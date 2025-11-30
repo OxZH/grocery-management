@@ -22,6 +22,75 @@ namespace GroceryManagement.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("GroceryManagement.Models.Allocation", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("StaffId")
+                        .HasColumnType("nvarchar(4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("Allocation");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecord", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("ManagerId")
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("StaffId")
+                        .HasColumnType("nvarchar(4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManagerId");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("AttendanceRecord");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("StaffId")
+                        .HasColumnType("nvarchar(4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("CustomerOrder");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("ManagerId")
+                        .HasColumnType("nvarchar(4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManagerId");
+
+                    b.ToTable("Expense");
+                });
+
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
                 {
                     b.Property<string>("Id")
@@ -35,6 +104,9 @@ namespace GroceryManagement.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(5)");
 
+                    b.Property<string>("StaffId")
+                        .HasColumnType("nvarchar(4)");
+
                     b.Property<int>("StoreFrontQty")
                         .HasColumnType("int");
 
@@ -44,6 +116,8 @@ namespace GroceryManagement.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("StaffId");
 
                     b.ToTable("Inventories");
                 });
@@ -81,6 +155,112 @@ namespace GroceryManagement.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("GroceryManagement.Models.User", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhoneNum")
+                        .IsRequired()
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+
+                    b.HasDiscriminator().HasValue("User");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Manager", b =>
+                {
+                    b.HasBaseType("GroceryManagement.Models.User");
+
+                    b.HasDiscriminator().HasValue("Manager");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Staff", b =>
+                {
+                    b.HasBaseType("GroceryManagement.Models.User");
+
+                    b.Property<string>("AuthorizationLvl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ManagerId")
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("PhotoURL")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal?>("Salary")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.HasIndex("ManagerId");
+
+                    b.HasDiscriminator().HasValue("Staff");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Allocation", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Staff", null)
+                        .WithMany("Allocations")
+                        .HasForeignKey("StaffId");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecord", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Manager", "Manager")
+                        .WithMany("AttendenceRecords")
+                        .HasForeignKey("ManagerId");
+
+                    b.HasOne("GroceryManagement.Models.Staff", null)
+                        .WithMany("AttendanceRecords")
+                        .HasForeignKey("StaffId");
+
+                    b.Navigation("Manager");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Staff", null)
+                        .WithMany("CustomerOrders")
+                        .HasForeignKey("StaffId");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Manager", "Manager")
+                        .WithMany("Expenses")
+                        .HasForeignKey("ManagerId");
+
+                    b.Navigation("Manager");
+                });
+
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
                 {
                     b.HasOne("GroceryManagement.Models.Product", "Product")
@@ -89,12 +269,45 @@ namespace GroceryManagement.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GroceryManagement.Models.Staff", null)
+                        .WithMany("ManagedInventory")
+                        .HasForeignKey("StaffId");
+
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Staff", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Manager", "Manager")
+                        .WithMany("Staffs")
+                        .HasForeignKey("ManagerId");
+
+                    b.Navigation("Manager");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Product", b =>
                 {
                     b.Navigation("Inventories");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Manager", b =>
+                {
+                    b.Navigation("AttendenceRecords");
+
+                    b.Navigation("Expenses");
+
+                    b.Navigation("Staffs");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Staff", b =>
+                {
+                    b.Navigation("Allocations");
+
+                    b.Navigation("AttendanceRecords");
+
+                    b.Navigation("CustomerOrders");
+
+                    b.Navigation("ManagedInventory");
                 });
 #pragma warning restore 612, 618
         }

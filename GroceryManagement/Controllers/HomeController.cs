@@ -9,4 +9,13 @@ public class HomeController(DB db, IWebHostEnvironment en) : Controller
         var Inv = db.Inventories;
         return View(Inv);
     }
+
+
+    public IActionResult TestDBUsers()
+    {
+        var users = db.Users;
+        return View(users);
+    }
+
+
 }
