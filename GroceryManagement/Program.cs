@@ -1,10 +1,16 @@
+global using GroceryManagement.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
+builder.Services.AddSqlServer<DB>($@"
+    Data Source=(LocalDB)\MSSQLLocalDB;
+    AttachDbFilename={builder.Environment.ContentRootPath}\GroceryManagementDB.mdf;
+");
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.MapDefaultControllerRoute();
 
-//app.MapGet("/", () => "Hello World!"); //default
+
 app.Run();

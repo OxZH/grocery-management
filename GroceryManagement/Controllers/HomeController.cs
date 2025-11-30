@@ -2,10 +2,11 @@
 
 namespace GroceryManagement.Controllers;
 
-public class HomeController : Controller
+public class HomeController(DB db, IWebHostEnvironment en) : Controller
 {
     public IActionResult Index()
     {
-        return View();
+        var Inv = db.Inventories;
+        return View(Inv);
     }
 }
