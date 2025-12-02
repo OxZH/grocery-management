@@ -50,24 +50,9 @@ public class Staff : User
 
     //navigation
     public Manager Manager { get; set; }
-
-    // relationship to Inventory
-    // 1 Staff manages many Inventory items
     public List<Inventory> ManagedInventory { get; set; }
-
-
-    // relationship to Orders
-    // 1 Staff manages/processes many CustomerOrders
     public List<CustomerOrder> CustomerOrders { get; set; }
-
-
-    // relationship to Tasks (via Allocation)
-    // Staff has many Allocations (assignments to tasks)
     public List<Allocation> Allocations { get; set; }
-
-
-    // relationship to Attendance
-    // Staff has many AttendanceRecords (their own history)
     public List<AttendanceRecords> AttendanceRecords { get; set; }
 
 }
@@ -89,7 +74,7 @@ public class CustomerOrder
     //add remaining attributes
 
     //nav
-
+    public Staff Staff { get; set; }
 }
 
 public class Allocation
@@ -99,6 +84,7 @@ public class Allocation
     //add remaining attributes
 
     //nav
+    public Staff Staff { get; set; }
 }
 
 
@@ -119,6 +105,8 @@ public class AttendanceRecords
     [MaxLength(10)]
     public string Status { get; set; }
 
+    public Staff Staff { get; set; }
+    public Manager Manager { get; set; }
 }
 public class Expense
 {
@@ -160,6 +148,7 @@ public class Product
     public string SupplierId { get; set; }
     //Navigation
     public List<Inventory> Inventories { get; set; } = [];
+    public Staff Staff { get; set; }
 
 }
 public class Inventory
