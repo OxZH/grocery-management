@@ -68,7 +68,7 @@ public class Staff : User
 
     // relationship to Attendance
     // Staff has many AttendanceRecords (their own history)
-    public List<AttendanceRecord> AttendanceRecords { get; set; }
+    public List<AttendanceRecords> AttendanceRecords { get; set; }
 
 }
 public class Manager : User
@@ -77,7 +77,7 @@ public class Manager : User
     //if wan lazy loading then List change to ICollection
     public List<Staff> Staffs { get; set; } = [];
     public List<Expense> Expenses { get; set; } = [];
-    public List<AttendanceRecord> AttendenceRecords { get; set; } = [];
+    public List<AttendanceRecords> AttendenceRecords { get; set; } = [];
 
 }
 
@@ -101,10 +101,14 @@ public class Allocation
     //nav
 }
 
-public class AttendanceRecord
+
+public class AttendanceRecords
 {
+    [Key, MaxLength(10)]
+    [RegularExpression(@"ATT\d{5}", ErrorMessage = "Format must be 'ATT', 5 digits (e.g. ATT00001)")]
+    public string Id { get; set; }
     public string StaffId { get; set; }
-    [Key, DataType(DataType.Date)]
+    [DataType(DataType.Date)]
     public DateOnly Date { get; set; } 
     [DataType(DataType.Time)]
     public TimeOnly? CheckInTime { get; set; } 
@@ -116,7 +120,6 @@ public class AttendanceRecord
     public string Status { get; set; }
 
 }
-
 public class Expense
 {
     [Key, MaxLength(5)]

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroceryManagement.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20251202073101_addRegex")]
-    partial class addRegex
+    [Migration("20251202081436_testDB")]
+    partial class testDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,16 +41,20 @@ namespace GroceryManagement.Migrations
                     b.ToTable("Allocation");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecord", b =>
+            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecords", b =>
                 {
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
+                    b.Property<string>("Id")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<TimeOnly?>("CheckInTime")
                         .HasColumnType("time");
 
                     b.Property<TimeOnly?>("CheckOutTime")
                         .HasColumnType("time");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
 
                     b.Property<string>("ManagerId")
                         .HasColumnType("nvarchar(4)");
@@ -64,13 +68,13 @@ namespace GroceryManagement.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.HasKey("Date");
+                    b.HasKey("Id");
 
                     b.HasIndex("ManagerId");
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("AttendanceRecord");
+                    b.ToTable("AttendanceRecords");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
@@ -248,7 +252,7 @@ namespace GroceryManagement.Migrations
                         .HasForeignKey("StaffId");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecord", b =>
+            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecords", b =>
                 {
                     b.HasOne("GroceryManagement.Models.Manager", null)
                         .WithMany("AttendenceRecords")
