@@ -93,12 +93,18 @@ public class Allocation
 
 public class AttendanceRecord
 {
-    [Key, MaxLength(5)]
-    public string Id { get; set; }
-    //add remaining attributes
+    public string StaffId { get; set; }
+    [Key, DataType(DataType.Date)]
+    public DateOnly Date { get; set; } 
+    [DataType(DataType.Time)]
+    public TimeOnly? CheckInTime { get; set; } 
+    [DataType(DataType.Time)]
+    public TimeOnly? CheckOutTime { get; set; } 
 
-    //nav
-    public Manager Manager { get; set; }
+    [RegularExpression("^(attend|absent|late|leave)$", ErrorMessage = "Status must be one of: attend, absent, late, or leave")]
+    [MaxLength(10)]
+    public string Status { get; set; }
+
 }
 
 public class Expense
