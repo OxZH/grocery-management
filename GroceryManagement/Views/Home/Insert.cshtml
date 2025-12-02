@@ -1,0 +1,40 @@
+﻿@model InventoryInsertVM
+
+@{
+    ViewBag.Title = "Home | Insert";
+    string min = DateTime.Today.AddDays(0).ToString("yyyy-MM-dd");
+}
+
+<form method="post" class="form">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <label asp-for="Id"></label>
+    <input asp-for="Id" data-upper autofocus>
+    <span asp-validation-for="Id"></span>
+
+    <label asp-for="ProductId"></label>
+    <select asp-for="ProductId" asp-items="ViewBag.ProductList">
+        <option value="">- Select One -</option>
+    </select>
+    <span asp-validation-for="ProductId"></span>
+
+    <label asp-for="ExpiryDate"></label>
+    <div>
+        <input asp-for="ExpiryDate" autofocus min="@min">
+        @* <br><small>@min</small> *@
+    </div>
+    <span asp-validation-for="ExpiryDate"></span>
+
+    <label asp-for="WareHouseQty">WareHouse Qty</label>
+    <input asp-for="WareHouseQty" type="number">
+    <span asp-validation-for="WareHouseQty"></span>
+
+    <label asp-for="StoreFrontQty">StoreFront Qty</label>
+    <input asp-for="StoreFrontQty" type="number">
+    <span asp-validation-for="StoreFrontQty"></span>
+
+    <section>
+        <button>Submit</button>
+        <button type="reset">Reset</button>
+    </section>
+</form>
