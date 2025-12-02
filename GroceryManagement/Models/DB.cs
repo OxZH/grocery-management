@@ -16,27 +16,36 @@ public class DB(DbContextOptions options) : DbContext(options)
 public class User
 {
     [Key, MaxLength(4)]
+    [RegularExpression("[a-zA-Z][0-9]{2,3}", ErrorMessage = "ID must be 1 letter followed by 2-3 digits (e.g., S01)")]
     public string Id { get; set; }
     [MaxLength(100)]
+    [RegularExpression(@"[a-zA-Z\s\.\'-]+", ErrorMessage = "Name can only contain letters, spaces, and .'-")]
     public string Name { get; set; }
     [MaxLength(100)]
+    [EmailAddress]
     public string Email { get; set; }
     [MaxLength(100)]
+    [RegularExpression(@"(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
     public string Password { get; set; }
     [MaxLength(11)]
+    [RegularExpression(@"01[0-9]-?[0-9]{7,8}", ErrorMessage = "Invalid Phone Number format.")]
     public string PhoneNum { get; set; }
     public string Role => GetType().Name; // "Staff" or "Manager"
 
 }
 
-public class Staff:User
+public class Staff : User
 {
     [MaxLength(100)]
+    [RegularExpression(@".+\.(jpg|jpeg|png)", ErrorMessage = "Image must be .jpg, .jpeg, or .png")]
     public string? PhotoURL { get; set; }
-    [Precision(10,2)]
+    [Precision(7, 2)]
+    [Range(0.01, 99999.99, ErrorMessage = "Salary must be between 0 and 100,000")]
     public decimal? Salary { get; set; }
+    [RegularExpression("(Cleaning|Cashier|Inventory)", ErrorMessage = "Role must be one of the below: Cleaning, Cashier, Inventory")]
     public string? AuthorizationLvl { get; set; }
     // FK
+    [RegularExpression(@"[a-zA-Z][0-9]{2,3}")]
     public string? ManagerId { get; set; }
 
     //navigation
@@ -71,6 +80,7 @@ public class Manager : User
     public List<AttendanceRecord> AttendenceRecords { get; set; } = [];
 
 }
+
 
 public class CustomerOrder
 {
@@ -119,15 +129,31 @@ public class Expense
 
 public class Product
 {
-    [Key, MaxLength(5)]
+    [Key, MaxLength(5), Required(ErrorMessage = "Product ID is required"),
+        RegularExpression(@"P\d{5}", ErrorMessage = "Format must be 'P' followed by 4 digits (e.g. P0001)")]
     public string Id { get; set; }
-    [MaxLength(100)]
+    [Required(ErrorMessage = "Product Name is required"), 
+        MaxLength(100, ErrorMessage = "Product Name cannot exceed 100 characters")]
     public string Name { get; set; }
-    [Precision(6, 2)]
+
+    [Required(ErrorMessage = "Price is required"), 
+        Range(0.01, 10000.00, ErrorMessage = "Price must be greater than 0"), 
+        Precision(7, 2)]
     public decimal Price { get; set; }
+
     [MaxLength(100)]
     public string PhotoURL { get; set; }
+
+    [Required(ErrorMessage = "Category is required"), MaxLength(50)]
     public string Category { get; set; }
+
+    [Range(0, 9999, ErrorMessage = "Quantity cannot be negative")]
+    public int WareHouseQty { get; set; }
+
+    [Range(0, 9999, ErrorMessage = "Quantity cannot be negative")]
+    public int StoreFrontQty { get; set; }
+
+    [Required(ErrorMessage = "Supplier ID is required")]
     public string SupplierId { get; set; }
     //Navigation
     public List<Inventory> Inventories { get; set; } = [];
@@ -135,14 +161,22 @@ public class Product
 }
 public class Inventory
 {
-    [Key, MaxLength(10)]
+    [Key, MaxLength(10), Required(ErrorMessage = "Batch ID is required"),
+        RegularExpression(@"INV\d{5}[A-Z]", ErrorMessage = "Format must be 'INV', 5 digits, and a letter (e.g. INV00001A)")]
     public string Id { get; set; }
+
+    [Required(ErrorMessage = "Expiry Date is required")]
+    [DataType(DataType.Date)]
     public DateOnly ExpiryDate { get; set; }
-    public int WareHouseQty { get; set; }
-    public int StoreFrontQty { get; set; }
+
     //FK
+    [Required(ErrorMessage = "Please select a Product")]
     public string ProductId { get; set; }
+    [Required(ErrorMessage = "Staff ID is required")]
+    public string StaffId { get; set; }
+
     //Navigation
     public Product Product { get; set; }
+    public Staff Staff { get; set; }
 
 }
