@@ -13,7 +13,7 @@ public class InventoryInsertVM
 
     [Required(ErrorMessage = "Expiry Date is required")]
     [DataType(DataType.Date)]
-    public DateTime ExpiryDate { get; set; }
+    public DateOnly ExpiryDate { get; set; }
 
     [Range(0, 9999, ErrorMessage = "Quantity cannot be negative")]
     public int WareHouseQty { get; set; }
