@@ -16,19 +16,19 @@ public class DB(DbContextOptions options) : DbContext(options)
 public class User
 {
     [Key, MaxLength(4)]
-    [RegularExpression("[a-zA-Z][0-9]{2,3}", ErrorMessage = "ID must be 1 letter followed by 2-3 digits (e.g., S01)")]
+    [RegularExpression(@"^[a-zA-Z][0-9]{2,3}$", ErrorMessage = "ID must be 1 letter followed by 2-3 digits (e.g., S01)")]
     public string Id { get; set; }
     [MaxLength(100)]
-    [RegularExpression(@"[a-zA-Z\s\.\'-]+", ErrorMessage = "Name can only contain letters, spaces, and .'-")]
+    [RegularExpression(@"^[a-zA-Z\s\.\'-]+$", ErrorMessage = "Name can only contain letters, spaces, and .'-")]
     public string Name { get; set; }
     [MaxLength(100)]
     [EmailAddress]
     public string Email { get; set; }
     [MaxLength(100)]
-    [RegularExpression(@"(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
+//    [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
     public string Password { get; set; }
     [MaxLength(11)]
-    [RegularExpression(@"01[0-9]-?[0-9]{7,8}", ErrorMessage = "Invalid Phone Number format.")]
+    [RegularExpression(@"^01[0-9]-?[0-9]{7,8}$", ErrorMessage = "Invalid Phone Number format.")]
     public string PhoneNum { get; set; }
     public string Role => GetType().Name; // "Staff" or "Manager"
 
@@ -37,15 +37,15 @@ public class User
 public class Staff : User
 {
     [MaxLength(100)]
-    [RegularExpression(@".+\.(jpg|jpeg|png)", ErrorMessage = "Image must be .jpg, .jpeg, or .png")]
+    [RegularExpression(@".+\.(jpg|jpeg|png)$", ErrorMessage = "Image must be .jpg, .jpeg, or .png")]
     public string? PhotoURL { get; set; }
     [Precision(7, 2)]
     [Range(0.01, 99999.99, ErrorMessage = "Salary must be between 0 and 100,000")]
     public decimal? Salary { get; set; }
-    [RegularExpression("(Cleaning|Cashier|Inventory)", ErrorMessage = "Role must be one of the below: Cleaning, Cashier, Inventory")]
+    [RegularExpression(@"^(Cleaning|Cashier|Inventory)$", ErrorMessage = "Role must be one of the below: Cleaning, Cashier, Inventory")]
     public string? AuthorizationLvl { get; set; }
     // FK
-    [RegularExpression(@"[a-zA-Z][0-9]{2,3}")]
+    [RegularExpression(@"^[a-zA-Z][0-9]{2,3}$")]
     public string? ManagerId { get; set; }
 
     //navigation

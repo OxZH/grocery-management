@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GroceryManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class testDB : Migration
+    public partial class TESTDB : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
