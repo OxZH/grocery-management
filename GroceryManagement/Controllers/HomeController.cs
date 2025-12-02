@@ -46,8 +46,6 @@ public class HomeController(DB db, IWebHostEnvironment en) : Controller
                 Id = vm.Id.Trim().ToUpper(),
                 ProductId = vm.ProductId,
                 ExpiryDate = vm.ExpiryDate,
-                WareHouseQty = vm.WareHouseQty,
-                StoreFrontQty = vm.StoreFrontQty,
             });
             db.SaveChanges();
             TempData["Info"] = "Record inserted.";
