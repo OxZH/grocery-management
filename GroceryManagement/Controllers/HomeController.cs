@@ -12,7 +12,7 @@ public class HomeController(DB db, IWebHostEnvironment en) : Controller
     }
     public IActionResult Insert()
     {
-        ViewBag.ProductList = new SelectList(db.Products, "Id", "Name");
+        ViewBag.ProductList = new SelectList(db.Products.ToList(), "Id", "Name");
         return View();
     }
 
