@@ -120,9 +120,10 @@ public class Expense
 
 public class Product
 {
-    [Key, MaxLength(5), Required(ErrorMessage = "Product ID is required"),
+    [Key, MaxLength(6), Required(ErrorMessage = "Product ID is required"),
         RegularExpression(@"P\d{5}", ErrorMessage = "Format must be 'P' followed by 4 digits (e.g. P0001)")]
     public string Id { get; set; }
+
     [Required(ErrorMessage = "Product Name is required"), 
         MaxLength(100, ErrorMessage = "Product Name cannot exceed 100 characters")]
     public string Name { get; set; }
@@ -132,8 +133,8 @@ public class Product
         Precision(7, 2)]
     public decimal Price { get; set; }
 
-    [MaxLength(100)]
-    public string PhotoURL { get; set; }
+    [RegularExpression(@".+\.(jpg|jpeg|png)$", ErrorMessage = "Image must be .jpg, .jpeg, or .png")]
+    public string? PhotoURL { get; set; }
 
     [Required(ErrorMessage = "Category is required"), MaxLength(50)]
     public string Category { get; set; }
@@ -148,12 +149,12 @@ public class Product
     public string SupplierId { get; set; }
     //Navigation
     public List<Inventory> Inventories { get; set; } = [];
-    public Staff Staff { get; set; }
+
 
 }
 public class Inventory
 {
-    [Key, MaxLength(10), Required(ErrorMessage = "Batch ID is required"),
+    [Key, MaxLength(9), Required(ErrorMessage = "Batch ID is required"),
         RegularExpression(@"INV\d{5}[A-Z]", ErrorMessage = "Format must be 'INV', 5 digits, and a letter (e.g. INV00001A)")]
     public string Id { get; set; }
 

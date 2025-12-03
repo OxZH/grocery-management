@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroceryManagement.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20251202082439_TESTDB")]
-    partial class TESTDB
+    [Migration("20251202142912_UpdateDB")]
+    partial class UpdateDB
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -112,15 +112,15 @@ namespace GroceryManagement.Migrations
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(9)
+                        .HasColumnType("nvarchar(9)");
 
                     b.Property<DateOnly>("ExpiryDate")
                         .HasColumnType("date");
 
                     b.Property<string>("ProductId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                        .HasColumnType("nvarchar(6)");
 
                     b.Property<string>("StaffId")
                         .IsRequired()
@@ -138,8 +138,8 @@ namespace GroceryManagement.Migrations
             modelBuilder.Entity("GroceryManagement.Models.Product", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -160,6 +160,9 @@ namespace GroceryManagement.Migrations
                         .HasPrecision(7, 2)
                         .HasColumnType("decimal(7,2)");
 
+                    b.Property<string>("StaffId")
+                        .HasColumnType("nvarchar(4)");
+
                     b.Property<int>("StoreFrontQty")
                         .HasColumnType("int");
 
@@ -171,6 +174,8 @@ namespace GroceryManagement.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StaffId");
 
                     b.ToTable("Products");
                 });
@@ -247,29 +252,37 @@ namespace GroceryManagement.Migrations
 
             modelBuilder.Entity("GroceryManagement.Models.Allocation", b =>
                 {
-                    b.HasOne("GroceryManagement.Models.Staff", null)
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
                         .WithMany("Allocations")
                         .HasForeignKey("StaffId");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.AttendanceRecords", b =>
                 {
-                    b.HasOne("GroceryManagement.Models.Manager", null)
+                    b.HasOne("GroceryManagement.Models.Manager", "Manager")
                         .WithMany("AttendenceRecords")
                         .HasForeignKey("ManagerId");
 
-                    b.HasOne("GroceryManagement.Models.Staff", null)
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
                         .WithMany("AttendanceRecords")
                         .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
                 {
-                    b.HasOne("GroceryManagement.Models.Staff", null)
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
                         .WithMany("CustomerOrders")
                         .HasForeignKey("StaffId");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
@@ -296,6 +309,15 @@ namespace GroceryManagement.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Product", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId");
 
                     b.Navigation("Staff");
                 });
