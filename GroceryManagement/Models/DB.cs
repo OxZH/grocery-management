@@ -42,7 +42,7 @@ public class Staff : User
     [Precision(7, 2)]
     [Range(0.01, 99999.99, ErrorMessage = "Salary must be between 0 and 100,000")]
     public decimal? Salary { get; set; }
-    [RegularExpression(@"^(Cleaning|Cashier|Inventory)$", ErrorMessage = "Role must be one of the below: Cleaning, Cashier, Inventory")]
+    [RegularExpression(@"^(CLEANING|CASHIER|INVENTORY)$", ErrorMessage = "Role only can be one of the below: CLEANING, CASHIER, INVENTORY")]
     public string? AuthorizationLvl { get; set; }
     // FK
     [RegularExpression(@"^[a-zA-Z][0-9]{2,3}$")]
@@ -51,11 +51,7 @@ public class Staff : User
     //navigation
     public Manager Manager { get; set; }
     public List<Inventory> ManagedInventory { get; set; }
-<<<<<<< HEAD
-    public List<CustomerOrder> CustomerOrders { get; set; }
-=======
     public List<Checkout> Checkout { get; set; }
->>>>>>> main
     public List<Allocation> Allocations { get; set; }
     public List<AttendanceRecords> AttendanceRecords { get; set; }
 
@@ -81,6 +77,9 @@ public class Checkout
     public decimal Total { get; set; }
     [DataType(DataType.DateTime)]
     public DateTime Date { get; set; }
+
+    [RegularExpression("^(CONFIRMED|PENDING|FAILED)$", ErrorMessage = "Status must be one of: VONFIRMED, PENDING or FAILED")]
+    [MaxLength(10)]
     public string Status { get; set; }
     [DataType(DataType.DateTime)]
     public DateTime StatusUpdateDate { get; set; }
@@ -89,10 +88,7 @@ public class Checkout
 
     //nav
     public Staff Staff { get; set; }
-<<<<<<< HEAD
-=======
     public List<Inventory> Inventories { get; set; } = [];
->>>>>>> main
 }
 
 public class Allocation
@@ -119,7 +115,7 @@ public class AttendanceRecords
     [DataType(DataType.Time)]
     public TimeOnly? CheckOutTime { get; set; } 
 
-    [RegularExpression("^(attend|absent|late|leave)$", ErrorMessage = "Status must be one of: attend, absent, late, or leave")]
+    [RegularExpression("^(ATTEND|ABSENT|LATE|LEAVE)$", ErrorMessage = "Status must be one of: ATTEND, ABSENT, LATE, or LEAVE")]
     [MaxLength(10)]
     public string Status { get; set; }
 
@@ -170,6 +166,7 @@ public class Product
     public Staff Staff { get; set; }
 
 
+
 }
 public class Inventory
 {
@@ -180,12 +177,15 @@ public class Inventory
     [Required(ErrorMessage = "Expiry Date is required")]
     [DataType(DataType.Date)]
     public DateOnly ExpiryDate { get; set; }
-
+    [RegularExpression("^(SOLD_OUT|EXPIRIED)$", ErrorMessage = "Status onyl can be one of: SOL_OUT, EXPIRED")]
+    [MaxLength(10)]
+    public string? Status { get; set; }
     //FK
     [Required(ErrorMessage = "Please select a Product")]
     public string ProductId { get; set; }
     [Required(ErrorMessage = "Staff ID is required")]
     public string StaffId { get; set; }
+
 
     //Navigation
     public Product Product { get; set; }
