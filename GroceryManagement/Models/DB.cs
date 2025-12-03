@@ -71,7 +71,6 @@ public class Manager : User
 }
 
 
-public class CustomerOrder
 public class Checkout
 {
     [Key, MaxLength(5)]
@@ -139,7 +138,6 @@ public class Expense
 
 public class Product
 {
-    [Key, MaxLength(5), Required(ErrorMessage = "Product ID is required"),
     [Key, MaxLength(6), Required(ErrorMessage = "Product ID is required"),
         RegularExpression(@"P\d{5}", ErrorMessage = "Format must be 'P' followed by 4 digits (e.g. P0001)")]
     public string Id { get; set; }
@@ -153,8 +151,6 @@ public class Product
         Precision(7, 2)]
     public decimal Price { get; set; }
 
-    [MaxLength(100)]
-    public string PhotoURL { get; set; }
     [RegularExpression(@".+\.(jpg|jpeg|png)$", ErrorMessage = "Image must be .jpg, .jpeg, or .png")]
     public string? PhotoURL { get; set; }
 
@@ -177,7 +173,6 @@ public class Product
 }
 public class Inventory
 {
-    [Key, MaxLength(10), Required(ErrorMessage = "Batch ID is required"),
     [Key, MaxLength(9), Required(ErrorMessage = "Batch ID is required"),
         RegularExpression(@"INV\d{5}[A-Z]", ErrorMessage = "Format must be 'INV', 5 digits, and a letter (e.g. INV00001A)")]
     public string Id { get; set; }
@@ -197,4 +192,4 @@ public class Inventory
     public Staff Staff { get; set; }
     public Checkout Checkout { get; set; }
 
-}
+    }
