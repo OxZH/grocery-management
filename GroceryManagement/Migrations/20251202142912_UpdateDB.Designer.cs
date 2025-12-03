@@ -279,7 +279,7 @@ namespace GroceryManagement.Migrations
             modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
                 {
                     b.HasOne("GroceryManagement.Models.Staff", "Staff")
-                        .WithMany("CustomerOrders")
+                        .WithMany("Checkout")
                         .HasForeignKey("StaffId");
 
                     b.Navigation("Staff");
@@ -351,7 +351,7 @@ namespace GroceryManagement.Migrations
 
                     b.Navigation("AttendanceRecords");
 
-                    b.Navigation("CustomerOrders");
+                    b.Navigation("Checkout");
 
                     b.Navigation("ManagedInventory");
                 });

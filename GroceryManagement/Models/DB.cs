@@ -51,7 +51,7 @@ public class Staff : User
     //navigation
     public Manager Manager { get; set; }
     public List<Inventory> ManagedInventory { get; set; }
-    public List<CustomerOrder> CustomerOrders { get; set; }
+    public List<Checkout> Checkout { get; set; }
     public List<Allocation> Allocations { get; set; }
     public List<AttendanceRecords> AttendanceRecords { get; set; }
 
@@ -67,14 +67,25 @@ public class Manager : User
 }
 
 
-public class CustomerOrder
+public class Checkout
 {
     [Key, MaxLength(5)]
     public string Id { get; set; }
+    public string CustomerId { get; set; }
+    public string InventoryId { get; set; }
+    [Precision(7, 2)]
+    public decimal Total { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime Date { get; set; }
+    public string Status { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime StatusUpdateDate { get; set; }
+    public string PaymentMethod { get; set; }
     //add remaining attributes
 
     //nav
     public Staff Staff { get; set; }
+    public List<Inventory> Inventories { get; set; } = [];
 }
 
 public class Allocation
@@ -171,5 +182,6 @@ public class Inventory
     //Navigation
     public Product Product { get; set; }
     public Staff Staff { get; set; }
+    public Checkout Checkout { get; set; }
 
-}
+    }
