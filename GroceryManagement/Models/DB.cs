@@ -25,7 +25,7 @@ public class User
     [EmailAddress]
     public string Email { get; set; }
     [MaxLength(100)]
-//    [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
+    //    [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
     public string Password { get; set; }
     [MaxLength(11)]
     [RegularExpression(@"^01[0-9]-?[0-9]{7,8}$", ErrorMessage = "Invalid Phone Number format.")]
@@ -93,7 +93,7 @@ public class Checkout
 
 public class Allocation
 {
-    [Key,MaxLength(5)]
+    [Key, MaxLength(5)]
     public string Id { get; set; }
     //add remaining attributes
 
@@ -109,11 +109,11 @@ public class AttendanceRecords
     public string Id { get; set; }
     public string StaffId { get; set; }
     [DataType(DataType.Date)]
-    public DateOnly Date { get; set; } 
+    public DateOnly Date { get; set; }
     [DataType(DataType.Time)]
-    public TimeOnly? CheckInTime { get; set; } 
+    public TimeOnly? CheckInTime { get; set; }
     [DataType(DataType.Time)]
-    public TimeOnly? CheckOutTime { get; set; } 
+    public TimeOnly? CheckOutTime { get; set; }
 
     [RegularExpression("^(ATTEND|ABSENT|LATE|LEAVE)$", ErrorMessage = "Status must be one of: ATTEND, ABSENT, LATE, or LEAVE")]
     [MaxLength(10)]
@@ -138,12 +138,12 @@ public class Product
         RegularExpression(@"P\d{5}", ErrorMessage = "Format must be 'P' followed by 4 digits (e.g. P0001)")]
     public string Id { get; set; }
 
-    [Required(ErrorMessage = "Product Name is required"), 
+    [Required(ErrorMessage = "Product Name is required"),
         MaxLength(100, ErrorMessage = "Product Name cannot exceed 100 characters")]
     public string Name { get; set; }
 
-    [Required(ErrorMessage = "Price is required"), 
-        Range(0.01, 10000.00, ErrorMessage = "Price must be greater than 0"), 
+    [Required(ErrorMessage = "Price is required"),
+        Range(0.01, 10000.00, ErrorMessage = "Price must be greater than 0"),
         Precision(7, 2)]
     public decimal Price { get; set; }
 
@@ -163,7 +163,6 @@ public class Product
     public string SupplierId { get; set; }
     //Navigation
     public List<Inventory> Inventories { get; set; } = [];
-    public Staff Staff { get; set; }
 
 
 
@@ -192,4 +191,4 @@ public class Inventory
     public Staff Staff { get; set; }
     public Checkout Checkout { get; set; }
 
-    }
+}

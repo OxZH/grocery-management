@@ -1,0 +1,57 @@
+﻿@{
+	ViewBag.Title = "Test DB Users";
+}
+@model IEnumerable<GroceryManagement.Models.User>
+
+
+<h2>Test Database Users</h2>
+<p>@Model.Count() record(s)</p>
+<table class="table">
+	<tr>
+		<th>User Id</th>
+		<th>Name</th>
+		<th>Email</th>
+		<th>Password</th>
+		<th>PhoneNum</th>
+		<th>Role</th>
+		<th>Salary</th>
+		<th>AuthorizationLvl</th>
+		<th>Manager ID</th>
+		<th>Photo</th>
+	</tr>
+	@foreach (var user in Model)
+	{
+		<tr>
+			<td>@user.Id</td>
+			<td>@user.Name</td>
+			<td>@user.Email</td>
+			<td>@user.Password</td>
+			<td>@user.PhoneNum</td>
+			<td>@user.Role</td>
+			@if(user is Staff staff)
+			{
+				<td>@staff.Salary</td>
+				<td>@staff.AuthorizationLvl</td>
+				<td>@staff.ManagerId</td>
+			}
+			else
+			{
+				<td>-</td>
+				<td>-</td>
+				<td>-</td>
+			}
+			@if (user is Staff staffMember)
+			{
+				<td>
+					@if (!string.IsNullOrEmpty(staffMember.PhotoURL))
+					{
+						<img src="/photos/@staffMember.PhotoURL" width="50" height="50" style="border-radius:50%; object-fit:cover;" />
+					}
+					else
+					{
+						<span class="text-muted">No Photo</span>
+					}
+				</td>
+			}
+		</tr>
+	}

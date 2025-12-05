@@ -1,10 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@inject DB db
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
-    <link rel="shortcut icon" href="/images/favicon.png">
+    @* <link rel="shortcut icon" href="/images/favicon.png"> *@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="/css/pager.css">
     <link rel="stylesheet" href="/css/app.css" asp-append-version="true">
@@ -14,14 +16,50 @@
     <div class="info">@Html.Raw(TempData["Info"])</div>
 
     <header>
-        <h1><a href="/">Grocery Management</a></h1>
+        <h1><a href="/">Email and DateTime</a></h1>
+
+        @if (User.Identity!.IsAuthenticated)
+        {
+            <div>
+                @User.Identity.Name |
+                @(User.IsInRole("Manager")  ? "Manager"  : "")
+                @(User.IsInRole("Staff") ? "Staff" : "")
+            </div>
+        }
+
+        @if (User.IsInRole("Staff"))
+        {
+            var staff = db.Staffs.FirstOrDefault(s => s.Email == User.Identity!.Name);
+            if (staff != null)
+            {
+                <img src="/photos/@staff.PhotoURL">
+                
+            }
+        }
     </header>
 
     <nav>
         <a href="/">Index</a>
-        <a href="/Home/TestDBUsers">Test User DB</a>
+        <a href="/Account/TestDBUsers">Test User DB</a>
         <a href="/Attendance/CheckInAttendance">Attendance</a>
+
         <div></div>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <a href="/Account/Logout">Logout</a>
+            <a href="/Account/UpdatePassword">Update Password</a>
+        }
+        else
+        {
+            <a href="/Account/Login">Login</a>
+            <a href="/Account/Register">Register</a>
+            <a href="/Account/ResetPassword">Reset Password</a>
+        }
+        @if (User.IsInRole("Staff"))
+        {
+            <a href="/Account/UpdateProfile">Update Profile</a>
+        }
     </nav>
 
     <main>

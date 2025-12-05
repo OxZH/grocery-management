@@ -55,11 +55,7 @@ public class HomeController(DB db, IWebHostEnvironment en) : Controller
         return View();
     }
 
-    public IActionResult TestDBUsers()
-    {
-        var users = db.Users;
-        return View(users);
-    }
+
 
 
 }
