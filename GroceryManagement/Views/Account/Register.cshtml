@@ -1,15 +1,21 @@
 ﻿@model RegisterVM
 
 @{
-    ViewBag.Title = "Register New Staff";
+    ViewBag.Title = "Register User";
 }
 
-<form class="form" method="post" enctype="multipart/form-data">
-        <section>
-            <h1>Register New Staff</h1>
-        </section>
+<form method="post" enctype="multipart/form-data">
+    <div class="form">
+        <section><h1>Register New User</h1></section>
 
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <label asp-for="Role">Account Type</label>
+        <select asp-for="Role" id="RoleSelect">
+            <option value="Staff">Staff</option>
+            <option value="Manager">Manager</option>
+        </select>
+        <span></span>
 
         <label asp-for="Name"></label>
         <input asp-for="Name" data-trim autofocus />
@@ -23,19 +29,6 @@
         <input asp-for="PhoneNum" data-trim />
         <span asp-validation-for="PhoneNum"></span>
 
-        <label asp-for="Salary"></label>
-        <input asp-for="Salary" type="number" step="0.01" min="0" />
-        <span asp-validation-for="Salary"></span>
-
-        <label asp-for="AuthorizationLvl">Role</label>
-        <select asp-for="AuthorizationLvl">
-            <option value="">-- Select Role --</option>
-            <option value="CASHIER">Cashier</option>
-            <option value="INVENTORY">Inventory</option>
-            <option value="CLEANING">Cleaning</option>
-        </select>
-        <span asp-validation-for="AuthorizationLvl"></span>
-
         <label asp-for="Password"></label>
         <input asp-for="Password" />
         <span asp-validation-for="Password"></span>
@@ -44,26 +37,52 @@
         <input asp-for="Confirm" />
         <span asp-validation-for="Confirm"></span>
 
-        <label asp-for="Photo"></label>
-        <label class="upload">
-            <input asp-for="Photo" type="file" accept="image/jpeg,image/png" hidden />
-            <img src="/images/default.png" alt="Photo Preview" />
-        </label>
-        <span asp-validation-for="Photo"></span>
+        <div id="staff-fields" style="display: contents;">
+            <label asp-for="Salary"></label>
+            <input asp-for="Salary" type="number" step="0.01" />
+            <span asp-validation-for="Salary"></span>
+
+            <label asp-for="AuthorizationLvl">Role</label>
+            <select asp-for="AuthorizationLvl">
+                <option value="">-- Select Role --</option>
+                <option value="CASHIER">Cashier</option>
+                <option value="INVENTORY">Inventory</option>
+                <option value="CLEANING">Cleaning</option>
+            </select>
+            <span asp-validation-for="AuthorizationLvl"></span>
+
+            <label asp-for="Photo"></label>
+            <label class="upload">
+                <input asp-for="Photo" type="file" accept="image/jpeg,image/png" hidden />
+                <img src="/images/default.png" alt="Photo Preview" />
+            </label>
+            <span asp-validation-for="Photo"></span>
+        </div>
 
         <section>
-            <button class="btn btn-primary" formnovalidate>Register</button>
+            <button class="btn btn-primary">Register</button>
             <button type="reset" class="btn btn-secondary">Reset</button>
             <a href="/" class="btn btn-link">Back</a>
         </section>
+    </div>
 </form>
 
 @section foot {
- <script>
-
-       $.validator.setDefaults({ ignore: '' });
- </script>
-     @* @{
+    @* @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     } *@
+    
+    <script>
+        // Simple logic to toggle fields based on selection
+        $('#RoleSelect').change(function() {
+            if ($(this).val() === 'Manager') {
+                $('#staff-fields').hide(); // Hide staff inputs
+                // Optional: clear values so they don't submit garbage
+                $('#staff-fields input, #staff-fields select').val('');
+            } else {
+                $('#staff-fields').show(); // Show staff inputs
+                $('#staff-fields').css('display', 'contents'); // Maintain grid layout
+            }
+        });
+    </script>
 }

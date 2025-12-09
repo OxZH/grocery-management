@@ -106,13 +106,14 @@ public class Helper(IWebHostEnvironment en,
                 == PasswordVerificationResult.Success;
     }
 
-    public void SignIn(string email, string role, bool rememberMe)
+    public void SignIn(string email, string role, bool rememberMe, string phone)
     {
         // (1) Claim, identity and principal
         List<Claim> claims =
         [
             new(ClaimTypes.Name, email),
             new(ClaimTypes.Role, role),
+            new(ClaimTypes.MobilePhone, phone ?? "")
         ];
 
 

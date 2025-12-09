@@ -56,6 +56,9 @@ public class RegisterVM
     [RegularExpression(@"^(CLEANING|CASHIER|INVENTORY)$", ErrorMessage = "Role only can be one of the below: CLEANING, CASHIER, INVENTORY")]
     [Display(Name = "Job Role")]
     public string AuthorizationLvl { get; set; }
+
+    [Display(Name = "User Role")]
+    public string Role { get; set; }  = "Staff";
 }
 
 
@@ -70,22 +73,23 @@ public class LoginVM
     public string Password { get; set; }
 
     public bool RememberMe { get; set; }
+
 }
 
 
 public class UpdatePasswordVM
 {
-    [StringLength(100, MinimumLength = 5)]
+    [StringLength(100, MinimumLength = 8)]
     [DataType(DataType.Password)]
     [DisplayName("Current Password")]
     public string Current { get; set; }
 
-    [StringLength(100, MinimumLength = 5)]
+    [StringLength(100, MinimumLength = 8)]
     [DataType(DataType.Password)]
     [DisplayName("New Password")]
     public string New { get; set; }
 
-    [StringLength(100, MinimumLength = 5)]
+    [StringLength(100, MinimumLength = 8)]
     [Compare("New")]
     [DataType(DataType.Password)]
     [DisplayName("Confirm Password")]

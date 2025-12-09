@@ -12,14 +12,17 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
         var users = db.Users.ToList();
         return View(users);
     }
-    private string NextId()
+    private string NextId(string prefix)
     {
-        //if ada data, take the maximum (T003 in this case) else assign T000
-        string max = db.Users.Max(t => t.Id) ?? "U000";
+        // only search for id with the specified prefix
+        // if none found, assign {prefix}000
+        var max = db.Users
+            .Where(u => u.Id.StartsWith(prefix))
+            .Max(u => u.Id) ?? $"{prefix}000";
         //take int part of the ID (T003 so take out 003), and the parse func trims off the leading 0s (so the 003 become 3)
         int n = int.Parse(max[1..]);
-        //increment the n (3) by 1 and to string it 
-        return (n + 1).ToString("'U'000");
+        //increment by 1 and format back to D3 (3 digits with leading 0s)
+        return $"{prefix}{(n+1):D3}";
     }
 
     // GET: Account/Login
@@ -46,7 +49,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             TempData["Info"] = "Login successfully.";
 
             // (3) Sign in
-            hp.SignIn(u!.Email, u.Role, vm.RememberMe);
+            hp.SignIn(u!.Email, u.Role, vm.RememberMe, u.PhoneNum);
 
             // (4) Handle return URL
             if (string.IsNullOrEmpty(returnURL))
@@ -66,7 +69,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
         // Sign out
         hp.SignOut();
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Login", "Account");
     }
 
     // GET: Account/AccessDenied
@@ -82,7 +85,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
     }
 
     // GET: Account/Register
-    //[Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Manager")]
     public IActionResult Register()
     {
         return View();
@@ -90,7 +93,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
 
     // POST: Account/Register
     [HttpPost]
-    //[Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Manager")]
     public IActionResult Register(RegisterVM vm)
     {
         if (ModelState.IsValid("Email") &&
@@ -112,34 +115,77 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
                 {
                     ModelState.AddModelError("Photo", "Photo is required.");
                 }*/
-
-        if (ModelState.IsValid)
+        if (vm.Role == "Manager")
         {
+            ModelState.Remove("Salary");
+            ModelState.Remove("AuthorizationLvl");
+            ModelState.Remove("Photo");
 
-            // FOR TESTING PURPOSE ONLY, REMOVE ONCE LOGIN IS DONE
-            string testManager = "M001";
-            // Insert member
-            var s = new Staff
+            if (ModelState.IsValid)
             {
-                Id = NextId(),
-                Name = vm.Name,
-                Email = vm.Email,
-                Password = hp.HashPassword(vm.Password),
-                PhoneNum = vm.PhoneNum,
-                // staff specific attributes
-                PhotoURL = hp.SavePhoto(vm.Photo, "photos"),
-                Salary = vm.Salary,
-                AuthorizationLvl = vm.AuthorizationLvl,
-                //ManagerId = User.Identity!.Name,
-                ManagerId = testManager,
-            };
-            db.Staffs.Add(s);
-            db.SaveChanges();
-
-            TempData["Info"] = $"Staff {s.Name} ({s.Id}) registered successfully.";
-
-            return RedirectToAction("TestDBUsers");
+                var m = new Manager
+                {
+                    Id = NextId("M"),
+                    Name = vm.Name,
+                    Email = vm.Email,
+                    Password = hp.HashPassword(vm.Password),
+                    PhoneNum = vm.PhoneNum,
+                    // Manager specific attributes
+                };
+                db.Managers.Add(m);
+                db.SaveChanges();
+                TempData["Info"] = $"Manager {m.Name} ({m.Id}) registered successfully.";
+                return RedirectToAction("TestDBUsers");
+            }
         }
+        else
+        {
+            if (ModelState.IsValid)
+            {
+            
+                // 1. Get the Email from the cookie
+                string currentManagerEmail = User.Identity!.Name;
+                // 2. Find the Manager object in the DB using that email
+                var currentManager = db.Managers.FirstOrDefault(m => m.Email == currentManagerEmail);
+                // Safety check (in case the manager was deleted but still has a cookie)
+                if (currentManager == null) return RedirectToAction("Login", "Account");
+                // save photos and keep the filename in a variable
+                string unqiueFileName = hp.SavePhoto(vm.Photo, "photos");
+                
+                try
+                {
+                    // Insert staff object
+                    var s = new Staff
+                    {
+                        Id = NextId("S"),
+                        Name = vm.Name,
+                        Email = vm.Email,
+                        Password = hp.HashPassword(vm.Password),
+                        PhoneNum = vm.PhoneNum,
+                        // staff specific attributes
+                        PhotoURL = unqiueFileName,
+                        Salary = vm.Salary,
+                        AuthorizationLvl = vm.AuthorizationLvl,
+                        ManagerId = currentManager.Id,
+                        //ManagerId = testManager,
+                    };
+                    // save to DB
+                    db.Staffs.Add(s);
+                    db.SaveChanges();
+
+                    TempData["Info"] = $"Staff {s.Name} ({s.Id}) registered successfully.";
+                    return RedirectToAction("TestDBUsers");
+                }
+                catch (Exception)
+                {
+                    hp.DeletePhoto(unqiueFileName, "photos");
+                    ModelState.AddModelError("", "Error saving photo. Registration failed.");
+                    return View(vm);
+                }
+            }
+        }
+
+      
 
         return View(vm);
     }

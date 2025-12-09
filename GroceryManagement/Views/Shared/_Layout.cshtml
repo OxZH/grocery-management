@@ -39,27 +39,28 @@
     </header>
 
     <nav>
-        <a href="/">Index</a>
-        <a href="/Account/TestDBUsers">Test User DB</a>
-        <a href="/Attendance/CheckInAttendance">Attendance</a>
-
-        <div></div>
-
-        @if (User.Identity.IsAuthenticated)
+        @if (!User.Identity!.IsAuthenticated)
         {
-            <a href="/Account/Logout">Logout</a>
-            <a href="/Account/UpdatePassword">Update Password</a>
+            <a href="/Account/Login">Login</a>
+            <a href="/Account/ResetPassword">Reset Password</a>
         }
         else
         {
-            <a href="/Account/Login">Login</a>
-            <a href="/Account/Register">Register</a>
-            <a href="/Account/ResetPassword">Reset Password</a>
-        }
-        @if (User.IsInRole("Staff"))
-        {
+            <a href="/">Product</a>
+            <a href="/Account/TestDBUsers">Test User DB</a>
+            <a href="/Attendance/CheckInAttendance">Attendance</a>
+            
+            <a href="/Account/UpdatePassword">Update Password</a>
             <a href="/Account/UpdateProfile">Update Profile</a>
+            <a href="/Account/Logout">Logout</a>
+
+            @if (User.IsInRole("Manager"))
+            {
+                <a href="/Account/Register">Register Staff</a>
+            }
+
         }
+        
     </nav>
 
     <main>
@@ -78,5 +79,6 @@
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="/js/app.js" asp-append-version="true"></script>
     @RenderSection("foot", false)
+	@RenderSection("Scripts", required: false)
 </body>
 </html>
