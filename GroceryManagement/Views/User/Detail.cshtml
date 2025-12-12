@@ -1,0 +1,100 @@
+﻿@using GroceryManagement.Models
+@model User
+
+@{
+    ViewBag.Title = "User Details";
+    var isStaff = Model is Staff;
+    var staff = Model as Staff;
+}
+
+<section>
+    <h1>User Details</h1>
+</section>
+
+<div style="display: flex; gap: 20px; align-items: flex-start;">
+
+    <div style="text-align: center;">
+        <div class="upload">
+            @if (isStaff)
+            {
+                <img src="/photos/@(staff!.PhotoURL ?? "default.png")" alt="Profile Photo">
+            }
+            else
+            {
+                <img src="/images/default.png" alt="Default Photo" style="opacity: 0.5">
+            }
+        </div>
+
+        <br>
+
+        <span class="badge">@Model.Role</span>
+    </div>
+
+    <div style="flex-grow: 1;">
+        <table class="table detail" style="width: 100%;">
+            <tr>
+                <th style="width: 200px;">User ID</th>
+                <td>@Model.Id</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>@Model.Name</td>
+            </tr>
+            <tr>
+                <th>Email</th>
+                <td>@Model.Email</td>
+            </tr>
+            <tr>
+                <th>Phone Number</th>
+                <td>@Model.PhoneNum</td>
+            </tr>
+
+            @if (isStaff)
+            {
+                <tr>
+                    <th>Job Role</th>
+                    <td>@staff!.AuthorizationLvl</td>
+                </tr>
+                <tr>
+                    <th>Salary</th>
+                    <td>RM @(staff.Salary?.ToString("N2") ?? "0.00")</td>
+                </tr>
+                <tr>
+                    <th>Assigned Manager</th>
+                    <td>@staff.ManagerId</td>
+                </tr>
+            }
+
+            <tr>
+                <th>Password (Hash)</th>
+                <td style="font-family: monospace; font-size: 0.85em; color: #666; word-break: break-all;">
+                    @Model.Password
+                </td>
+            </tr>
+            @if (isStaff)
+            {
+                <tr>
+                    <th>Photo Filename</th>
+                    <td style="font-family: monospace; font-size: 0.85em; color: #666;">
+                        @staff!.PhotoURL
+                    </td>
+                </tr>
+            }
+        </table>
+
+        <br>
+
+        <div>
+            <a asp-action="Index" style="text-decoration: none;">
+                <button type="button">Back to List</button>
+            </a>
+
+            @if (User.IsInRole("Manager"))
+            {
+                <a href="/User/Update?id=@Model.Id" style="text-decoration: none;">
+                    <button type="button">Edit User</button>
+                </a>
+            }
+        </div>
+    </div>
+</div>

@@ -108,9 +108,37 @@ public class UpdateProfileVM
     public IFormFile? Photo { get; set; }
 }
 
+public class UserUpdateVM
+{
+    public string Id {get; set; }
+
+    [StringLength(100)]
+    [RegularExpression(@"^[a-zA-Z\s\.\'-]+$", ErrorMessage = "Name can only contain letters, spaces, and .'-")]
+    public string Name { get; set; }
+
+    //public string? Email { get; set; }
+
+    [MaxLength(11)]
+    [RegularExpression(@"^01[0-9]-?[0-9]{7,8}$", ErrorMessage = "Invalid Phone Number format.")]
+    public string PhoneNum { get; set; }
+
+    public IFormFile? Photo { get; set; }
+
+    public string? ExistingPhotoURL { get; set; }
+
+    [Range(0.01, 100000, ErrorMessage = "Salary must be greater than 0")]
+    public decimal? Salary { get; set; }
+
+    [RegularExpression(@"^(CLEANING|CASHIER|INVENTORY)$", ErrorMessage = "Role only can be one of the below: CLEANING, CASHIER, INVENTORY")]
+    [Display(Name = "Job Role")]
+    public string? AuthorizationLvl { get; set; }
+
+    public string? Role { get; set; }
+}
 public class ResetPasswordVM
 {
     [StringLength(100)]
     [EmailAddress]
     public string Email { get; set; }
 }
+

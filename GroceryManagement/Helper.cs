@@ -29,9 +29,9 @@ public class Helper(IWebHostEnvironment en,
         {
             return "Only JPG and PNG photo is allowed.";
         }
-        else if (f.Length > 1 * 1024 * 1024)
+        else if (f.Length > 1 * 5120 * 5120)
         {
-            return "Photo size cannot more than 1MB.";
+            return "Photo size cannot more than 5MB.";
         }
 
         return "";
@@ -83,7 +83,10 @@ public class Helper(IWebHostEnvironment en,
     {
         file = Path.GetFileName(file);
         var path = Path.Combine(en.WebRootPath, folder, file);
-        File.Delete(path);
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
     }
 
 

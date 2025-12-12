@@ -7,7 +7,8 @@ namespace GroceryManagement.Controllers;
 
 public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Controller
 {
-    public IActionResult TestDBUsers()
+    [Authorize(Roles = "Manager")]
+    public IActionResult Index()
     {
         var users = db.Users.ToList();
         return View(users);
@@ -135,7 +136,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
                 db.Managers.Add(m);
                 db.SaveChanges();
                 TempData["Info"] = $"Manager {m.Name} ({m.Id}) registered successfully.";
-                return RedirectToAction("TestDBUsers");
+                return RedirectToAction("Index", "User");
             }
         }
         else
@@ -174,7 +175,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
                     db.SaveChanges();
 
                     TempData["Info"] = $"Staff {s.Name} ({s.Id}) registered successfully.";
-                    return RedirectToAction("TestDBUsers");
+                    return RedirectToAction("Index", "User");
                 }
                 catch (Exception)
                 {
