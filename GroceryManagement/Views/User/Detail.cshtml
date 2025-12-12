@@ -14,16 +14,25 @@
 <div style="display: flex; gap: 20px; align-items: flex-start;">
 
     <div style="text-align: center;">
-        <div class="upload">
-            @if (isStaff)
-            {
+
+        @if (isStaff)
+        {
+            <div class="upload">
                 <img src="/photos/@(staff!.PhotoURL ?? "default.png")" alt="Profile Photo">
-            }
-            else
-            {
-                <img src="/images/default.png" alt="Default Photo" style="opacity: 0.5">
-            }
-        </div>
+            </div>
+        }
+        else
+        {
+            <div style="width: 200px; height: 200px; background-color: #eee; border: 1px solid #333; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666;">
+
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+
+                <h3 style="margin: 10px 0 0 0; font-size: 1.2rem;">MANAGER</h3>
+            </div>
+        }
 
         <br>
 
