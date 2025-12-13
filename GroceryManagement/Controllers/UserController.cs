@@ -58,7 +58,6 @@ public class UserController (DB db,
         {
             Id = u.Id,
             Name = u.Name,
-            //Email = u.Email,      // Read-only display
             PhoneNum = u.PhoneNum,
             Role = u.Role
         };
@@ -69,6 +68,11 @@ public class UserController (DB db,
             vm.Salary = s.Salary;
             vm.AuthorizationLvl = s.AuthorizationLvl;
             vm.ExistingPhotoURL = s.PhotoURL;
+            vm.ManagerId = s.ManagerId;
+            // Get list of managers for dropdown
+            var managers = db.Managers.OrderBy(m => m.Name).ToList();
+            // Create SelectList for the ViewModel
+            vm.ManagerList = new SelectList(managers, "Id", "Name", s.ManagerId);
         }
 
         return View(vm);
@@ -81,6 +85,8 @@ public class UserController (DB db,
     {
         // Remove role validation;just for display in vm
         ModelState.Remove("Role");
+        // Remove ManagerList validation; just for dropdown population
+        ModelState.Remove("ManagerList");
 
         if (ModelState.IsValid)
         {
@@ -90,7 +96,7 @@ public class UserController (DB db,
             if (dbUser == null)
             {
                 TempData["Info"] = "User not found.";
-                return RedirectToAction("TestDBUsers");
+                return RedirectToAction("Index");
             }
 
             // Update common fields (name, phone)
@@ -104,6 +110,11 @@ public class UserController (DB db,
                 if (vm.Salary != null)
                 {
                     dbStaff.Salary = vm.Salary;
+                    // Additional CHECK: ManagerId exists in Managers table
+                    if (vm.ManagerId != null && db.Managers.Any(m => m.Id == vm.ManagerId))
+                    {
+                        dbStaff.ManagerId = vm.ManagerId;
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(vm.AuthorizationLvl))
@@ -140,6 +151,11 @@ public class UserController (DB db,
             return RedirectToAction("Index");
         }
 
+        if(db.Users.Find(vm.Id) is Staff)
+        {
+            vm.ManagerList = new SelectList(db.Managers.OrderBy(m => m.Name), "Id", "Name", vm.ManagerId);
+        }
+
         return View(vm);
     }
 
@@ -172,7 +188,7 @@ public class UserController (DB db,
             if (otherManager == null)
             {
                 // Scenario: No one else to take over. Block deletion.
-                TempData["Error"] = "Cannot delete: This manager has staff assigned, and no other manager exists to take over.";
+                TempData["Info"] = "Cannot delete: This manager has staff assigned, and no other manager exists to take over.";
                 return Redirect(Request.Headers.Referer.ToString());
             }
 
@@ -198,6 +214,17 @@ public class UserController (DB db,
 
         db.Users.Remove(u);
         db.SaveChanges();
+
+        // User.Identity.Name holds the Email (based on your Helper.SignIn logic)
+        if (u.Email == User.Identity!.Name)
+        {
+            // 1. Kill the cookie immediately
+            hp.SignOut();
+
+            TempData["Info"] = "Your account has been deleted.";
+            // 2. Kick them back to Login page (not the previous page, because they have no access)
+            return RedirectToAction("Login", "Account");
+        }
 
         // Delete physical file
         if (!string.IsNullOrEmpty(photoToDelete))

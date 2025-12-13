@@ -62,15 +62,15 @@
         <section>
             <button class="btn btn-primary">Register</button>
             <button type="reset" class="btn btn-secondary">Reset</button>
-            <a href="/" class="btn btn-link">Back</a>
+            <a href="javascript:history.back()" class="btn btn-link">Back</a>
         </section>
     </div>
 </form>
 
 @section foot {
-    @* @{
+    @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    } *@
+    }
     
     <script>
         // Simple logic to toggle fields based on selection

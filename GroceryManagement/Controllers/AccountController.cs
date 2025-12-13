@@ -36,7 +36,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
     [HttpPost]
     public IActionResult Login(LoginVM vm, string? returnURL)
     {
-        // (1) Get user (admin or member) record based on email (PK)
+        // (1) Get user (admin or member) record based on email
         var u = db.Users.FirstOrDefault(u => u.Email == vm.Email);
 
         // (2) Custom validation -> verify password
@@ -201,16 +201,28 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
     // POST: Account/UpdatePassword
     [Authorize]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult UpdatePassword(UpdatePasswordVM vm)
     {
-        // Get user (admin or member) record based on email (PK
-        var u = db.Users.Find(User.Identity!.Name);
-        if (u == null) return RedirectToAction("Index", "Home");
+        // Get user (admin or member) record based on email
+        string userEmail = User.Identity!.Name!;
+        var u = db.Users.FirstOrDefault(u => u.Email == userEmail);
+
+        if (u == null)
+        {
+            hp.SignOut();
+            return RedirectToAction("Login", "Account");
+        }
 
         // If current password not matched
         if (!hp.VerifyPassword(u.Password, vm.Current))
         {
-            ModelState.AddModelError("Current", "Current Password not matched.");
+            ModelState.AddModelError("Current", "Incorrect Current Password.");
+        }
+
+        else if (hp.VerifyPassword(u.Password, vm.New))
+        {
+            ModelState.AddModelError("New", "New Password cannot be the same as Current Password.");
         }
 
         if (ModelState.IsValid)
@@ -220,26 +232,40 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             db.SaveChanges();
 
             TempData["Info"] = "Password updated.";
-            return RedirectToAction();
+            return RedirectToAction("Index", "Home");
         }
 
-        return View();
+        return View(vm);
     }
 
     // GET: Account/UpdateProfile
     [Authorize]
     public IActionResult UpdateProfile()
     {
-        // Get member record based on email (PK)
-        var m = db.Staffs.Find(User.Identity!.Name);
-        if (m == null) return RedirectToAction("Index", "Home");
+        // 1. Identify User
+        string userEmail = User.Identity!.Name!;
+        var u = db.Users.FirstOrDefault(u => u.Email == userEmail);
 
+        if (u == null)
+        {
+            hp.SignOut();
+            return RedirectToAction("Login");
+        }
+
+        // 2. Load Data into VM
         var vm = new UpdateProfileVM
         {
-            Email = m.Email,
-            Name = m.Name,
-            PhotoURL = m.PhotoURL,
+            Email = u.Email,
+            Name = u.Name,
+            PhoneNum = u.PhoneNum,
         };
+
+        // 3. Load Photo (Only if user is Staff, Managers might not have photos in your design?)
+        // Adjust this check based on whether Managers also have photos.
+        if (u is Staff s)
+        {
+            vm.PhotoURL = s.PhotoURL;
+        }
 
         return View(vm);
     }
@@ -247,36 +273,62 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
     // POST: Account/UpdateProfile
     [Authorize]
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult UpdateProfile(UpdateProfileVM vm)
     {
-        // Get member record based on email (PK)
-        var m = db.Staffs.Find(User.Identity!.Name);
-        if (m == null) return RedirectToAction("Index", "Home");
+        // 1. Recover User
+        string userEmail = User.Identity!.Name!;
+        var u = db.Users.FirstOrDefault(u => u.Email == userEmail);
 
+        if (u == null) return RedirectToAction("Login");
+
+        // 2. Validate Photo (If one was uploaded)
         if (vm.Photo != null)
         {
-            var err = hp.ValidatePhoto(vm.Photo);
-            if (err != "") ModelState.AddModelError("Photo", err);
+            string err = hp.ValidatePhoto(vm.Photo);
+            if (err != "")
+            {
+                ModelState.AddModelError("Photo", err);
+            }
         }
 
         if (ModelState.IsValid)
         {
-            m.Name = vm.Name;
+            // 3. Update Basic Info
+            u.Name = vm.Name;
+            u.PhoneNum = vm.PhoneNum;
 
-            if (vm.Photo != null)
+            // 4. Update Photo (Only for Staff)
+            if (u is Staff s && vm.Photo != null)
             {
-                hp.DeletePhoto(m.PhotoURL, "photos");
-                m.PhotoURL = hp.SavePhoto(vm.Photo, "photos");
+                // A. Delete old photo if exists
+                if (!string.IsNullOrEmpty(s.PhotoURL))
+                {
+                    hp.DeletePhoto(s.PhotoURL, "photos");
+                }
+
+                // B. Save new photo
+                s.PhotoURL = hp.SavePhoto(vm.Photo, "photos");
             }
 
             db.SaveChanges();
+            TempData["Info"] = "Profile updated successfully.";
 
-            TempData["Info"] = "Profile updated.";
-            return RedirectToAction();
+            // Optional: Refresh Cookie if your cookie stores Phone/Name
+            // hp.SignIn(u.Email, u.Role, true, u.PhoneNum); 
+
+            return RedirectToAction("UpdateProfile"); // Reload page to show changes
         }
 
-        vm.Email = m.Email;
-        vm.PhotoURL = m.PhotoURL;
+        // If error, reload the existing photo URL so the image doesn't disappear
+        if (u is Staff existingStaff)
+        {
+            vm.PhotoURL = existingStaff.PhotoURL;
+        }
+
+        // Also restore the email since it wasn't posted back
+        vm.Email = u.Email;
+
         return View(vm);
     }
 

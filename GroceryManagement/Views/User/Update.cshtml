@@ -57,6 +57,14 @@
 			<option value="CLEANING">Cleaning</option>
 		</select>
 		<span asp-validation-for="AuthorizationLvl"></span>
+
+		<label asp-for="ManagerId">Under</label>
+		<select asp-for="ManagerId" asp-items="Model.ManagerList">
+			@* Optional: Add a default null option if needed *@
+			@* <option value="">-- Select Manager --</option> *@ 
+	        </select>
+		<span asp-validation-for="ManagerId"></span>
+
 	}
 
 	<label>Account Type</label>
@@ -70,9 +78,9 @@
 </form>
 
 @section foot {
-@*     @{
+    @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    } *@
+    }
   <script>
         // Use jQuery to detect file input change
         // Note: Assuming your label has class 'upload' and input is inside

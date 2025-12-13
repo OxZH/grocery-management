@@ -74,36 +74,20 @@
                 </tr>
             }
 
-            <tr>
-                <th>Password (Hash)</th>
-                <td style="font-family: monospace; font-size: 0.85em; color: #666; word-break: break-all;">
-                    @Model.Password
-                </td>
-            </tr>
-            @if (isStaff)
-            {
-                <tr>
-                    <th>Photo Filename</th>
-                    <td style="font-family: monospace; font-size: 0.85em; color: #666;">
-                        @staff!.PhotoURL
-                    </td>
-                </tr>
-            }
         </table>
 
         <br>
 
-        <div>
-            <a asp-action="Index" style="text-decoration: none;">
-                <button type="button">Back to List</button>
-            </a>
+        <section>
 
             @if (User.IsInRole("Manager"))
             {
                 <a href="/User/Update?id=@Model.Id" style="text-decoration: none;">
-                    <button type="button">Edit User</button>
+                    <button class="btn btn-primary">Edit User</button>
                 </a>
             }
-        </div>
+
+            <a asp-action="Index" class="btn btn-link">Back to List</a>
+        </section>
     </div>
 </div>

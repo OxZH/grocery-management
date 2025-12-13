@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 namespace GroceryManagement.Models;
@@ -50,7 +51,7 @@ public class RegisterVM
 
     public IFormFile Photo { get; set; }
 
-    [Range(0.01, 100000, ErrorMessage = "Salary must be greater than 0")]
+    [Range(0.01, 100000, ErrorMessage = "Salary must be greater than 0 and less than RM 100,000")]
     public decimal Salary { get; set; }
 
     [RegularExpression(@"^(CLEANING|CASHIER|INVENTORY)$", ErrorMessage = "Role only can be one of the below: CLEANING, CASHIER, INVENTORY")]
@@ -79,21 +80,24 @@ public class LoginVM
 
 public class UpdatePasswordVM
 {
+    [StringLength(100)]
+    [EmailAddress]
+    public string? Email { get; set; }
     [StringLength(100, MinimumLength = 8)]
     [DataType(DataType.Password)]
     [DisplayName("Current Password")]
-    public string Current { get; set; }
+    public string? Current { get; set; }
 
     [StringLength(100, MinimumLength = 8)]
     [DataType(DataType.Password)]
     [DisplayName("New Password")]
-    public string New { get; set; }
+    public string? New { get; set; }
 
     [StringLength(100, MinimumLength = 8)]
-    [Compare("New")]
+    [Compare("New", ErrorMessage = "The new password and confirmation password do not match.")]
     [DataType(DataType.Password)]
     [DisplayName("Confirm Password")]
-    public string Confirm { get; set; }
+    public string? Confirm { get; set; }
 }
 
 public class UpdateProfileVM
@@ -101,7 +105,10 @@ public class UpdateProfileVM
     public string? Email { get; set; }
 
     [StringLength(100)]
-    public string Name { get; set; }
+    public string? Name { get; set; }
+    [MaxLength(11)]
+    [RegularExpression(@"^01[0-9]-?[0-9]{7,8}$", ErrorMessage = "Invalid Phone Number format.")]
+    public string? PhoneNum { get; set; }
 
     public string? PhotoURL { get; set; }
 
@@ -132,6 +139,9 @@ public class UserUpdateVM
     [RegularExpression(@"^(CLEANING|CASHIER|INVENTORY)$", ErrorMessage = "Role only can be one of the below: CLEANING, CASHIER, INVENTORY")]
     [Display(Name = "Job Role")]
     public string? AuthorizationLvl { get; set; }
+
+    public string? ManagerId { get; set; }
+    public SelectList? ManagerList { get; set; }
 
     public string? Role { get; set; }
 }

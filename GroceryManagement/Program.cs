@@ -16,5 +16,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.MapDefaultControllerRoute();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<DB>();
+    var hp = scope.ServiceProvider.GetRequiredService<Helper>();
+    DataSeeder.SeedManager(db, hp);
+}
 
 app.Run();

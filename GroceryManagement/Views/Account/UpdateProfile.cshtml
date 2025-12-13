@@ -5,7 +5,7 @@
 }
 
 <form class="form" method="post" enctype="multipart/form-data">
-    <div asp-validation-summary="ModelOnly"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
     <label asp-for="Email"></label>
     <b>@Model.Email</b>
@@ -15,16 +15,42 @@
     <input asp-for="Name" autofocus>
     <span asp-validation-for="Name"></span>
 
+    <label asp-for="PhoneNum"></label>
+    <input asp-for="PhoneNum">
+    <span asp-validation-for="PhoneNum"></span>
+
     <label asp-for="Photo"></label>
     <label class="upload">
         <small>Select Photo...</small>
         <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-        <img src="/photos/@Model.PhotoURL">
+        @* Use the null coalescing operator to ensure a default image if none exists *@
+        <img src="/photos/@(Model.PhotoURL ?? "default.png")">
     </label>
     <span asp-validation-for="Photo"></span>
+
+    <div style="margin-top: 10px;">
+        <a asp-action="UpdatePassword" style="text-decoration: none; font-size: 0.9rem;">Change Password</a>
+    </div>
 
     <section>
         <button>Update</button>
         <button type="reset">Reset</button>
+        <a href="/" style="text-decoration: none; padding: 0.5rem;">Back</a>
     </section>
 </form>
+
+@section foot {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Update the image source immediately when a new file is selected
+        $(".upload input").change(function () {
+            const file = this.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                $(this).next("img").attr("src", url);
+            }
+        });
+    </script>
+}
