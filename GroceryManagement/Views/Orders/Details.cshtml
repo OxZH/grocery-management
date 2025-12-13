@@ -1,0 +1,60 @@
+@model Checkout
+@{
+    ViewBag.Title = "Order Details - " + Model.Id;
+    var timeline = (List<(string status, DateTime at)>)ViewBag.Timeline ?? new List<(string, DateTime)>();
+    var workflow = (string[])ViewBag.Workflow ?? new string[] { "PENDING","PICKING","PACKED","READY","COMPLETED","CANCELLED" };
+}
+
+<h2>Order @Model.Id</h2>
+<p>Date: @Model.Date</p>
+<p>Total: @Model.Total</p>
+<p>Status: <strong id="currentStatus">@Model.Status</strong></p>
+
+<div>
+    <h4>Timeline</h4>
+    <ul id="timeline">
+        @foreach(var t in timeline)
+        {
+            <li>@t.status - @t.at</li>
+        }
+    </ul>
+</div>
+
+<div>
+    <h4>Change Status</h4>
+    <select id="statusSelect">
+        @foreach(var s in workflow)
+        {
+            <text>
+                <option value="@s" selected="@(s==Model.Status ? "selected" : null)">@s</option>
+            </text>
+        }
+    </select>
+    <button id="btnUpdate">Update</button>
+</div>
+
+<div>
+    <h4>Packing Slip</h4>
+    <a href="/Orders/PackingSlip/@Model.Id" target="_blank">Open Packing Slip</a>
+</div>
+
+<script src="/js/orders.js"></script>
+<script>
+    document.getElementById('btnUpdate').addEventListener('click', async function(){
+        var newStatus = document.getElementById('statusSelect').value;
+        var id = '@Model.Id';
+        var resp = await fetch('/Orders/UpdateStatus', { method: 'POST', headers: { 'Content-Type':'application/x-www-form-urlencoded' }, body: 'id='+encodeURIComponent(id)+'&newStatus='+encodeURIComponent(newStatus)});
+        if (resp.ok){
+            var data = await resp.json();
+            document.getElementById('currentStatus').textContent = data.status;
+            var ul = document.getElementById('timeline');
+            var li = document.createElement('li');
+            li.textContent = data.status + ' - ' + new Date().toLocaleString();
+            ul.appendChild(li);
+            alert('Status updated');
+        } else {
+            var txt = await resp.text();
+            alert('Failed: '+txt);
+        }
+    });
+</script>

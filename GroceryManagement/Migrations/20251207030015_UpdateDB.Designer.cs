@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroceryManagement.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20251203063205_UpdateDB")]
+    [Migration("20251207030015_UpdateDB")]
     partial class UpdateDB
     {
         /// <inheritdoc />

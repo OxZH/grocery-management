@@ -77,11 +77,12 @@ public class Checkout
     public decimal Total { get; set; }
     [DataType(DataType.DateTime)]
     public DateTime Date { get; set; }
-    [RegularExpression("^(CONFIRMED|PENDING|FAILED)$", ErrorMessage = "Status must be one of: VONFIRMED, PENDING or FAILED")]
+    [RegularExpression("^(CONFIRMED|PENDING|FAILED)$", ErrorMessage = "Status must be one of: CONFIRMED, PENDING or FAILED")]
     [MaxLength(10)]
     public string Status { get; set; }
     [DataType(DataType.DateTime)]
     public DateTime StatusUpdateDate { get; set; }
+    [RegularExpression("^(CASH|E-WALLET|BANK PAYMENT)$", ErrorMessage = "Status must be one of: CASH, E-WALLET or BANK PAYMENT")]
     public string PaymentMethod { get; set; }
     //add remaining attributes
 
