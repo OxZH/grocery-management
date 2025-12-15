@@ -38,17 +38,32 @@ namespace GroceryManagement.Migrations
                     b.ToTable("Allocation");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecord", b =>
+            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecords", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<TimeOnly?>("CheckInTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly?>("CheckOutTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
 
                     b.Property<string>("ManagerId")
                         .HasColumnType("nvarchar(4)");
 
                     b.Property<string>("StaffId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
 
@@ -56,23 +71,50 @@ namespace GroceryManagement.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("AttendanceRecord");
+                    b.ToTable("AttendanceRecords");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
+            modelBuilder.Entity("GroceryManagement.Models.Checkout", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(5)
                         .HasColumnType("nvarchar(5)");
 
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InventoryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("StaffId")
                         .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("StatusUpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("CustomerOrder");
+                    b.ToTable("Checkout");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
@@ -94,26 +136,30 @@ namespace GroceryManagement.Migrations
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(9)
+                        .HasColumnType("nvarchar(9)");
+
+                    b.Property<string>("CheckoutId")
+                        .HasColumnType("nvarchar(5)");
 
                     b.Property<DateOnly>("ExpiryDate")
                         .HasColumnType("date");
 
                     b.Property<string>("ProductId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(5)");
+                        .HasColumnType("nvarchar(6)");
 
                     b.Property<string>("StaffId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(4)");
 
-                    b.Property<int>("StoreFrontQty")
-                        .HasColumnType("int");
-
-                    b.Property<int>("WareHouseQty")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CheckoutId");
 
                     b.HasIndex("ProductId");
 
@@ -125,12 +171,13 @@ namespace GroceryManagement.Migrations
             modelBuilder.Entity("GroceryManagement.Models.Product", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -138,17 +185,21 @@ namespace GroceryManagement.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PhotoURL")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
-                        .HasPrecision(6, 2)
-                        .HasColumnType("decimal(6,2)");
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
+
+                    b.Property<int>("StoreFrontQty")
+                        .HasColumnType("int");
 
                     b.Property<string>("SupplierId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WareHouseQty")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -217,8 +268,8 @@ namespace GroceryManagement.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal?>("Salary")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
 
                     b.HasIndex("ManagerId");
 
@@ -227,29 +278,37 @@ namespace GroceryManagement.Migrations
 
             modelBuilder.Entity("GroceryManagement.Models.Allocation", b =>
                 {
-                    b.HasOne("GroceryManagement.Models.Staff", null)
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
                         .WithMany("Allocations")
                         .HasForeignKey("StaffId");
+
+                    b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecord", b =>
+            modelBuilder.Entity("GroceryManagement.Models.AttendanceRecords", b =>
                 {
                     b.HasOne("GroceryManagement.Models.Manager", "Manager")
                         .WithMany("AttendenceRecords")
                         .HasForeignKey("ManagerId");
 
-                    b.HasOne("GroceryManagement.Models.Staff", null)
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
                         .WithMany("AttendanceRecords")
-                        .HasForeignKey("StaffId");
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Manager");
+
+                    b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
+            modelBuilder.Entity("GroceryManagement.Models.Checkout", b =>
                 {
-                    b.HasOne("GroceryManagement.Models.Staff", null)
-                        .WithMany("CustomerOrders")
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
+                        .WithMany("Checkout")
                         .HasForeignKey("StaffId");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
@@ -263,17 +322,27 @@ namespace GroceryManagement.Migrations
 
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
                 {
+                    b.HasOne("GroceryManagement.Models.Checkout", "Checkout")
+                        .WithMany("Inventories")
+                        .HasForeignKey("CheckoutId");
+
                     b.HasOne("GroceryManagement.Models.Product", "Product")
                         .WithMany("Inventories")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GroceryManagement.Models.Staff", null)
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
                         .WithMany("ManagedInventory")
-                        .HasForeignKey("StaffId");
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Checkout");
 
                     b.Navigation("Product");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Staff", b =>
@@ -283,6 +352,11 @@ namespace GroceryManagement.Migrations
                         .HasForeignKey("ManagerId");
 
                     b.Navigation("Manager");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Checkout", b =>
+                {
+                    b.Navigation("Inventories");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Product", b =>
@@ -305,7 +379,7 @@ namespace GroceryManagement.Migrations
 
                     b.Navigation("AttendanceRecords");
 
-                    b.Navigation("CustomerOrders");
+                    b.Navigation("Checkout");
 
                     b.Navigation("ManagedInventory");
                 });
