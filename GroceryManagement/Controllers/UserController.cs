@@ -2,16 +2,72 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using X.PagedList;
+using X.PagedList.Extensions;
+using X.PagedList.Mvc.Core;
 
 namespace GroceryManagement.Controllers;
 
 public class UserController (DB db, 
-                            IWebHostEnvironment en, Helper hp) : Controller
+                            IWebHostEnvironment en, 
+                            Helper hp) : Controller
 {
-    // GET: Home/Index
-    public IActionResult Index()
+    // GET: User/Index
+    public IActionResult Index(string? name, string? sort, string? dir, int page = 1)
     {
-        var model = db.Users;
+        // (1) Searching ------------------------
+        // Store search term to View to keep it in the input box
+        ViewBag.Name = name = name?.Trim() ?? "";
+
+        var query = db.Users.AsQueryable();
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.Where(u => u.Name.Contains(name) || u.Email.Contains(name));
+        }
+
+        // (2) Sorting --------------------------
+        ViewBag.Sort = sort;
+        ViewBag.Dir = dir;
+
+        // Map string "sort" to the actual property
+        Func<User, object> fn = sort switch
+        {
+            "Id" => u => u.Id,
+            "Name" => u => u.Name,
+            "Email" => u => u.Email,
+            "Role" => u => u.Role,
+            // Handle Salary sorting safely (users who aren't staff get 0/null)
+            "Salary" => u => (u is Staff s) ? s.Salary : 0,
+            _ => u => u.Id
+        };
+
+        // Apply sorting (Note: Func<User,object> forces client-side evaluation for these complex types)
+        var sorted = dir == "des" ?
+                     query.OrderByDescending(fn).AsQueryable() :
+                     query.OrderBy(fn).AsQueryable();
+
+        // (3) Paging ---------------------------
+        int pageSize = 5;
+
+        // Validate page number
+        if (page < 1) return RedirectToAction(null, new { name, sort, dir, page = 1 });
+
+        // Create Paged List
+        var model = sorted.ToPagedList(page, pageSize);
+
+        // Redirect if page is out of bounds
+        if (page > model.PageCount && model.PageCount > 0)
+        {
+            return RedirectToAction(null, new { name, sort, dir, page = model.PageCount });
+        }
+
+        // (4) AJAX Response --------------------
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest") // Standard AJAX check
+        {
+            return PartialView("_StaffTable", model);
+        }
+
         return View(model);
     }
 

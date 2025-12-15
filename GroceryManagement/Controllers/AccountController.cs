@@ -260,8 +260,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             PhoneNum = u.PhoneNum,
         };
 
-        // 3. Load Photo (Only if user is Staff, Managers might not have photos in your design?)
-        // Adjust this check based on whether Managers also have photos.
+        // 3. Load Photo (Only if user is Staff)
         if (u is Staff s)
         {
             vm.PhotoURL = s.PhotoURL;
@@ -286,6 +285,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
         if (vm.Photo != null)
         {
             string err = hp.ValidatePhoto(vm.Photo);
+            // if theres error add to modelstate
             if (err != "")
             {
                 ModelState.AddModelError("Photo", err);
@@ -342,7 +342,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
     [HttpPost]
     public IActionResult ResetPassword(ResetPasswordVM vm)
     {
-        var u = db.Users.Find(vm.Email);
+        var u = db.Users.FirstOrDefault(u => u.Email == vm.Email);
 
         if (u == null)
         {

@@ -130,11 +130,12 @@ main h1 {
     border: inherit;
     padding: inherit;
     position: absolute;
-    z-index: 1;
+    z-index: 1000;
     white-space: nowrap;
     top: 50%;
-    left: 100%;
-    transform: translate(5px, -50%);
+    right: 100%;
+    left: auto;
+    transform: translate(-5px, -50%);
     display: none;
 }
 

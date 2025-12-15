@@ -1,0 +1,141 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@* @using GroceryManagement.Models *@
+@model IPagedList<User>
+
+@{
+    // Helper to determine the class for the sort arrow (asc/des)
+    string GetSortClass(string field)
+    {
+        return ViewBag.Sort == field ? ViewBag.Dir : "";
+    }
+
+    // Helper to determine the next sort direction
+    string GetNextDir(string field)
+    {
+        if (ViewBag.Sort == field)
+        {
+            return ViewBag.Dir == "des" ? "asc" : "des";
+        }
+        return "asc";
+    }
+}
+
+@Html.Hidden("sort", (string)ViewBag.Sort, new { form = "searchForm" })
+@Html.Hidden("dir", (string)ViewBag.Dir, new { form = "searchForm" })
+
+<p>
+    @Model.Count() of @Model.TotalItemCount record(s) |
+    Page @Model.PageNumber of @Model.PageCount
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <a data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader"
+                   href="?name=@ViewBag.Name&sort=Id&dir=@GetNextDir("Id")"
+                   class="@GetSortClass("Id")">User Id</a>
+            </th>
+            <th>
+                <a data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader"
+                   href="?name=@ViewBag.Name&sort=Name&dir=@GetNextDir("Name")"
+                   class="@GetSortClass("Name")">Name</a>
+            </th>
+            <th>
+                <a data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader"
+                   href="?name=@ViewBag.Name&sort=Email&dir=@GetNextDir("Email")"
+                   class="@GetSortClass("Email")">Email</a>
+            </th>
+            <th>PhoneNum</th>
+            <th>
+                <a data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader"
+                   href="?name=@ViewBag.Name&sort=Role&dir=@GetNextDir("Role")"
+                   class="@GetSortClass("Role")">Role</a>
+            </th>
+            <th>
+                <a data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader"
+                   href="?name=@ViewBag.Name&sort=Salary&dir=@GetNextDir("Salary")"
+                   class="@GetSortClass("Salary")">Salary</a>
+            </th>
+            <th>AuthLvl</th>
+            <th>Manager ID</th>
+            <th>Photo</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Count == 0)
+        {
+            <tr><td colspan="10" style="text-align:center">No records found.</td></tr>
+        }
+
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Name</td>
+                <td>@user.Email</td>
+                <td>@user.PhoneNum</td>
+                <td>@user.Role</td>
+
+                @if (user is Staff staff)
+                {
+                    <td>@staff.Salary</td>
+                    <td>@staff.AuthorizationLvl</td>
+                    <td>@staff.ManagerId</td>
+                }
+                else
+                {
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                }
+
+                <td style="position:relative">
+                    @if (user is Staff staffMember && !string.IsNullOrEmpty(staffMember.PhotoURL))
+                    {
+                        <img src="/photos/@staffMember.PhotoURL" width="50" height="50" style="object-fit:cover;" />
+
+                        <img src="/photos/@staffMember.PhotoURL" class="popup" style="width:150px; height:150px; object-fit:cover; border:1px solid #333;" />
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+
+                <td>
+                    <button data-get="/User/Detail/@user.Id">Detail</button>
+                    <button data-get="/User/Update/@user.Id">Update</button>
+                    <button data-post="/User/Delete/@user.Id">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@{
+    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+    options.LinkToFirstPageFormat = "First";
+    options.LinkToLastPageFormat = "Last";
+    options.LinkToPreviousPageFormat = "Previous";
+    options.LinkToNextPageFormat = "Next";
+
+    // Ensure we use the classes expected by your pager.css
+    options.UlElementClasses = new[] { "pagination" };
+    options.LiElementClasses = new string[] { }; // pager.css targets .pagination > li directly
+
+    var ajaxOptions = new AjaxOptions
+    {
+        HttpMethod = "get",
+        UpdateTargetId = "target",
+        LoadingElementId = "#loader"
+    };
+}
+
+@Html.PagedListPager(
+Model,
+p => $"?name={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={p}",
+PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+)

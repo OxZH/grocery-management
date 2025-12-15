@@ -42,7 +42,7 @@
         @if (!User.Identity!.IsAuthenticated)
         {
             <a href="/Account/Login">Login</a>
-            <a href="/Account/ResetPassword">Reset Password</a>
+            <a href="/Account/ResetPassword">Forgot Password</a>
         }
         else
         {
@@ -51,7 +51,10 @@
             <a href="/Attendance/CheckInAttendance">Attendance</a>
             
             <a href="/Account/UpdatePassword">Update Password</a>
-            <a href="/Account/UpdateProfile">Update Profile</a>
+            @if (User.IsInRole("Staff"))
+            {
+                <a href="/Account/UpdateProfile">Update Profile</a>
+			}
             <a href="/Account/Logout">Logout</a>
 
             @if (User.IsInRole("Manager"))

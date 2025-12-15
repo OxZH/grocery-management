@@ -19,15 +19,18 @@
     <input asp-for="PhoneNum">
     <span asp-validation-for="PhoneNum"></span>
 
-    <label asp-for="Photo"></label>
-    <label class="upload">
-        <small>Select Photo...</small>
-        <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-        @* Use the null coalescing operator to ensure a default image if none exists *@
-        <img src="/photos/@(Model.PhotoURL ?? "default.png")">
-    </label>
-    <span asp-validation-for="Photo"></span>
+    @if(User.IsInRole("Staff"))
+    {
+        <label asp-for="Photo"></label>
+        <label class="upload">
+            <small>Select Photo...</small>
+            <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
+            <img src="/photos/@(Model.PhotoURL ?? "default.png")">
+        </label>
+        <span asp-validation-for="Photo"></span>
 
+        
+    }
     <div style="margin-top: 10px;">
         <a asp-action="UpdatePassword" style="text-decoration: none; font-size: 0.9rem;">Change Password</a>
     </div>
