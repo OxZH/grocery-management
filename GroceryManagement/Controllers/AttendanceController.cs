@@ -38,7 +38,7 @@ public class AttendanceController(DB db) : Controller
                 ViewBag.AlreadyCheckedIn = true;
                 ViewBag.CheckInInfo = $"Checked in on {existingRecord.Date:yyyy-MM-dd} at {existingRecord.CheckInTime}";
                 ViewBag.HasCheckout = existingRecord.CheckOutTime != null;
-                ViewBag.CanCheckout = existingRecord.CheckOutTime is null;
+                ViewBag.CanCheckout = true; // allow rewriting checkout time
                 if (existingRecord.CheckOutTime is not null)
                 {
                     ViewBag.CheckOutInfo = $"Checked out at {existingRecord.CheckOutTime}";
@@ -140,21 +140,18 @@ public class AttendanceController(DB db) : Controller
             });
         }
 
-        if (record.CheckOutTime is not null)
-        {
-            TempData["Info"] = $"<p class='error'>Already checked out at {record.CheckOutTime} on {record.Date:yyyy-MM-dd}.</p>";
-            return RedirectToAction(nameof(CheckInAttendance), new
-            {
-                staffId,
-                overrideDate = checkDate.ToString("yyyy-MM-dd"),
-                overrideTime = checkTime.ToString("HH:mm")
-            });
-        }
-
+        var priorCheckout = record.CheckOutTime;
         record.CheckOutTime = checkTime;
         db.SaveChanges();
 
-        TempData["Info"] = $"<p class='success'>Checked out at {checkTime} on {checkDate:yyyy-MM-dd}.</p>";
+        if (priorCheckout is not null)
+        {
+            TempData["Info"] = $"<p class='success'>Checkout time updated to {checkTime} (was {priorCheckout}) on {checkDate:yyyy-MM-dd}.</p>";
+        }
+        else
+        {
+            TempData["Info"] = $"<p class='success'>Checked out at {checkTime} on {checkDate:yyyy-MM-dd}.</p>";
+        }
 
         return RedirectToAction(nameof(CheckInAttendance), new
         {

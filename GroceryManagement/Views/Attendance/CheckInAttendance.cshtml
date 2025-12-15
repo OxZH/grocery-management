@@ -63,8 +63,8 @@
     <input type="hidden" id="checkoutDate" name="overrideDate" value="@currentDate" />
     <input type="hidden" id="checkoutTime" name="overrideTime" value="@currentTime" />
 
-    <button type="submit" @(canCheckout ? "" : "disabled")>Check out</button>
-    @if (!canCheckout)
+    <button type="submit" @(hasCheckIn ? "" : "disabled")>Check out</button>
+    @if (!hasCheckIn)
     {
         <small>Checkout disabled until a check-in exists for the selected date.</small>
     }
