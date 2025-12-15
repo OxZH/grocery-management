@@ -1,0 +1,36 @@
+@model Checkout
+@{
+    ViewBag.Title = "Edit Order - " + Model.Id;
+    var workflow = (string[])ViewBag.Workflow ?? new string[] { "PENDING","PICKING","PACKED","READY","COMPLETED","CANCELLED" };
+}
+
+<h2>Edit Order @Model.Id</h2>
+
+<form method="post">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <div>
+        <label>CustomerId</label>
+        <input name="CustomerId" value="@Model.CustomerId" />
+    </div>
+    <div>
+        <label>InventoryId</label>
+        <input name="InventoryId" value="@Model.InventoryId" />
+    </div>
+    <div>
+        <label>Total</label>
+        <input name="Total" value="@Model.Total" />
+    </div>
+    <div>
+        <label>Status</label>
+        <select name="Status">
+            @{ foreach(var s in workflow) { var sel = s==Model.Status ? "selected" : null; }
+            }
+            @for(int i=0;i<workflow.Length;i++)
+            {
+                var s = workflow[i];
+                <option value="@s" selected="@(s==Model.Status?"selected":null)">@s</option>
+            }
+        </select>
+    </div>
+    <button type="submit">Save</button>
+</form>

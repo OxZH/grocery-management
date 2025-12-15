@@ -46,6 +46,100 @@ public class OrdersController : Controller
         return View(list);
     }
 
+    // GET: /Orders/Create
+    public IActionResult Create()
+    {
+        ViewBag.Workflow = Workflow;
+        return View();
+    }
+
+    // POST: /Orders/Create
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Create(Checkout model)
+    {
+        if (model == null) return BadRequest();
+        // generate a new Id based on existing Checkout table (O followed by 4 digits)
+        var existing = _db.Set<Checkout>().Select(c => c.Id).ToList();
+        var max = 0;
+        foreach (var ex in existing)
+        {
+            if (string.IsNullOrEmpty(ex)) continue;
+            var s = ex.StartsWith("O") ? ex.Substring(1) : ex;
+            if (int.TryParse(s, out var n)) max = Math.Max(max, n);
+        }
+        var nextNum = max + 1;
+        model.Id = "O" + nextNum.ToString().PadLeft(4, '0');
+        model.Date = model.Date == default ? DateTime.Now : model.Date;
+        // server-side validation: customer and inventory ids should be digits only for now
+        if (string.IsNullOrEmpty(model.CustomerId) || !model.CustomerId.All(char.IsDigit))
+        {
+            ModelState.AddModelError("CustomerId", "CustomerId must be digits only");
+        }
+        if (string.IsNullOrEmpty(model.InventoryId) || !model.InventoryId.All(char.IsDigit))
+        {
+            ModelState.AddModelError("InventoryId", "InventoryId must be digits only");
+        }
+        if (model.Total <= 0)
+        {
+            ModelState.AddModelError("Total", "Total must be a positive number");
+        }
+        model.StatusUpdateDate = DateTime.Now;
+        // double-check uniqueness (very unlikely)
+        if (_db.Set<Checkout>().Any(c => c.Id == model.Id))
+        {
+            ModelState.AddModelError("Id", "Order with this Id already exists");
+        }
+        if (!ModelState.IsValid)
+        {
+            ViewBag.Workflow = Workflow;
+            return View(model);
+        }
+        _db.Add(model);
+        _db.SaveChanges();
+        return RedirectToAction(nameof(Index));
+    }
+
+    // POST: /Orders/Delete
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Delete(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return BadRequest();
+        var o = _db.Set<Checkout>().FirstOrDefault(c => c.Id == id);
+        if (o == null) return NotFound();
+        _db.Remove(o);
+        _db.SaveChanges();
+        return RedirectToAction(nameof(Index));
+    }
+
+    // GET: /Orders/Edit/{id}
+    public IActionResult Edit(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return NotFound();
+        var o = _db.Set<Checkout>().FirstOrDefault(c => c.Id == id);
+        if (o == null) return NotFound();
+        ViewBag.Workflow = Workflow;
+        return View(o);
+    }
+
+    // POST: /Orders/Edit
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Edit(Checkout model)
+    {
+        if (model == null || string.IsNullOrEmpty(model.Id)) return BadRequest();
+        var o = _db.Set<Checkout>().FirstOrDefault(c => c.Id == model.Id);
+        if (o == null) return NotFound();
+        o.CustomerId = model.CustomerId;
+        o.InventoryId = model.InventoryId;
+        o.Total = model.Total;
+        o.Status = model.Status;
+        o.StatusUpdateDate = DateTime.Now;
+        _db.SaveChanges();
+        return RedirectToAction(nameof(Details), new { id = model.Id });
+    }
+
     // GET: /Orders/Details/{id}
     public IActionResult Details(string id)
     {
@@ -107,7 +201,7 @@ public class OrdersController : Controller
             q = q.Where(c => c.Date > since.Value);
         }
         var pending = q.Where(c => c.Status == "PENDING").OrderByDescending(c => c.Date).Take(10).ToList();
-        return Json(new { newOrders = pending.Select(p => new { p.Id, p.Date, p.Total }) });
+        return Json(new { newOrders = pending.Select(p => new { id = p.Id, date = p.Date, total = p.Total }) });
     }
 
     // Helpers: timeline file per order stored under App_Data/order_timeline/{id}.json

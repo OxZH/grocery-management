@@ -23,11 +23,11 @@
 <div>
     <h4>Change Status</h4>
     <select id="statusSelect">
-        @foreach(var s in workflow)
+        @{ var currentIdx = Array.IndexOf(workflow, Model.Status ?? "PENDING"); }
+        @for (int i = 0; i < workflow.Length; i++)
         {
-            <text>
-                <option value="@s" selected="@(s==Model.Status ? "selected" : null)">@s</option>
-            </text>
+            var s = workflow[i];
+            <option value="@s" disabled="@(i < currentIdx && s != "CANCELLED" ? "disabled" : null)" selected="@(s == Model.Status ? "selected" : null)">@s</option>
         }
     </select>
     <button id="btnUpdate">Update</button>
@@ -38,7 +38,6 @@
     <a href="/Orders/PackingSlip/@Model.Id" target="_blank">Open Packing Slip</a>
 </div>
 
-<script src="/js/orders.js"></script>
 <script>
     document.getElementById('btnUpdate').addEventListener('click', async function(){
         var newStatus = document.getElementById('statusSelect').value;

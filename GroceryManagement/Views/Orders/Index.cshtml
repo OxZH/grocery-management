@@ -5,6 +5,8 @@
 
 <h2>Orders</h2>
 
+<p><a href="/Orders/Create">Add Order</a></p>
+
 <form method="get" id="filterForm">
     <input type="text" name="search" placeholder="Search by id, customer or inventory" value="@Context.Request.Query["search"]" />
     <select name="statusFilter">
@@ -46,9 +48,11 @@
             <td>
                 <a href="/Orders/Details/@o.Id">Details</a>
                 <a href="/Orders/PackingSlip/@o.Id" target="_blank">Print Slip</a>
+                <form method="post" action="/Orders/Delete" style="display:inline">
+                    <input type="hidden" name="id" value="@o.Id" />
+                    <button type="submit" onclick="return confirm('Delete order @o.Id ?')">Delete</button>
+                </form>
             </td>
         </tr>
     }
 </table>
-
-<script src="/js/orders.js"></script>
