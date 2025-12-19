@@ -7,9 +7,9 @@
 <form method="post" class="form">
     <div asp-validation-summary="ModelOnly"></div>
 
-    <label asp-for="Id"></label>
-    <input asp-for="Id" data-upper autofocus>
-    <span asp-validation-for="Id"></span>
+    <label>ID</label>
+    <span>@ViewBag.NextId</span>
+    <br />
 
     <label asp-for="Name"></label>
     <input asp-for="Name" data-trim>
@@ -42,4 +42,5 @@
 @section foot {
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
 }

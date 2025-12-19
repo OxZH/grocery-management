@@ -1,0 +1,192 @@
+﻿@model ProcurementRecordVM
+
+@{
+    ViewBag.Title = "Procurement | Update";
+}
+
+<form method="post" class="form">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <label asp-for="Id"></label>
+    <b>@Model?.Id</b>
+    <br>
+
+    <label asp-for="SupplierId"></label>
+    <select asp-for="SupplierId" asp-items="ViewBag.SupplierList"
+            class="supplier-select">
+        <option value="">-- Select a supplier --</option>
+    </select>
+    <span asp-validation-for="SupplierId"></span>
+
+    <label asp-for="ProductId"></label>
+    <select asp-for="ProductId" class="product-select">
+        <option value="">-- Select a product --</option>
+    </select>
+    <span asp-validation-for="ProductId"></span>
+
+    <label asp-for="Quantity"></label>
+    <input asp-for="Quantity" class="quantity" disabled>
+    <span asp-validation-for="Quantity"></span>
+
+    @* <label asp-for="Status"></label>
+    <select asp-for="Status" class="status-select">
+        <option value="">-- Select a status --</option>
+    </select>
+    <span asp-validation-for="Status"></span> *@
+
+    <label>Total Price</label>
+    <span id="total-price">0.00</span>
+    <br>
+
+    <section>
+        <button>Submit</button>
+        <button type="reset">Reset</button>
+    </section>
+</form>
+
+@section foot {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(function () {
+            // Read model values emitted by Razor; guarantee string values
+            var modelSupplierId = '@(Model?.SupplierId?.ToString() ?? "")'.trim();
+            var modelProductId = '@(Model?.ProductId?.ToString() ?? "")'.trim();
+            var modelQuantity = '@(Model?.Quantity.ToString() ?? "")'.trim();
+
+            // Helper to set total price via AJAX
+            function updateTotalPrice(productId, quantity) {
+                if (!productId || !quantity) {
+                    $('#total-price').text('0.00');
+                    return;
+                }
+                $.getJSON('/Procurement/GetTotalPrice', { productId: productId, quantity: quantity })
+                    .done(function (data) {
+                        // Expecting data.totalPrice
+                        $('#total-price').text(data && data.totalPrice ? data.totalPrice : '0.00');
+                    })
+                    .fail(function () {
+                        $('#total-price').text('0.00');
+                    });
+            }
+
+            // Ensure initial state: quantity value and disabled state
+            var hasInitialProduct = $('.product-select').val(); // may be empty before AJAX
+            var initialDisabled = !hasInitialProduct && !modelProductId;
+            $(".quantity").prop("disabled", initialDisabled);
+
+            if (modelQuantity && !initialDisabled) {
+                $('.quantity').val(modelQuantity);
+            } else if (initialDisabled) {
+                $('.quantity').val('');
+                $('#total-price').text('0.00');
+            }
+
+            // If a supplier is present in the model, load its products and select the model product
+            function loadProductsForSupplier(supplierId, selectProductIdAfterLoad) {
+                $('.product-select').empty()
+                    .append('<option value="">-- Select a product --</option>');
+
+                // Reset quantity and total price whenever supplier changes
+                $(".quantity").prop("disabled", true).val('');
+                $('#total-price').text('0.00');
+
+                if (!supplierId) return;
+
+                $.getJSON('/Procurement/GetProducts', { supplierId: supplierId })
+                    .done(function (data) {
+                        $.each(data, function (_, item) {
+                            $('.product-select')
+                                .append($('<option>', {
+                                    value: item.value,
+                                    text: item.text
+                                }));
+                        });
+
+                        if (selectProductIdAfterLoad) {
+                            if (selectProductIdAfterLoad && $('.product-select').find('option[value="' + selectProductIdAfterLoad + '"]').length) {
+                                $('.product-select').val(selectProductIdAfterLoad);
+                                // Enable quantity if a product is selected
+                                $(".quantity").prop("disabled", false);
+                                if (modelQuantity) {
+                                    $('.quantity').val(modelQuantity);
+                                    updateTotalPrice(selectProductIdAfterLoad, modelQuantity);
+                                }
+                            } else {
+                                // If the model product id is missing from the returned list, add it so UI shows it
+                                if (selectProductIdAfterLoad) {
+                                    $('.product-select').append($('<option>', {
+                                        value: selectProductIdAfterLoad,
+                                        text: selectProductIdAfterLoad,
+                                        selected: true
+                                    }));
+                                    $(".quantity").prop("disabled", false);
+                                    if (modelQuantity) {
+                                        $('.quantity').val(modelQuantity);
+                                        updateTotalPrice(selectProductIdAfterLoad, modelQuantity);
+                                    }
+                                }
+                            }
+                        }
+                    })
+                    .fail(function () {
+                        // leave empty but ensure UI is consistent
+                    });
+            }
+
+            // If model has supplier, set supplier select and load products for it
+            if (modelSupplierId) {
+                $('.supplier-select').val(modelSupplierId);
+                loadProductsForSupplier(modelSupplierId, modelProductId);
+            } else {
+                // No supplier model: ensure quantity disabled and total price zero
+                $(".quantity").prop("disabled", true).val('');
+                $('#total-price').text('0.00');
+            }
+
+            // When supplier changes
+            $('.supplier-select').change(function () {
+                var supplierId = this.value;
+
+                // Clear and populate via AJAX
+                loadProductsForSupplier(supplierId, null);
+            });
+
+            // When product changes: enable/disable quantity
+            $('.product-select').change(function () {
+                var productId = this.value;
+                var disabled = !productId;
+                $(".quantity").prop("disabled", disabled);
+
+                if (disabled) {
+                    $('.quantity').val('');
+                    $('#total-price').text('0.00');
+                } else {
+                    // If quantity has a value, update total price
+                    var quantity = $('.quantity').val();
+                    if (quantity) {
+                        updateTotalPrice(productId, quantity);
+                    }
+                }
+            });
+
+            // When quantity changes: calculate total price
+            $(".quantity").on('input change', function () {
+                var productId = $('.product-select').val();
+                var quantity = $(this).val();
+                if (!productId || !quantity) {
+                    $('#total-price').text('0.00');
+                    return;
+                }
+                updateTotalPrice(productId, quantity);
+            });
+
+            // Keep select2 initialization optional: uncomment if desired
+            // $('.supplier-select, .product-select, .status-select').select2({
+            //     width: '100%'
+            // });
+        });
+    </script>
+}
+

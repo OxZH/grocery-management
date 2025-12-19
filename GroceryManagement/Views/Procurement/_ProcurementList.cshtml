@@ -1,0 +1,116 @@
+﻿@* Pseudocode plan (detailed):
+   1. Render an antiforgery token in the partial so JS can read it for POST requests.
+   2. Replace the status cell text with a <select> dropdown. Provide a small set of status options.
+      - Pre-select the current status value.
+      - Add attributes to the select to identify the procurement id and allow JS to find the row.
+   3. Attach an onchange handler that calls an async JS function updateStatus(id, selectElement).
+   4. In updateStatus:
+      - Read the antiforgery token value from the rendered hidden input.
+      - Disable the select while request is in-flight.
+      - POST application/x-www-form-urlencoded to /Procurement/UpdateStatus/{id} with form data { status } and header RequestVerificationToken.
+      - On success:
+         - If server returns JSON with updatedAt, update the .status-updated cell in the same row; otherwise set to current time.
+         - briefly toggle a success class on the select.
+      - On failure:
+         - show a minimal error (alert) and briefly toggle an error class.
+      - Re-enable the select.
+   5. Keep the rest of the partial intact (paging, links), and keep unobtrusive ajax behavior.
+   6. Use graceful fallback if server doesn't return JSON.
+*@
+
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<ProcurementRecord>
+
+@{
+    string[] fields = ["Id", "Created", "Total Price", "Status", "Last Updated"];
+    var statusOptions = new List<string> { "Ordered", "Received", "Cancelled" };
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+
+@* Render antiforgery token so JS can read it for AJAX POSTs *@
+@Html.AntiForgeryToken()
+
+<p>
+    @Model.Count() of @Model.TotalItemCount record(s) |
+    Page @Model.PageNumber of @Model.PageCount
+</p>
+
+<table class="table">
+    <tr>
+        @foreach (var f in fields)
+        {
+            string d = "asc";
+            string c = "";
+
+            if (f == ViewBag.Sort)
+            {
+                d = ViewBag.Dir == "des" ? "asc" : "des";
+                c = ViewBag.Dir;
+            }
+
+            <th>
+                <a data-ajax="true"
+                   data-ajax-update="#target"
+                   data-ajax-loading="#loader"
+                   href="?name=@ViewBag.Name&sort=@f&dir=@d" class="@c">@f</a>
+            </th>
+        }
+        <th></th>
+    </tr>
+
+    @foreach (var s in Model)
+    {
+        <tr>
+            @{
+                var statusOptionsList = new SelectList(statusOptions, s.Status?.ToString() ?? "");
+            }
+            <td>@s.Id</td>
+            <td>@s.ProcurementDateTime</td>
+            <td>@s.TotalPrice</td>
+            <td>
+                @{
+                    // compute current status string once to avoid inline complex expressions in attributes
+                    var currentStatus = s.Status?.ToString() ?? "";
+                }
+                <form data-ajax="true"
+                      data-ajax-update="#target"
+                      method="post"
+                      action="/Procurement/UpdateStatus">
+                    @Html.DropDownList("Status", statusOptionsList, "")
+                    @Html.Hidden("Id", s.Id)
+                </form>
+                
+            </td>
+            <td class="status-updated">@s.StatusUpdateDateTime</td>
+            <td>
+                <button data-get="/Procurement/Detail/@s.Id">Detail</button>
+                <button data-get="/Procurement/Update/@s.Id">Update</button>
+                <button data-post="/Procurement/Delete/@s.Id">Delete</button>
+            </td>
+        </tr>
+    }
+</table>
+
+@{
+    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+    options.LinkToFirstPageFormat = "First";
+    options.LinkToLastPageFormat = "Last";
+    options.LinkToPreviousPageFormat = "Previous";
+    options.LinkToNextPageFormat = "Next";
+
+    var ajaxOptions = new AjaxOptions
+    {
+        HttpMethod = "get",
+        UpdateTargetId = "target",
+        LoadingElementId = "#loader",
+    };
+}
+
+@Html.PagedListPager(
+    Model,
+    p => $"?name={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={p}",
+    PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+)

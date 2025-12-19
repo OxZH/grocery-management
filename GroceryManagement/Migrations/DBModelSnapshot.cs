@@ -168,6 +168,49 @@ namespace GroceryManagement.Migrations
                     b.ToTable("Inventories");
                 });
 
+            modelBuilder.Entity("GroceryManagement.Models.ProcurementRecord", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("ProcurementDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("StatusUpdateDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SupplierId")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("ProcurementRecords");
+                });
+
             modelBuilder.Entity("GroceryManagement.Models.Product", b =>
                 {
                     b.Property<string>("Id")
@@ -374,6 +417,25 @@ namespace GroceryManagement.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.ProcurementRecord", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GroceryManagement.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Staff", b =>

@@ -7,6 +7,7 @@ namespace GroceryManagement.Models;
 public class DB(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Supplier> Suppliers { get; set; }
+    public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
     public DbSet<User> Users { get; set; }
@@ -210,36 +211,36 @@ public class Supplier
     public string ContactNo { get; set; }
 }
 
-public class Procurement
+public class ProcurementRecord
 {
     [Key, MaxLength(10)]
-    [Required(ErrorMessage = "Procurement ID is required")]
-    [RegularExpression(@"^PR\d{6}$", ErrorMessage = "Format must be 'PR' followed by 6 digits (e.g. PR000001)")]
     public string Id { get; set; }
 
-    [Range(1, 99999, ErrorMessage = "Quantity must be at least 1")]
     public int Quantity { get; set; }
 
     [Precision(6, 2)]
-    [Range(0.01, 9999.99, ErrorMessage = "Total price must be between ")]
     [DataType(DataType.Currency)]
     public Decimal TotalPrice { get; set; }
 
-    [Required(ErrorMessage = "Status is required")]
-    [RegularExpression("^(PENDING|ORDERED|RECEIVED|CANCELLED)$", ErrorMessage = "Status must be one of: PENDING, ORDERED, RECEIVED, or CANCELLED")]
+    // quick access
     [MaxLength(10)]
     public string Status { get; set; }
 
-    [Required(ErrorMessage = "Status update date is required")]
+    // automated
+    [DataType(DataType.DateTime)]
+    public DateTime ProcurementDateTime { get; set; }
+
     [DataType(DataType.Date)]
-    public DateOnly StatusUpdateDate { get; set; }
+    public DateTime? StatusUpdateDateTime { get; set; }
 
     // FK
-    [Required(ErrorMessage = "Product ID is required")]
     [MaxLength(6)]
-    [RegularExpression(@"P\d{5}", ErrorMessage = "Product ID must match an existing Product (e.g. P00001)")]
     public string ProductId { get; set; }
+
+    [MaxLength(6)]
+    public string SupplierId { get; set; }
 
     // Navigation
     public Product Product { get; set; }
+    public Supplier Supplier { get; set; }
 }

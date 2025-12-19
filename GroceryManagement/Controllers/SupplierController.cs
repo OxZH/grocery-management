@@ -6,9 +6,12 @@ namespace GroceryManagement.Controllers;
 
 public class SupplierController(DB db) : Controller
 {
-    public bool CheckId(string id)
+    // Manually generate next id
+    private string NextId()
     {
-        return !db.Suppliers.Any(s => s.Id == id);
+        string max = db.Suppliers.Max(t => t.Id) ?? "SUP000";
+        int n = int.Parse(max[3..]);
+        return (n + 1).ToString("'SUP'000");
     }
 
     public IActionResult Index()
@@ -18,10 +21,10 @@ public class SupplierController(DB db) : Controller
 
     public IActionResult Insert()
     {
+        ViewBag.NextId = NextId();
         return View();
     }
 
-    // POST: Home/Insert
     [HttpPost]
     public IActionResult Insert(SupplierVM vm)
     {
@@ -34,17 +37,19 @@ public class SupplierController(DB db) : Controller
         {
             db.Suppliers.Add(new()
             {
-                Id = vm.Id.Trim().ToUpper(),
-                Name = vm.Name,
+                Id = NextId(),
+                Name = vm.Name.Trim(),
                 SupplierType = vm.SupplierType,
-                Address = vm.Address,
+                Address = vm.Address.Trim(),
                 ContactNo = vm.ContactNo,
             });
             db.SaveChanges();
+
+            TempData["Info"] = "Record inserted.";
+            return RedirectToAction("Index");
         }
 
-        TempData["Info"] = "Record inserted.";
-        return RedirectToAction("Index");
+        return View();
     }
 
     public IActionResult Update(string? id)
@@ -77,12 +82,12 @@ public class SupplierController(DB db) : Controller
 
         if (!ModelState.IsValid)
         {
-            return View();
+            return View(vm);
         }
 
-        sup.Name = vm.Name;
+        sup.Name = vm.Name.Trim();
         sup.SupplierType = vm.SupplierType;
-        sup.Address = vm.Address;
+        sup.Address = vm.Address.Trim();
         sup.ContactNo = vm.ContactNo;
         db.SaveChanges();
 

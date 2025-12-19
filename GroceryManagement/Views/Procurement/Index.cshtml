@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Procurement Records | Index";
+}
+
+<div id="target">
+    <partial name="_ProcurementList">
+</div>
+
+@section foot {
+    <script>
+        $(document).on("change", "select", e => {
+            $(e.target.form).submit()
+        });
+    </script>
+}
