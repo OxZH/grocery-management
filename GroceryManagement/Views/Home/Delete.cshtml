@@ -1,0 +1,40 @@
+﻿@model Inventory
+
+@{
+    ViewBag.Title = $"Delete Inventory | {Model.Id}";
+}
+
+<h2 class="alert-danger">Confirm Deletion</h2>
+<p class="alert-warning">Are you sure you want to delete the following Inventory record? This action cannot be undone.</p>
+
+<section class="detail-container">
+    <div class="detail-group">
+        <label>Batch ID</label>
+        <p>@Model.Id</p>
+    </div>
+
+    <div class="detail-group">
+        <label>Product ID</label>
+        <p>@Model.ProductId</p>
+    </div>
+
+    <div class="detail-group">
+        <label>Expiry Date</label>
+        <p>@Model.ExpiryDate.ToShortDateString()</p>
+    </div>
+
+    <div class="detail-group">
+        <label>Status</label>
+        <p>@Model.Status</p>
+    </div>
+</section>
+
+<form method="post">
+    @* Hidden field to pass the primary key ID back to the POST method *@
+    <input type="hidden" asp-for="Id" />
+
+    <section class="actions">
+        <button type="submit" class="btn-danger">Confirm Delete</button>
+        <a href="/Home/Index" class="button btn-secondary">Cancel</a>
+    </section>
+</form>

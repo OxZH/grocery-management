@@ -8,30 +8,30 @@
 <form method="post" class="form">
     <div asp-validation-summary="ModelOnly"></div>
 
-    <label asp-for="Id"></label>
+    @* <label asp-for="Id"></label>
     <input asp-for="Id" data-upper autofocus>
-    <span asp-validation-for="Id"></span>
+    <span asp-validation-for="Id"></span> *@
 
-    <label asp-for="ProductId"></label>
-    <select asp-for="ProductId" asp-items="ViewBag.ProductList" class="form-control" id="ProductSearch">
+    <label asp-for="ProductId">Product</label>
+    <select asp-for="ProductId" asp-items="ViewBag.ProductList" class="form-control" id="ProductSearch" style="text-transform: uppercase" autofocus>
         <option value="">- Select Product -</option>
     </select>
     <span asp-validation-for="ProductId" class="text-danger"></span>
 
     <label asp-for="ExpiryDate"></label>
     <div>
-        <input asp-for="ExpiryDate" autofocus min="@min">
-        @* <br><small>@min</small> *@
+        <input asp-for="ExpiryDate" min="@min">
     </div>
     <span asp-validation-for="ExpiryDate"></span>
 
-    @* <label asp-for="WareHouseQty">WareHouse Qty</label>
-    <input asp-for="WareHouseQty" type="number">
-    <span asp-validation-for="WareHouseQty"></span>
+    <label asp-for="SupplierId">Supplier Id</label>
+    <input asp-for="SupplierId" data-upper>
+    <span asp-validation-for="SupplierId"></span>
 
-    <label asp-for="StoreFrontQty">StoreFront Qty</label>
-    <input asp-for="StoreFrontQty" type="number">
-    <span asp-validation-for="StoreFrontQty"></span> *@
+    <label asp-for="Qty">Qty</label>
+    <input asp-for="Qty" type="number">
+    <span asp-validation-for="Qty"></span>
+    
 
     <section>
         <button>Submit</button>

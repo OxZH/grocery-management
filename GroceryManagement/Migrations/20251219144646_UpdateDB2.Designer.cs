@@ -4,6 +4,7 @@ using GroceryManagement.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroceryManagement.Migrations
 {
     [DbContext(typeof(DB))]
-    partial class DBModelSnapshot : ModelSnapshot
+    [Migration("20251219144646_UpdateDB2")]
+    partial class UpdateDB2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -160,7 +163,7 @@ namespace GroceryManagement.Migrations
 
                     b.Property<string>("SupplierId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(6)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -169,8 +172,6 @@ namespace GroceryManagement.Migrations
                     b.HasIndex("ProductId");
 
                     b.HasIndex("StaffId");
-
-                    b.HasIndex("SupplierId");
 
                     b.ToTable("Inventories");
                 });
@@ -280,7 +281,7 @@ namespace GroceryManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Supplier");
+                    b.ToTable("Suppliers");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.User", b =>
@@ -299,12 +300,6 @@ namespace GroceryManagement.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTime?>("Locked")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("LoginAttempts")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -319,12 +314,6 @@ namespace GroceryManagement.Migrations
                         .IsRequired()
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar(11)");
-
-                    b.Property<string>("ResetToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ResetTokenExpiry")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -427,19 +416,11 @@ namespace GroceryManagement.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GroceryManagement.Models.Supplier", "Supplier")
-                        .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Checkout");
 
                     b.Navigation("Product");
 
                     b.Navigation("Staff");
-
-                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.ProcurementRecord", b =>

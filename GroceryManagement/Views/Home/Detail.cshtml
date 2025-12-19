@@ -1,0 +1,42 @@
+﻿@model Inventory
+
+@{
+    ViewBag.Title = $"Inventory Detail | {Model.Id}";
+}
+
+<table class="table">
+    <tr>
+        <th>Batch ID</th>
+        <td>@Model.Id</td>
+    </tr>
+    <tr>
+        <th>Product ID</th>
+        <td>@Model.ProductId</td>
+    </tr>
+    <tr>
+        <th>Expiry Date</th>
+        <td>@Model.ExpiryDate.ToShortDateString()</td>
+    </tr>
+    <tr>
+        <th>Staff ID</th>
+        <td>@Model.StaffId</td>
+    </tr>
+    <tr>
+        <th>Checkout ID</th>
+        <td>@Model.StaffId</td>
+    </tr>
+    <tr>
+        <th>Checkout ID</th>
+        <td>@(string.IsNullOrEmpty(Model.CheckoutId) ? "N/A" : Model.CheckoutId)</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>@Model.Status</td>
+    </tr>
+
+</table>
+
+<section class="actions">
+    <button data-get="/Home/Update/@Model.Id">Edit</button>
+    <a href="/Home/Index" class="button">Back to List</a>
+</section>

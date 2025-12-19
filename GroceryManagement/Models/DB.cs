@@ -5,6 +5,8 @@ namespace GroceryManagement.Models;
 
 public class DB(DbContextOptions options) : DbContext(options)
 {
+    public DbSet<Supplier> Supplier { get; set; }
+    public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
     public DbSet<User> Users { get; set; }
@@ -25,13 +27,20 @@ public class User
     [EmailAddress]
     public string Email { get; set; }
     [MaxLength(100)]
-//    [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
+    //    [RegularExpression(@"^(?=.[A-Za-z])(?=.\d)[A-Za-z\d]{8,}$", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
     public string Password { get; set; }
     [MaxLength(11)]
     [RegularExpression(@"^01[0-9]-?[0-9]{7,8}$", ErrorMessage = "Invalid Phone Number format.")]
     public string PhoneNum { get; set; }
     public string Role => GetType().Name; // "Staff" or "Manager"
 
+    public string? ResetToken { get; set; }
+    [DataType(DataType.DateTime)]
+    public DateTime? ResetTokenExpiry { get; set; }
+
+    public int LoginAttempts { get; set; } = 0;
+    [DataType(DataType.DateTime)]
+    public DateTime? Locked { get; set; }
 }
 
 public class Staff : User
@@ -42,7 +51,7 @@ public class Staff : User
     [Precision(7, 2)]
     [Range(0.01, 99999.99, ErrorMessage = "Salary must be between 0 and 100,000")]
     public decimal? Salary { get; set; }
-    [RegularExpression(@"^(Cleaning|Cashier|Inventory)$", ErrorMessage = "Role must be one of the below: Cleaning, Cashier, Inventory")]
+    [RegularExpression(@"^(CLEANING|CASHIER|INVENTORY)$", ErrorMessage = "Role only can be one of the below: CLEANING, CASHIER, INVENTORY")]
     public string? AuthorizationLvl { get; set; }
     // FK
     [RegularExpression(@"^[a-zA-Z][0-9]{2,3}$")]
@@ -77,6 +86,8 @@ public class Checkout
     public decimal Total { get; set; }
     [DataType(DataType.DateTime)]
     public DateTime Date { get; set; }
+    [RegularExpression("^(CONFIRMED|PENDING|FAILED)$", ErrorMessage = "Status must be one of: CONFIRMED, PENDING or FAILED")]
+    [MaxLength(10)]
     public string Status { get; set; }
     [DataType(DataType.DateTime)]
     public DateTime StatusUpdateDate { get; set; }
@@ -90,7 +101,7 @@ public class Checkout
 
 public class Allocation
 {
-    [Key,MaxLength(5)]
+    [Key, MaxLength(5)]
     public string Id { get; set; }
     //add remaining attributes
 
@@ -106,13 +117,13 @@ public class AttendanceRecords
     public string Id { get; set; }
     public string StaffId { get; set; }
     [DataType(DataType.Date)]
-    public DateOnly Date { get; set; } 
+    public DateOnly Date { get; set; }
     [DataType(DataType.Time)]
-    public TimeOnly? CheckInTime { get; set; } 
+    public TimeOnly? CheckInTime { get; set; }
     [DataType(DataType.Time)]
-    public TimeOnly? CheckOutTime { get; set; } 
+    public TimeOnly? CheckOutTime { get; set; }
 
-    [RegularExpression("^(attend|absent|late|leave)$", ErrorMessage = "Status must be one of: attend, absent, late, or leave")]
+    [RegularExpression("^(ATTEND|ABSENT|LATE|LEAVE)$", ErrorMessage = "Status must be one of: ATTEND, ABSENT, LATE, or LEAVE")]
     [MaxLength(10)]
     public string Status { get; set; }
 
@@ -135,19 +146,19 @@ public class Product
         RegularExpression(@"P\d{5}", ErrorMessage = "Format must be 'P' followed by 4 digits (e.g. P0001)")]
     public string Id { get; set; }
 
-    [Required(ErrorMessage = "Product Name is required"), 
+    [Required(ErrorMessage = "Product Name is required"),
         MaxLength(100, ErrorMessage = "Product Name cannot exceed 100 characters")]
     public string Name { get; set; }
 
-    [Required(ErrorMessage = "Price is required"), 
-        Range(0.01, 10000.00, ErrorMessage = "Price must be greater than 0"), 
+    [Required(ErrorMessage = "SellPrice is required"),
+        Range(0.01, 10000.00, ErrorMessage = "SellPrice must be greater than 0"),
         Precision(7, 2)]
-    public decimal Price { get; set; }
+    public decimal SellPrice { get; set; }
 
     [RegularExpression(@".+\.(jpg|jpeg|png)$", ErrorMessage = "Image must be .jpg, .jpeg, or .png")]
     public string? PhotoURL { get; set; }
 
-    [Required(ErrorMessage = "Category is required"), MaxLength(50)]
+    [Required(ErrorMessage = "Category is required"), MaxLength(20)]
     public string Category { get; set; }
 
     [Range(0, 9999, ErrorMessage = "Quantity cannot be negative")]
@@ -156,8 +167,6 @@ public class Product
     [Range(0, 9999, ErrorMessage = "Quantity cannot be negative")]
     public int StoreFrontQty { get; set; }
 
-    [Required(ErrorMessage = "Supplier ID is required")]
-    public string SupplierId { get; set; }
     //Navigation
     public List<Inventory> Inventories { get; set; } = [];
 
@@ -165,7 +174,7 @@ public class Product
 }
 public class Inventory
 {
-    [Key, MaxLength(9), Required(ErrorMessage = "Batch ID is required"),
+    [Key, MaxLength(9), Required(ErrorMessage = "Id is required"),
         RegularExpression(@"INV\d{5}[A-Z]", ErrorMessage = "Format must be 'INV', 5 digits, and a letter (e.g. INV00001A)")]
     public string Id { get; set; }
 
@@ -176,12 +185,72 @@ public class Inventory
     //FK
     [Required(ErrorMessage = "Please select a Product")]
     public string ProductId { get; set; }
-    [Required(ErrorMessage = "Staff ID is required")]
+    [Required(ErrorMessage = "Staff Id is required")]
     public string StaffId { get; set; }
+
+    [Required(ErrorMessage = "Supplier ID is required"),
+   RegularExpression(@"SUP\d{3}", ErrorMessage = "Format must be 'SUP' followed by 3 digits (e.g. SUP001)")]
+    public string SupplierId { get; set; }
+
+    [RegularExpression("^(AVAILABLE|SOLD|DISPOSED)$", ErrorMessage = "Status must be one of: Available, Sold, or Disposed")]
+    [MaxLength(10)]
+    public string Status { get; set; }
+    public string? CheckoutId { get; set; }
 
     //Navigation
     public Product Product { get; set; }
     public Staff Staff { get; set; }
     public Checkout Checkout { get; set; }
+    public Supplier Supplier { get; set; }
+}
+public class Supplier
+{
+    [Key, MaxLength(6)]
+    public string Id { get; set; }
 
-    }
+    [MaxLength(100)]
+    public string Name { get; set; }
+
+    [MaxLength(12)]
+    public string SupplierType { get; set; }
+
+    [MaxLength(250)]
+    public string Address { get; set; }
+
+    [MinLength(11), MaxLength(12)]
+    public string ContactNo { get; set; }
+}
+
+public class ProcurementRecord
+{
+    [Key, MaxLength(10)]
+    public string Id { get; set; }
+
+    public int Quantity { get; set; }
+
+    [Precision(6, 2)]
+    [DataType(DataType.Currency)]
+    public Decimal TotalPrice { get; set; }
+
+    // quick access
+    [MaxLength(10)]
+    public string Status { get; set; }
+
+    // automated
+    [DataType(DataType.DateTime)]
+    public DateTime ProcurementDateTime { get; set; }
+
+    [DataType(DataType.Date)]
+    public DateTime? StatusUpdateDateTime { get; set; }
+
+    // FK
+    [MaxLength(6)]
+    public string ProductId { get; set; }
+
+    [MaxLength(6)]
+    public string SupplierId { get; set; }
+
+    // Navigation
+    public Product Product { get; set; }
+    public Supplier Supplier { get; set; }
+}

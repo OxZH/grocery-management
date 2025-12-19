@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroceryManagement.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20251202142912_UpdateDB")]
-    partial class UpdateDB
+    [Migration("20251219150458_UpdateDB7")]
+    partial class UpdateDB7
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -77,20 +77,47 @@ namespace GroceryManagement.Migrations
                     b.ToTable("AttendanceRecords");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
+            modelBuilder.Entity("GroceryManagement.Models.Checkout", b =>
                 {
                     b.Property<string>("Id")
                         .HasMaxLength(5)
                         .HasColumnType("nvarchar(5)");
 
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InventoryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("StaffId")
                         .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("StatusUpdateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(7, 2)
+                        .HasColumnType("decimal(7,2)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("CustomerOrder");
+                    b.ToTable("Checkout");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
@@ -115,6 +142,9 @@ namespace GroceryManagement.Migrations
                         .HasMaxLength(9)
                         .HasColumnType("nvarchar(9)");
 
+                    b.Property<string>("CheckoutId")
+                        .HasColumnType("nvarchar(5)");
+
                     b.Property<DateOnly>("ExpiryDate")
                         .HasColumnType("date");
 
@@ -126,13 +156,69 @@ namespace GroceryManagement.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(4)");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SupplierId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(6)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CheckoutId");
 
                     b.HasIndex("ProductId");
 
                     b.HasIndex("StaffId");
 
+                    b.HasIndex("SupplierId");
+
                     b.ToTable("Inventories");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.ProcurementRecord", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("ProcurementDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("StatusUpdateDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SupplierId")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SupplierId");
+
+                    b.ToTable("ProcurementRecords");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Product", b =>
@@ -143,8 +229,8 @@ namespace GroceryManagement.Migrations
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -152,32 +238,52 @@ namespace GroceryManagement.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PhotoURL")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal>("SellPrice")
                         .HasPrecision(7, 2)
                         .HasColumnType("decimal(7,2)");
 
-                    b.Property<string>("StaffId")
-                        .HasColumnType("nvarchar(4)");
-
                     b.Property<int>("StoreFrontQty")
                         .HasColumnType("int");
-
-                    b.Property<string>("SupplierId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("WareHouseQty")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StaffId");
-
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Supplier", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("ContactNo")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SupplierType")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("nvarchar(12)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Supplier");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.User", b =>
@@ -196,6 +302,12 @@ namespace GroceryManagement.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<DateTime?>("Locked")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LoginAttempts")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -210,6 +322,12 @@ namespace GroceryManagement.Migrations
                         .IsRequired()
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar(11)");
+
+                    b.Property<string>("ResetToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResetTokenExpiry")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -276,7 +394,7 @@ namespace GroceryManagement.Migrations
                     b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.CustomerOrder", b =>
+            modelBuilder.Entity("GroceryManagement.Models.Checkout", b =>
                 {
                     b.HasOne("GroceryManagement.Models.Staff", "Staff")
                         .WithMany("Checkout")
@@ -296,6 +414,10 @@ namespace GroceryManagement.Migrations
 
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
                 {
+                    b.HasOne("GroceryManagement.Models.Checkout", "Checkout")
+                        .WithMany("Inventories")
+                        .HasForeignKey("CheckoutId");
+
                     b.HasOne("GroceryManagement.Models.Product", "Product")
                         .WithMany("Inventories")
                         .HasForeignKey("ProductId")
@@ -308,18 +430,38 @@ namespace GroceryManagement.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GroceryManagement.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Checkout");
+
                     b.Navigation("Product");
 
                     b.Navigation("Staff");
+
+                    b.Navigation("Supplier");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.Product", b =>
+            modelBuilder.Entity("GroceryManagement.Models.ProcurementRecord", b =>
                 {
-                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
+                    b.HasOne("GroceryManagement.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("StaffId");
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Staff");
+                    b.HasOne("GroceryManagement.Models.Supplier", "Supplier")
+                        .WithMany()
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Supplier");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Staff", b =>
@@ -329,6 +471,11 @@ namespace GroceryManagement.Migrations
                         .HasForeignKey("ManagerId");
 
                     b.Navigation("Manager");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.Checkout", b =>
+                {
+                    b.Navigation("Inventories");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Product", b =>

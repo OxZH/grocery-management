@@ -1,20 +1,19 @@
-﻿/*using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
+﻿//using Microsoft.AspNetCore.Authentication;
+//using Microsoft.AspNetCore.Identity;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System.Security.Claims;
+//using System.Security.Claims;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
+//using static System.Net.Mime.MediaTypeNames;
 
 namespace GroceryManagement;
 
-// TODO
-public class Helper(IWebHostEnvironment en,
-                    IHttpContextAccessor ct)
+public class Helper(IWebHostEnvironment en)
 {
-    // ------------------------------------------------------------------------
-    // Photo Upload
-    // ------------------------------------------------------------------------
+     //------------------------------------------------------------------------
+     //Photo Upload
+     //------------------------------------------------------------------------
 
     public string ValidatePhoto(IFormFile f)
     {
@@ -61,67 +60,66 @@ public class Helper(IWebHostEnvironment en,
 
 
 
-    // ------------------------------------------------------------------------
-    // Security Helper Functions
-    // ------------------------------------------------------------------------
+    //// ------------------------------------------------------------------------
+    //// Security Helper Functions
+    //// ------------------------------------------------------------------------
 
 
-    private readonly PasswordHasher<object> ph = new();
+    //private readonly PasswordHasher<object> ph = new();
 
-    public string HashPassword(string password)
-    {
-        return ph.HashPassword(0, password);
-    }
+    //public string HashPassword(string password)
+    //{
+    //    return ph.HashPassword(0, password);
+    //}
 
-    public bool VerifyPassword(string hash, string password)
-    {
-        return ph.VerifyHashedPassword(0, hash, password)
-                == PasswordVerificationResult.Success;
-    }
+    //public bool VerifyPassword(string hash, string password)
+    //{
+    //    return ph.VerifyHashedPassword(0, hash, password)
+    //            == PasswordVerificationResult.Success;
+    //}
 
-    public void SignIn(string email, string role, bool rememberMe)
-    {
-        // (1) Claim, identity and principal
-        List<Claim> claims =
-        [
-            new(ClaimTypes.Name, email),
-            new(ClaimTypes.Role, role),
-        ];
+    //public void SignIn(string email, string role, bool rememberMe)
+    //{
+    //    // (1) Claim, identity and principal
+    //    List<Claim> claims =
+    //    [
+    //        new(ClaimTypes.Name, email),
+    //        new(ClaimTypes.Role, role),
+    //    ];
 
 
-        ClaimsIdentity identity = new(claims, "Cookies");
+    //    ClaimsIdentity identity = new(claims, "Cookies");
 
-        ClaimsPrincipal principal = new(identity);
+    //    ClaimsPrincipal principal = new(identity);
 
-        // (2) Remember me (authentication properties)
-        AuthenticationProperties properties = new()
-        {
-            IsPersistent = rememberMe,
-        };
+    //    // (2) Remember me (authentication properties)
+    //    AuthenticationProperties properties = new()
+    //    {
+    //        IsPersistent = rememberMe,
+    //    };
 
-        // (3) Sign in
-        ct.HttpContext!.SignInAsync(principal, properties);
-    }
+    //    // (3) Sign in
+    //    ct.HttpContext!.SignInAsync(principal, properties);
+    //}
 
-    public void SignOut()
-    {
-        // Sign out
-        ct.HttpContext!.SignOutAsync();
-    }
+    //public void SignOut()
+    //{
+    //    // Sign out
+    //    ct.HttpContext!.SignOutAsync();
+    //}
 
-    public string RandomPassword()
-    {
-        string s = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        string password = "";
+    //public string RandomPassword()
+    //{
+    //    string s = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    //    string password = "";
 
-        Random r = new();
+    //    Random r = new();
 
-        for (int i = 1; i <= 10; i++)
-        {
-            password += s[r.Next(s.Length)]; //s[r.Next(36)] -> s[10] so the random value is A
-        }
+    //    for (int i = 1; i <= 10; i++)
+    //    {
+    //        password += s[r.Next(s.Length)]; //s[r.Next(36)] -> s[10] so the random value is A
+    //    }
 
-        return password;
-    }
+    //    return password;
+    //}
 }
-*/

@@ -12,6 +12,23 @@ namespace GroceryManagement.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    SellPrice = table.Column<decimal>(type: "decimal(7,2)", precision: 7, scale: 2, nullable: false),
+                    PhotoURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    WareHouseQty = table.Column<int>(type: "int", nullable: false),
+                    StoreFrontQty = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -82,17 +99,24 @@ namespace GroceryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CustomerOrder",
+                name: "Checkout",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
+                    CustomerId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    InventoryId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(7,2)", precision: 7, scale: 2, nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StatusUpdateDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     StaffId = table.Column<string>(type: "nvarchar(4)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CustomerOrder", x => x.Id);
+                    table.PrimaryKey("PK_Checkout", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CustomerOrder_Users_StaffId",
+                        name: "FK_Checkout_Users_StaffId",
                         column: x => x.StaffId,
                         principalTable: "Users",
                         principalColumn: "Id");
@@ -116,41 +140,25 @@ namespace GroceryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Products",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(7,2)", precision: 7, scale: 2, nullable: false),
-                    PhotoURL = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    WareHouseQty = table.Column<int>(type: "int", nullable: false),
-                    StoreFrontQty = table.Column<int>(type: "int", nullable: false),
-                    SupplierId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StaffId = table.Column<string>(type: "nvarchar(4)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Products", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Products_Users_StaffId",
-                        column: x => x.StaffId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Inventories",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(9)", maxLength: 9, nullable: false),
                     ExpiryDate = table.Column<DateOnly>(type: "date", nullable: false),
                     ProductId = table.Column<string>(type: "nvarchar(6)", nullable: false),
-                    StaffId = table.Column<string>(type: "nvarchar(4)", nullable: false)
+                    StaffId = table.Column<string>(type: "nvarchar(4)", nullable: false),
+                    SupplierId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    CheckoutId = table.Column<string>(type: "nvarchar(5)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Inventories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Inventories_Checkout_CheckoutId",
+                        column: x => x.CheckoutId,
+                        principalTable: "Checkout",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Inventories_Products_ProductId",
                         column: x => x.ProductId,
@@ -181,14 +189,19 @@ namespace GroceryManagement.Migrations
                 column: "StaffId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CustomerOrder_StaffId",
-                table: "CustomerOrder",
+                name: "IX_Checkout_StaffId",
+                table: "Checkout",
                 column: "StaffId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Expense_ManagerId",
                 table: "Expense",
                 column: "ManagerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Inventories_CheckoutId",
+                table: "Inventories",
+                column: "CheckoutId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Inventories_ProductId",
@@ -198,11 +211,6 @@ namespace GroceryManagement.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Inventories_StaffId",
                 table: "Inventories",
-                column: "StaffId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Products_StaffId",
-                table: "Products",
                 column: "StaffId");
 
             migrationBuilder.CreateIndex(
@@ -221,13 +229,13 @@ namespace GroceryManagement.Migrations
                 name: "AttendanceRecords");
 
             migrationBuilder.DropTable(
-                name: "CustomerOrder");
-
-            migrationBuilder.DropTable(
                 name: "Expense");
 
             migrationBuilder.DropTable(
                 name: "Inventories");
+
+            migrationBuilder.DropTable(
+                name: "Checkout");
 
             migrationBuilder.DropTable(
                 name: "Products");

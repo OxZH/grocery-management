@@ -4,6 +4,7 @@ using GroceryManagement.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroceryManagement.Migrations
 {
     [DbContext(typeof(DB))]
-    partial class DBModelSnapshot : ModelSnapshot
+    [Migration("20251219150352_UpdateDB5")]
+    partial class UpdateDB5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -280,7 +283,7 @@ namespace GroceryManagement.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Supplier");
+                    b.ToTable("Suppliers");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.User", b =>
@@ -427,7 +430,7 @@ namespace GroceryManagement.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GroceryManagement.Models.Supplier", "Supplier")
+                    b.HasOne("GroceryManagement.Models.Supplier", "Suppliers")
                         .WithMany()
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -439,7 +442,7 @@ namespace GroceryManagement.Migrations
 
                     b.Navigation("Staff");
 
-                    b.Navigation("Supplier");
+                    b.Navigation("Suppliers");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.ProcurementRecord", b =>
@@ -450,7 +453,7 @@ namespace GroceryManagement.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GroceryManagement.Models.Supplier", "Supplier")
+                    b.HasOne("GroceryManagement.Models.Supplier", "Suppliers")
                         .WithMany()
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -458,7 +461,7 @@ namespace GroceryManagement.Migrations
 
                     b.Navigation("Product");
 
-                    b.Navigation("Supplier");
+                    b.Navigation("Suppliers");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Staff", b =>

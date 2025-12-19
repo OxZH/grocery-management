@@ -1,0 +1,41 @@
+﻿@model IEnumerable<Product>
+
+@{
+    ViewBag.Title = "Product | Index";
+}
+
+<p>@Model.Count() record(s)</p>
+
+<table class="table">
+    <tr>
+        <td><button data-get="/Product/Insert">Insert</button></td>
+    </tr>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>SellPrice (RM)</th>
+        <th>Photo URL</th>
+        <th>Category</th>
+        <th>WareHouse Qty</th>
+        <th>StoreFront Qty</th>
+        <th></th>
+    </tr>
+
+    @foreach (var s in Model)
+    {
+        <tr>
+            <td>@s.Id</td>
+            <td>@s.Name</td>
+            <td>@s.SellPrice</td>
+            <td>@s.PhotoURL</td>
+            <td>@s.Category</td>
+            <td>@s.WareHouseQty</td>
+            <td>@s.StoreFrontQty</td>
+            <td>
+                <button data-get="/Product/Detail/@s.Id">Detail</button>
+                <button data-get="/Product/Update/@s.Id">Update</button>
+                <button data-post="/Product/Delete/@s.Id">Delete</button>
+            </td>
+        </tr>
+    }
+</table>
