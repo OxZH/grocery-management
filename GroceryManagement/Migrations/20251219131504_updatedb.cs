@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GroceryManagement.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateDB : Migration
+    public partial class updatedb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,10 +19,9 @@ namespace GroceryManagement.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Price = table.Column<decimal>(type: "decimal(7,2)", precision: 7, scale: 2, nullable: false),
                     PhotoURL = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Category = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     WareHouseQty = table.Column<int>(type: "int", nullable: false),
-                    StoreFrontQty = table.Column<int>(type: "int", nullable: false),
-                    SupplierId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    StoreFrontQty = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -38,6 +37,10 @@ namespace GroceryManagement.Migrations
                     Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     PhoneNum = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
+                    ResetToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ResetTokenExpiry = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    LoginAttempts = table.Column<int>(type: "int", nullable: false),
+                    Locked = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Discriminator = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
                     PhotoURL = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Salary = table.Column<decimal>(type: "decimal(7,2)", precision: 7, scale: 2, nullable: true),
@@ -146,9 +149,10 @@ namespace GroceryManagement.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(9)", maxLength: 9, nullable: false),
                     ExpiryDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
                     ProductId = table.Column<string>(type: "nvarchar(6)", nullable: false),
                     StaffId = table.Column<string>(type: "nvarchar(4)", nullable: false),
+                    SupplierId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     CheckoutId = table.Column<string>(type: "nvarchar(5)", nullable: true)
                 },
                 constraints: table =>

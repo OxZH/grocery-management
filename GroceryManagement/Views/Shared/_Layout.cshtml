@@ -16,7 +16,7 @@
     <div class="info">@Html.Raw(TempData["Info"])</div>
 
     <header>
-        <h1><a href="/">Email and DateTime</a></h1>
+        <h1><a href="/">Grocery Management</a></h1>
 
         @if (User.Identity!.IsAuthenticated)
         {
@@ -42,7 +42,7 @@
         @if (!User.Identity!.IsAuthenticated)
         {
             <a href="/Account/Login">Login</a>
-            <a href="/Account/ResetPassword">Forgot Password</a>
+            <a href="/Account/ForgotPassword">Forgot Password</a>
         }
         else
         {
@@ -81,6 +81,7 @@
     <script src="/js/jquery.validate.min.js"></script>
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="/js/app.js" asp-append-version="true"></script>
+
     @RenderSection("foot", false)
 	@RenderSection("Scripts", required: false)
 </body>

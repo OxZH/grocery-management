@@ -154,8 +154,13 @@ namespace GroceryManagement.Migrations
                         .HasColumnType("nvarchar(4)");
 
                     b.Property<string>("Status")
+                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SupplierId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -176,8 +181,8 @@ namespace GroceryManagement.Migrations
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -193,10 +198,6 @@ namespace GroceryManagement.Migrations
 
                     b.Property<int>("StoreFrontQty")
                         .HasColumnType("int");
-
-                    b.Property<string>("SupplierId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("WareHouseQty")
                         .HasColumnType("int");
@@ -222,6 +223,12 @@ namespace GroceryManagement.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<DateTime?>("Locked")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LoginAttempts")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -236,6 +243,12 @@ namespace GroceryManagement.Migrations
                         .IsRequired()
                         .HasMaxLength(11)
                         .HasColumnType("nvarchar(11)");
+
+                    b.Property<string>("ResetToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResetTokenExpiry")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

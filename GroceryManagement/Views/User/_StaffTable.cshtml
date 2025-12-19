@@ -96,7 +96,6 @@
                     @if (user is Staff staffMember && !string.IsNullOrEmpty(staffMember.PhotoURL))
                     {
                         <img src="/photos/@staffMember.PhotoURL" width="50" height="50" style="object-fit:cover;" />
-
                         <img src="/photos/@staffMember.PhotoURL" class="popup" style="width:150px; height:150px; object-fit:cover; border:1px solid #333;" />
                     }
                     else
@@ -108,7 +107,29 @@
                 <td>
                     <button data-get="/User/Detail/@user.Id">Detail</button>
                     <button data-get="/User/Update/@user.Id">Update</button>
-                    <button data-post="/User/Delete/@user.Id">Delete</button>
+                    @{
+                        // Check if user is currently locked
+                        bool isLocked = user.Locked != null && user.Locked > DateTime.Now;
+                    }
+
+                    @if (isLocked)
+                    {
+                        <button type="button"
+                                data-post="/User/Unblock/@user.Id"
+                                data-confirm="Are you sure you want to UNBLOCK this user?"
+                                style="background-color: #ffcccc; color: red; font-weight: bold;"
+                                title="Locked until @user.Locked">
+                            Unblock
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                data-post="/User/Delete/@user.Id"
+                                data-confirm="Are you sure you want to DELETE this user?">
+                            Delete
+                        </button>
+                    }
                 </td>
             </tr>
         }

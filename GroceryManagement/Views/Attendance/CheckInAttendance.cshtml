@@ -1,6 +1,96 @@
-﻿@{
-    ViewBag.Title = "Check In Attendance";
+﻿﻿@{
+ViewBag.Title = "Check In Attendance";
+var info = TempData["Info"] as string;
+var currentDate = ViewBag.CurrentDate as string ?? DateTime.Now.ToString("yyyy-MM-dd");
+var currentTime = ViewBag.CurrentTime as string ?? DateTime.Now.ToString("HH:mm");
+var canCheckout = ViewBag.CanCheckout as bool? ?? false;
+var hasCheckIn = ViewBag.HasCheckIn as bool? ?? false;
+var hasCheckout = ViewBag.HasCheckout as bool? ?? false;
+var selectedStaffId = ViewBag.SelectedStaffId as string ?? "";
 }
 @model GroceryManagement.Models.AttendanceRecords
 
 <h2>Check In Attendance</h2>
+
+@if (!string.IsNullOrWhiteSpace(info))
+{
+    <div class="alert">@Html.Raw(info)</div>
+}
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert">@ViewBag.Message</div>
+}
+
+@if (ViewBag.CheckInInfo != null)
+{
+    <div class="alert">@ViewBag.CheckInInfo</div>
+}
+
+@if (ViewBag.CheckOutInfo != null)
+{
+    <div class="alert">@ViewBag.CheckOutInfo</div>
+}
+
+<form asp-action="CheckIn" method="post">
+    @Html.AntiForgeryToken()
+    <div>
+        <label for="staffId">Staff</label>
+        <select id="staffId" name="staffId" asp-items="ViewBag.Staffs">
+            <option value="">-- Select staff --</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="overrideDate">Date</label>
+        <input id="overrideDate" type="date" name="overrideDate" value="@currentDate" />
+    </div>
+
+    <div>
+        <label for="overrideTime">Time</label>
+        <input id="overrideTime" type="time" name="overrideTime" value="@currentTime" />
+        <small>This lets you temporarily override the current date/time for testing.</small>
+    </div>
+
+    <button type="submit">Check in now</button>
+</form>
+
+<hr />
+
+<form id="checkoutForm" asp-action="CheckOut" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="checkoutStaffId" name="staffId" value="@selectedStaffId" />
+    <input type="hidden" id="checkoutDate" name="overrideDate" value="@currentDate" />
+    <input type="hidden" id="checkoutTime" name="overrideTime" value="@currentTime" />
+
+    <button type="submit" @(hasCheckIn ? "" : "disabled")>Check out</button>
+    @if (!hasCheckIn)
+    {
+        <small>Checkout disabled until a check-in exists for the selected date.</small>
+    }
+</form>
+
+<script>
+    (() => {
+        const staff = document.getElementById("staffId");
+        const date = document.getElementById("overrideDate");
+        const time = document.getElementById("overrideTime");
+        const checkoutStaff = document.getElementById("checkoutStaffId");
+        const checkoutDate = document.getElementById("checkoutDate");
+        const checkoutTime = document.getElementById("checkoutTime");
+
+        const sync = () => {
+            if (checkoutStaff) checkoutStaff.value = staff.value;
+            if (checkoutDate) checkoutDate.value = date.value;
+            if (checkoutTime) checkoutTime.value = time.value;
+        };
+
+        [staff, date, time].forEach(el => el?.addEventListener('change', sync));
+        sync();
+
+        staff?.addEventListener('change', () => {
+            const url = `/Attendance/CheckInAttendance?staffId=${encodeURIComponent(staff.value)}&overrideDate=${encodeURIComponent(date.value)}&overrideTime=${encodeURIComponent(time.value)}`;
+            window.location = url;
+        });
+    })();
+</script>

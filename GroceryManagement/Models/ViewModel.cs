@@ -98,6 +98,8 @@ public class UpdatePasswordVM
     [DataType(DataType.Password)]
     [DisplayName("Confirm Password")]
     public string? Confirm { get; set; }
+    public string? Token { get; set; }
+
 }
 
 public class UpdateProfileVM
@@ -145,10 +147,15 @@ public class UserUpdateVM
 
     public string? Role { get; set; }
 }
-public class ResetPasswordVM
+/*public class ResetPasswordVM
 {
     [StringLength(100)]
     [EmailAddress]
     public string Email { get; set; }
-}
+    public string Token { get; set; }
+    public string CurrentPassword { get; set; }
+    public string NewPassword { get; set; }
+    [Compare("NewPassword")]
+    public string ConfirmNewPassword { get; set; }
 
+}*/

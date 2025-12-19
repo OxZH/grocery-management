@@ -42,15 +42,5 @@
             e.preventDefault(); // Prevent default if inside form
             window.location.href = $(this).data('get');
         });
-
-        $(document).on('click', 'button[data-post]', function(e) {
-            e.preventDefault();
-            if(confirm('Are you sure you want to delete this record?')) {
-                // Create a temporary form to post
-                var form = $('<form action="' + $(this).data('post') + '" method="post"></form>');
-                $('body').append(form);
-                form.submit();
-            }
-        });
     </script>
 }

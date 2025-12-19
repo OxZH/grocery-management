@@ -91,11 +91,23 @@ public class UserController (DB db,
         return !db.Users.Any(s => s.Id == id);
     }
 
-    /*    // GET: Home/CheckProgramId
-        public bool CheckProgramId(string programId)
+
+    // Unblock staff
+    [HttpPost]
+    [Authorize(Roles = "Manager")]
+    public IActionResult Unblock(string id)
+    {
+        var staff = db.Users.Find(id);
+        if (staff != null)
         {
-            return db.Programs.Any(p => p.Id == programId);
-        }*/
+            staff.Locked = null;
+            staff.LoginAttempts = 0;
+            db.SaveChanges();
+            TempData["Info"] = $"{staff.Name} unblocked.";
+        }
+
+        return RedirectToAction("Index", "User");
+    }
 
     // GET
     [Authorize(Roles ="Manager")]
@@ -292,50 +304,5 @@ public class UserController (DB db,
 
         return Redirect(Request.Headers.Referer.ToString());
     }
-
-    /*    // POST: Home/DeleteMany
-        [HttpPost]
-        public IActionResult DeleteMany(string[] ids)
-        {
-            int n = db.Users
-                .Where(s => ids.Contains(s.Id))
-                .ExecuteDelete();
-
-            TempData["Info"] = $"{n} record(s) deleted.";
-            return RedirectToAction("Demo");
-        }*/
-    /*
-        // POST: Home/Restore
-        [HttpPost]
-        public IActionResult Restore()
-        {
-            // (1) Delete all records
-            db.Users.ExecuteDelete();
-
-            // ------------------------------------------------
-
-            // (2) Insert all records from "Users.txt"
-            string path = Path.Combine(en.ContentRootPath, "Users.txt");
-
-            foreach (string line in System.IO.File.ReadLines(path))
-            {
-                if (line.Trim() == "") continue;
-
-                var data = line.Split("\t", StringSplitOptions.TrimEntries);
-
-                db.Users.Add(new()
-                {
-                    Id = data[0],
-                    Name = data[1],
-                    Gender = data[2],
-                    ProgramId = data[3],
-                });
-            }
-
-            db.SaveChanges();
-
-            TempData["Info"] = "Record(s) restored.";
-            return RedirectToAction("Demo");
-        }*/
 }
 

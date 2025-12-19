@@ -36,23 +36,70 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
     [HttpPost]
     public IActionResult Login(LoginVM vm, string? returnURL)
     {
-        // (1) Get user (admin or member) record based on email
+        // (1) Get user record based on email
         var u = db.Users.FirstOrDefault(u => u.Email == vm.Email);
 
-        // (2) Custom validation -> verify password
-        if (u == null || !hp.VerifyPassword(u.Password, vm.Password))
+        // User not found
+        if (u == null)
         {
             ModelState.AddModelError("", "Login credentials not matched.");
+            vm.Password = string.Empty; // Remove previously entered password 
+            return View(vm); // Reload current page with entered data
+        }
+
+        // (2) Check Locked
+        if (u.Locked != null && u.Locked > DateTime.Now)
+        {
+            if (u is Manager)
+            {
+                TimeSpan remaining = u.Locked.Value - DateTime.Now;
+                ModelState.AddModelError("", $"Account locked. Try again in {remaining.Seconds} seconds.");            }
+            else
+                {
+                ModelState.AddModelError("", $"Account locked due to multiple failed attempts. Please contact a Manager.");
+            }
+            return View(vm);
+        }
+        // (3) Verify password
+        if (!hp.VerifyPassword(u.Password, vm.Password))
+        {
+            u.LoginAttempts++;
+
+            if (u.LoginAttempts >= 3)
+            {
+                if (u is Manager)
+                {
+                    u.Locked = DateTime.Now.AddMinutes(1); // Set to 1 minute for testing
+                }
+                else
+                {
+                    u.Locked = DateTime.MaxValue; // Lock indefinitely
+                }
+                db.SaveChanges();
+                ModelState.AddModelError("", "Maximum attempts reached. Account Locked.");
+                return View(vm);
+            }
+            // Normal fail ( < 3 attempts)
+            int remaining = 3-u.LoginAttempts;
+            db.SaveChanges(); // Save incremented count
+
+            ModelState.AddModelError("", $"Invalid credentials. You have {remaining} attempts left.");
+            return View(vm);
         }
 
         if (ModelState.IsValid)
         {
+            // Reset if success
+            u.LoginAttempts = 0;
+            u.Locked = null;
+            db.SaveChanges();
+
             TempData["Info"] = "Login successfully.";
 
-            // (3) Sign in
+            // Sign in
             hp.SignIn(u!.Email, u.Role, vm.RememberMe, u.PhoneNum);
 
-            // (4) Handle return URL
+            // Handle return URL
             if (string.IsNullOrEmpty(returnURL))
             {
                 return RedirectToAction("Index", "Home");
@@ -103,19 +150,17 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             ModelState.AddModelError("Email", "Duplicated Email.");
         }
 
-        /*        if(vm.Photo != null)
-                {
-                    if (ModelState.IsValid("Photo"))
-                    {   
-                        var err = hp.ValidatePhoto(vm.Photo);
-                        if (err != "") ModelState.AddModelError("Photo", err);
-                    }
+        // Validate Photo
+        if (vm.Photo != null)
+        {
+            string err = hp.ValidatePhoto(vm.Photo);
+            // if theres error add to modelstate
+            if (err != "")
+            {
+                ModelState.AddModelError("Photo", err);
+            }
+        }
 
-                }
-                else
-                {
-                    ModelState.AddModelError("Photo", "Photo is required.");
-                }*/
         if (vm.Role == "Manager")
         {
             ModelState.Remove("Salary");
@@ -185,9 +230,6 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
                 }
             }
         }
-
-      
-
         return View(vm);
     }
 
@@ -314,7 +356,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             db.SaveChanges();
             TempData["Info"] = "Profile updated successfully.";
 
-            // Optional: Refresh Cookie if your cookie stores Phone/Name
+            // Optional: Refresh Cookie 
             // hp.SignIn(u.Email, u.Role, true, u.PhoneNum); 
 
             return RedirectToAction("UpdateProfile"); // Reload page to show changes
@@ -332,49 +374,102 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
         return View(vm);
     }
 
-    // GET: Account/ResetPassword
-    public IActionResult ResetPassword()
+    // GET: Account/ForgotPassword
+    public IActionResult ForgotPassword()
     {
         return View();
+    }
+
+    // POST: Account/ForgotPassword
+    [HttpPost]
+    public IActionResult ForgotPassword(UpdatePasswordVM vm)
+    {
+        // 1. Find user
+        var u = db.Users.FirstOrDefault(u => u.Email == vm.Email);
+
+        // Security Note: Generally, you shouldn't reveal if an email exists, 
+        // but for school projects, checking specific errors is fine.
+        if (u == null)
+        {
+            ModelState.AddModelError("Email", "Email not found.");
+            return View(vm);
+        }
+
+        // 2. Generate Token & Expiry (e.g., 30 mins)
+        string token = Guid.NewGuid().ToString();
+        u.ResetToken = token;
+        u.ResetTokenExpiry = DateTime.Now.AddMinutes(30);
+        db.SaveChanges();
+
+        // 3. Send Email with Link
+        SendResetPasswordEmail(u, token);
+
+        TempData["Info"] = "Reset link sent! Check your email.";
+        return RedirectToAction("Login", "Account");
+    }
+
+    // GET: Account/ResetPassword?token=...&email=...
+    // [HttpGet]
+    public IActionResult ResetPassword(string token, string email)
+    {
+        // 1. Basic Validation
+        if (token == null || email == null)
+        {
+            TempData["Info"] = "Invalid password reset token.";
+            return RedirectToAction("Login", "Account");
+        }
+
+        // 2. Pass data to the View so the form can submit it back
+        var vm = new UpdatePasswordVM
+        {
+            Token = token,
+            Email = email
+        };
+
+        return View(vm);
     }
 
     // POST: Account/ResetPassword
     [HttpPost]
-    public IActionResult ResetPassword(ResetPasswordVM vm)
+    public IActionResult ResetPassword(UpdatePasswordVM vm)
     {
+        if (!ModelState.IsValid) return View(vm);
+
+        // 3. Find User & Verify Token
         var u = db.Users.FirstOrDefault(u => u.Email == vm.Email);
 
-        if (u == null)
+        if (u == null ||
+            u.ResetToken != vm.Token ||
+            u.ResetTokenExpiry < DateTime.Now)
         {
-            ModelState.AddModelError("Email", "Email not found.");
+            TempData["Info"] = "Token is invalid or has expired.";
+            return RedirectToAction("ForgotPassword");
         }
 
-        if (ModelState.IsValid)
-        {
-            string password = hp.RandomPassword();
+        // 4. Update Password & Clear Token
+        u.Password = hp.HashPassword(vm.New);
+        u.ResetToken = null;       // Invalidate token so it can't be used again
+        u.ResetTokenExpiry = null;
 
-            u!.Password = hp.HashPassword(password);
-            db.SaveChanges();
+        db.SaveChanges();
 
-            // Send reset password email
-            SendResetPasswordEmail(u, password);
-
-            TempData["Info"] = $"Password reset. Check your email.";
-            return RedirectToAction();
-        }
-
-        return View();
+        TempData["Info"] = "Password updated successfully. Please login.";
+        return RedirectToAction("Login", "Account");
     }
 
-    private void SendResetPasswordEmail(User u, string password)
+    private void SendResetPasswordEmail(User u, string token)
     {
         var mail = new MailMessage();
         mail.To.Add(new MailAddress(u.Email, u.Name));
-        mail.Subject = "Reset Password";
+        mail.Subject = "Reset Your Password";
         mail.IsBodyHtml = true;
 
-        var url = Url.Action("Login", "User", null, "https");
+        // Generate the link: /Account/ResetPassword?token=XYZ&email=ABC
+        var link = Url.Action("ResetPassword", "Account",
+            new { token = token, email = u.Email },
+            protocol: "https");
 
+        // Photo Logic (kept from your code)
         var path = u switch
         {
             Manager => Path.Combine(en.WebRootPath, "photos", "admin.jpg"),
@@ -382,22 +477,28 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             _ => "",
         };
 
-        var att = new Attachment(path);
-        mail.Attachments.Add(att);
-        att.ContentId = "photo";
+        if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+        {
+            var att = new Attachment(path);
+            mail.Attachments.Add(att);
+            att.ContentId = "photo";
+        }
 
         mail.Body = $@"
-            <img src='cid:photo' style='width: 200px; height: 200px;
-                                        border: 1px solid #333'>
-            <p>Dear {u.Name},<p>
-            <p>Your password has been reset to:</p>
-            <h1 style='color: red'>{password}</h1>
+        <div style='font-family: Arial, sans-serif;'>
+            <h2>Password Reset Request</h2>
+            <p>Dear {u.Name},</p>
+            <p>We received a request to reset your password. Click the link below to choose a new password:</p>
             <p>
-                Please <a href='{url}'>login</a>
-                with your new password.
+                <a href='{link}' style='background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>
+                    Reset Password
+                </a>
             </p>
-            <p>From, 🐱 Super Admin</p>
-        ";
+            <p style='color: #666; font-size: 12px;'>This link expires in 30 minutes.</p>
+            <hr>
+            {(string.IsNullOrEmpty(path) ? "" : "<img src='cid:photo' style='width: 100px; height: 100px; border-radius: 50%; object-fit: cover;'>")}
+        </div>
+    ";
 
         hp.SendEmail(mail);
     }
