@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
@@ -49,16 +50,18 @@ public class SupplierController(DB db) : Controller
     {
         if (ModelState.IsValid)
         {
+            var nextId = NextId();
             db.Suppliers.Add(new()
             {
-                Id = NextId(),
+                Id = nextId,
                 Name = vm.Name.Trim(),
                 SupplierType = vm.SupplierType,
                 Address = vm.Address.Trim(),
                 ContactNo = vm.ContactNo,
-                SupplierTags = db.SupplierTags
-                       .Where(t => tags.Contains(t.Id))
-                       .ToList()
+            });
+            db.SupplierSupplierTags.Add(new()
+            {
+                SupplierId = nextId,
             });
             db.SaveChanges();
 

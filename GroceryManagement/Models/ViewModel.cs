@@ -52,6 +52,8 @@ public class SupplierVM
     [StringLength(12)]
     [RegularExpression(@"01\d-(\d){7,8}", ErrorMessage = "Invalid {0}")]
     public string ContactNo { get; set; }
+
+    public List<SupplierTag> SupplierTags { get; set; }
 }
 
 public class SupplierTagVM
@@ -89,4 +91,15 @@ public class ProcurementRecordVM
 
     // other stuff
     public IFormFile? ProofPhoto { get; set; }
+}
+
+// reports n stuff
+public class DateRangeVM
+{
+    [DisplayName("Start Date")]
+    [DataType(DataType.Date)]
+    public DateOnly StartDate { get; set; }
+    [DisplayName("End Date")]
+    [DataType(DataType.Date)]
+    public DateOnly EndDate { get; set; }
 }

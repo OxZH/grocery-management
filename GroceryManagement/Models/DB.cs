@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GroceryManagement.Models;
 
@@ -8,6 +9,7 @@ public class DB(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Supplier> Suppliers { get; set; }
 
+    public DbSet<SupplierSupplierTag> SupplierSupplierTags { get; set; }
     public DbSet<SupplierTag> SupplierTags { get; set; }
     public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Product> Products { get; set; }
@@ -214,6 +216,18 @@ public class Supplier
 
     // navigation
     public List<SupplierTag> SupplierTags { get; set; } = [];
+}
+
+[PrimaryKey(nameof(SupplierId), nameof(SupplierTagId))]
+public class SupplierSupplierTag
+{
+    [MaxLength(6)]
+    public string SupplierId { get; set; }
+    public Supplier Supplier { get; set; }
+
+    [MaxLength(5)]
+    public string SupplierTagId { get; set; }
+    public SupplierTag SupplierTag { get; set; }
 }
 
 public class SupplierTag

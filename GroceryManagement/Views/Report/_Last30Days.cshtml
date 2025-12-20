@@ -6,7 +6,7 @@
 }
 
 <p>
-    @Model.Count() record(s)
+    @ViewBag.Procurements.Count() record(s)
 </p>
 
 <table class="table">
@@ -31,10 +31,10 @@
         }
     </tr>
 
-    @foreach (var p in Model)
+    @foreach (var p in ViewBag.Procurements)
     {
         // Find product without using a lambda on a dynamic collection
-        string prodName = null;
+        string prodName = "";
         if (ViewBag.Products != null)
         {
             foreach (Product x in ViewBag.Products)
@@ -48,7 +48,7 @@
         }
 
         // Find supplier without using a lambda on a dynamic collection
-        string supName = null;
+        string supName = "";
         if (ViewBag.Suppliers != null)
         {
             foreach (Supplier s in ViewBag.Suppliers)
@@ -64,8 +64,8 @@
         <tr>
             <td>@p.ProcurementDateTime</td>
             <td>@p.Id</td>
-            <td>@(prodName ?? "Unknown") (@p.ProductId)</td>
-            <td>@(supName ?? "Unknown") (@p.SupplierId)</td>
+            <td>@(prodName != "" ? prodName : "Unknown") (@p.ProductId)</td>
+            <td>@(supName != "" ? supName : "Unknown") (@p.SupplierId)</td>
             <td>@p.Quantity</td>
             <td>@p.TotalPrice</td>
         </tr>

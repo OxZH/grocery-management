@@ -137,6 +137,30 @@ namespace GroceryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SupplierSupplierTags",
+                columns: table => new
+                {
+                    SupplierId = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
+                    SupplierTagId = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SupplierSupplierTags", x => new { x.SupplierId, x.SupplierTagId });
+                    table.ForeignKey(
+                        name: "FK_SupplierSupplierTags_SupplierTags_SupplierTagId",
+                        column: x => x.SupplierTagId,
+                        principalTable: "SupplierTags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SupplierSupplierTags_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Suppliers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Allocation",
                 columns: table => new
                 {
@@ -311,6 +335,11 @@ namespace GroceryManagement.Migrations
                 column: "SuppliersId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SupplierSupplierTags_SupplierTagId",
+                table: "SupplierSupplierTags",
+                column: "SupplierTagId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_ManagerId",
                 table: "Users",
                 column: "ManagerId");
@@ -336,6 +365,9 @@ namespace GroceryManagement.Migrations
 
             migrationBuilder.DropTable(
                 name: "SupplierSupplierTag");
+
+            migrationBuilder.DropTable(
+                name: "SupplierSupplierTags");
 
             migrationBuilder.DropTable(
                 name: "Checkout");
