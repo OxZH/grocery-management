@@ -16,7 +16,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<Expense> Expenses { get; set; }
     public DbSet<Allocation> Allocations { get; set; }
     public DbSet<LeaveRequest> LeaveRequests { get; set; }
-    public DbSet<Expense> Expenses { get; set; }
+    public DbSet<Expense> Expense { get; set; }
 
 }
 
@@ -109,7 +109,7 @@ public class Checkout
     public Staff Staff { get; set; }
     public List<Inventory> Inventories { get; set; } = [];
 }
-*/
+
 
 public class Allocation
 {

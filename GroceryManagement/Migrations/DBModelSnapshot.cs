@@ -35,7 +35,7 @@ namespace GroceryManagement.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("Allocation");
+                    b.ToTable("Allocations");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.AttendanceRecords", b =>
@@ -153,7 +153,7 @@ namespace GroceryManagement.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("Expenses");
+                    b.ToTable("Expense");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
