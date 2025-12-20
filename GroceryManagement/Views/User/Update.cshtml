@@ -27,7 +27,7 @@
 		<label class="upload">
 			<input asp-for="Photo" accept="image/jpeg,image/png" hidden />
 
-			<img src="/photos/@(Model.ExistingPhotoURL ?? "default.png")" alt="Photo Preview" />
+			<img src="/images/users/@(Model.ExistingPhotoURL ?? "default.png")" alt="Photo Preview" />
 		</label>
 		<span asp-validation-for="Photo"></span>
 	}
@@ -36,7 +36,7 @@
 	<input asp-for="Name" data-trim autofocus />
 	<span asp-validation-for="Name"></span>
 
-@* 	<label asp-for="Email"></label>
+	@* 	<label asp-for="Email"></label>
 	<input asp-for="Email" type="email" data-trim />
 	<span asp-validation-for="Email"></span> *@
 
@@ -62,7 +62,7 @@
 		<select asp-for="ManagerId" asp-items="Model.ManagerList">
 			@* Optional: Add a default null option if needed *@
 			@* <option value="">-- Select Manager --</option> *@ 
-	        </select>
+		        </select>
 		<span asp-validation-for="ManagerId"></span>
 
 	}
@@ -78,20 +78,20 @@
 </form>
 
 @section foot {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-  <script>
-        // Use jQuery to detect file input change
-        // Note: Assuming your label has class 'upload' and input is inside
-        $(".upload input").change(function () {
-            const file = this.files[0];
-            if (file) {
-                // Create a temporary URL for the selected file
-                const url = URL.createObjectURL(file);
-                // Find the <img> tag next to this input and update src
-                $(this).next("img").attr("src", url);
-            }
-        });
-    </script>
-} 
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+	<script>
+		// Use jQuery to detect file input change
+		// Note: Assuming your label has class 'upload' and input is inside
+		$(".upload input").change(function () {
+			const file = this.files[0];
+			if (file) {
+				// Create a temporary URL for the selected file
+				const url = URL.createObjectURL(file);
+				// Find the <img> tag next to this input and update src
+				$(this).next("img").attr("src", url);
+			}
+		});
+	</script>
+}

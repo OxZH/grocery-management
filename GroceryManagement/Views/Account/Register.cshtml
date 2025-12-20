@@ -38,18 +38,18 @@
         <span asp-validation-for="Confirm"></span>
 
         <div id="staff-fields" style="display: contents;">
-            <label asp-for="Salary">Salary (RM)</label>
-            <input asp-for="Salary" type="number" step="0.01" />
-            <span asp-validation-for="Salary"></span>
-
-            <label asp-for="AuthorizationLvl">Role</label>
-            <select asp-for="AuthorizationLvl">
+            <label asp-for="AuthorizationLvl">Job Role</label>
+            <select asp-for="AuthorizationLvl" id="JobRoleSelect">
                 <option value="">-- Select Role --</option>
                 <option value="CASHIER">Cashier</option>
                 <option value="INVENTORY">Inventory</option>
                 <option value="CLEANING">Cleaning</option>
             </select>
             <span asp-validation-for="AuthorizationLvl"></span>
+
+            <label asp-for="Salary">Salary (RM/hr)</label>
+            <input asp-for="Salary" id="SalaryInput" type="number" step="0.01" />
+            <span asp-validation-for="Salary"></span>
 
             <label asp-for="Photo"></label>
             <label class="upload">
@@ -71,18 +71,44 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    
+
     <script>
-        // Simple logic to toggle fields based on selection
-        $('#RoleSelect').change(function() {
-            if ($(this).val() === 'Manager') {
-                $('#staff-fields').hide(); // Hide staff inputs
-                // Optional: clear values so they don't submit garbage
-                $('#staff-fields input, #staff-fields select').val('');
-            } else {
-                $('#staff-fields').show(); // Show staff inputs
-                $('#staff-fields').css('display', 'contents'); // Maintain grid layout
-            }
+        $(document).ready(function() {
+
+            // 1. Logic to toggle fields based on Account Type (Manager/Staff)
+            $('#RoleSelect').change(function() {
+                if ($(this).val() === 'Manager') {
+                    $('#staff-fields').hide(); // Hide staff inputs
+                    // Clear values so they don't submit garbage
+                    $('#staff-fields input, #staff-fields select').val('');
+                } else {
+                    $('#staff-fields').show();
+                    $('#staff-fields').css('display', 'contents'); // Restore Grid layout
+                }
+            });
+
+            // 2. Logic to Auto-Fill Salary based on Job Role
+            $('#JobRoleSelect').change(function() {
+                var role = $(this).val();
+                var salaryBox = $('#SalaryInput');
+
+                if (role === 'CASHIER') {
+                    salaryBox.val('10.00');
+                }
+                else if (role === 'INVENTORY') {
+                    salaryBox.val('12.00');
+                }
+                else if (role === 'CLEANING') {
+                    salaryBox.val('9.00');
+                }
+                // Clear if they select "-- Select Role --"
+                else if (role === "") {
+                    salaryBox.val('');
+                }
+            });
+
+            // Trigger change on load just in case browser cached the selection (optional)
+            $('#RoleSelect').trigger('change');
         });
     </script>
 }

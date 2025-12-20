@@ -32,7 +32,7 @@
             var staff = db.Staffs.FirstOrDefault(s => s.Email == User.Identity!.Name);
             if (staff != null)
             {
-                <img src="/photos/@staff.PhotoURL">
+                <img src="/images/users/@staff.PhotoURL">
             }
         }
     </header>

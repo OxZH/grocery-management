@@ -14,6 +14,10 @@ builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapDefaultControllerRoute();
 
 using (var scope = app.Services.CreateScope())

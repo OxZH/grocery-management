@@ -8,8 +8,8 @@ using X.PagedList.Mvc.Core;
 
 namespace GroceryManagement.Controllers;
 
-public class UserController (DB db, 
-                            IWebHostEnvironment en, 
+public class UserController(DB db,
+                            IWebHostEnvironment en,
                             Helper hp) : Controller
 {
     // GET: User/Index
@@ -110,7 +110,7 @@ public class UserController (DB db,
     }
 
     // GET
-    [Authorize(Roles ="Manager")]
+    [Authorize(Roles = "Manager")]
     public IActionResult Update(string? id)
     {
         var u = db.Users.Find(id);
@@ -148,17 +148,35 @@ public class UserController (DB db,
 
     // POST: 
     [HttpPost]
-    [Authorize(Roles ="Manager")]
+    [Authorize(Roles = "Manager")]
     public IActionResult Update(UserUpdateVM vm)
     {
         // Remove role validation;just for display in vm
         ModelState.Remove("Role");
         // Remove ManagerList validation; just for dropdown population
         ModelState.Remove("ManagerList");
+        // Remove ExistingPhotoURL validation; just for display
+        ModelState.Remove("ExistingPhotoURL");
 
+        // If manager, remove unnecessary validations
+        if (vm.Role == "Manager")
+        {
+            ModelState.Remove("Salary");
+            ModelState.Remove("AuthorizationLvl");
+            ModelState.Remove("ManagerId");
+        }
+        // If staff, salary cannot be empty
+        else
+        {
+            if (vm.Salary == null)
+            {
+                ModelState.AddModelError("Salary", "Salary cannot be empty");
+            }
+
+        }
         if (ModelState.IsValid)
         {
-            // Find the REAL record in the database using the ID from the form
+            // Find the record in the database using the ID from the form
             var dbUser = db.Users.Find(vm.Id);
 
             if (dbUser == null)
@@ -204,11 +222,11 @@ public class UserController (DB db,
                     // Delete the old photo
                     if (!string.IsNullOrEmpty(dbStaff.PhotoURL))
                     {
-                        hp.DeletePhoto(dbStaff.PhotoURL, "photos");
+                        hp.DeletePhoto(dbStaff.PhotoURL, "images/users");
                     }
 
                     // C. Save new photo
-                    dbStaff.PhotoURL = hp.SavePhoto(vm.Photo, "photos");
+                    dbStaff.PhotoURL = hp.SavePhoto(vm.Photo, "images/users");
                 }
             }
 
@@ -219,7 +237,13 @@ public class UserController (DB db,
             return RedirectToAction("Index");
         }
 
-        if(db.Users.Find(vm.Id) is Staff)
+        /*if (db.Users.Find(vm.Id) is Staff)
+        {
+            vm.ManagerList = new SelectList(db.Managers.OrderBy(m => m.Name), "Id", "Name", vm.ManagerId);
+        }*/
+
+        // RELOAD DROPDOWN (Crucial so page doesn't break on error)
+        if (vm.Role == "Staff" || vm.Role == null)
         {
             vm.ManagerList = new SelectList(db.Managers.OrderBy(m => m.Name), "Id", "Name", vm.ManagerId);
         }
@@ -297,7 +321,7 @@ public class UserController (DB db,
         // Delete physical file
         if (!string.IsNullOrEmpty(photoToDelete))
         {
-            hp.DeletePhoto(photoToDelete, "photos");
+            hp.DeletePhoto(photoToDelete, "images/users");
         }
 
         TempData["Info"] += "Record deleted successfully.";
@@ -305,4 +329,3 @@ public class UserController (DB db,
         return Redirect(Request.Headers.Referer.ToString());
     }
 }
-
