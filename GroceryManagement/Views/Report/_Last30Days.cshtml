@@ -1,0 +1,73 @@
+﻿@model List<ProcurementRecord>
+
+@{
+    string[] fields = ["Date Created", "Id", "Item", "Supplier", "Quantity", "Total Price"];
+
+}
+
+<p>
+    @Model.Count() record(s)
+</p>
+
+<table class="table">
+    <tr>
+        @foreach (var f in fields)
+        {
+            string d = "asc";
+            string c = "";
+
+            if (f == ViewBag.Sort)
+            {
+                d = ViewBag.Dir == "des" ? "asc" : "des";
+                c = ViewBag.Dir;
+            }
+
+            <th>
+                <a data-ajax="true"
+                   data-ajax-update="#target"
+                   data-ajax-loading="#loader"
+                   href="?name=@ViewBag.Name&sort=@f&dir=@d" class="@c">@f</a>
+            </th>
+        }
+    </tr>
+
+    @foreach (var p in Model)
+    {
+        // Find product without using a lambda on a dynamic collection
+        string prodName = null;
+        if (ViewBag.Products != null)
+        {
+            foreach (Product x in ViewBag.Products)
+            {
+                if (x.Id == p.ProductId)
+                {
+                    prodName = x.Name;
+                    break;
+                }
+            }
+        }
+
+        // Find supplier without using a lambda on a dynamic collection
+        string supName = null;
+        if (ViewBag.Suppliers != null)
+        {
+            foreach (Supplier s in ViewBag.Suppliers)
+            {
+                if (s.Id == p.SupplierId)
+                {
+                    supName = s.Name;
+                    break;
+                }
+            }
+        }
+
+        <tr>
+            <td>@p.ProcurementDateTime</td>
+            <td>@p.Id</td>
+            <td>@(prodName ?? "Unknown") (@p.ProductId)</td>
+            <td>@(supName ?? "Unknown") (@p.SupplierId)</td>
+            <td>@p.Quantity</td>
+            <td>@p.TotalPrice</td>
+        </tr>
+    }
+</table>

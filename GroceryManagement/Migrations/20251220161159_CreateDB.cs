@@ -35,13 +35,25 @@ namespace GroceryManagement.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    SupplierType = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false),
+                    SupplierType = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
                     ContactNo = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Suppliers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SupplierTags",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SupplierTags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -79,6 +91,7 @@ namespace GroceryManagement.Migrations
                     Status = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     ProcurementDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     StatusUpdateDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeliveryProofPhotoLink = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     ProductId = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
                     SupplierId = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false)
                 },
@@ -94,6 +107,30 @@ namespace GroceryManagement.Migrations
                     table.ForeignKey(
                         name: "FK_ProcurementRecords_Suppliers_SupplierId",
                         column: x => x.SupplierId,
+                        principalTable: "Suppliers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SupplierSupplierTag",
+                columns: table => new
+                {
+                    SupplierTagsId = table.Column<string>(type: "nvarchar(5)", nullable: false),
+                    SuppliersId = table.Column<string>(type: "nvarchar(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SupplierSupplierTag", x => new { x.SupplierTagsId, x.SuppliersId });
+                    table.ForeignKey(
+                        name: "FK_SupplierSupplierTag_SupplierTags_SupplierTagsId",
+                        column: x => x.SupplierTagsId,
+                        principalTable: "SupplierTags",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SupplierSupplierTag_Suppliers_SuppliersId",
+                        column: x => x.SuppliersId,
                         principalTable: "Suppliers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -269,6 +306,11 @@ namespace GroceryManagement.Migrations
                 column: "SupplierId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SupplierSupplierTag_SuppliersId",
+                table: "SupplierSupplierTag",
+                column: "SuppliersId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_ManagerId",
                 table: "Users",
                 column: "ManagerId");
@@ -293,10 +335,16 @@ namespace GroceryManagement.Migrations
                 name: "ProcurementRecords");
 
             migrationBuilder.DropTable(
+                name: "SupplierSupplierTag");
+
+            migrationBuilder.DropTable(
                 name: "Checkout");
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "SupplierTags");
 
             migrationBuilder.DropTable(
                 name: "Suppliers");

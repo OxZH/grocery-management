@@ -11,14 +11,14 @@
     <b>@Model?.Id</b>
     <br>
 
-    <label asp-for="SupplierId"></label>
+    <label asp-for="SupplierId">Supplier ID</label>
     <select asp-for="SupplierId" asp-items="ViewBag.SupplierList"
             class="supplier-select">
         <option value="">-- Select a supplier --</option>
     </select>
     <span asp-validation-for="SupplierId"></span>
 
-    <label asp-for="ProductId"></label>
+    <label asp-for="ProductId">Product ID</label>
     <select asp-for="ProductId" class="product-select">
         <option value="">-- Select a product --</option>
     </select>
@@ -27,12 +27,6 @@
     <label asp-for="Quantity"></label>
     <input asp-for="Quantity" class="quantity" disabled>
     <span asp-validation-for="Quantity"></span>
-
-    @* <label asp-for="Status"></label>
-    <select asp-for="Status" class="status-select">
-        <option value="">-- Select a status --</option>
-    </select>
-    <span asp-validation-for="Status"></span> *@
 
     <label>Total Price</label>
     <span id="total-price">0.00</span>

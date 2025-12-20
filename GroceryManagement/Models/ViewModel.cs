@@ -31,8 +31,7 @@ public class SupplierVM
     // format: SUP001
     [StringLength(6)]
     [RegularExpression(@"SUP\d{3}", ErrorMessage = "Invalid {0}")]
-    [Remote("CheckId", "Supplier", ErrorMessage = "Duplicated {0}.")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [Required(ErrorMessage = "This field is required.")]
     [StringLength(100)]
@@ -55,12 +54,18 @@ public class SupplierVM
     public string ContactNo { get; set; }
 }
 
+public class SupplierTagVM
+{
+    [Required(ErrorMessage = "Tag Name is required")]
+    [StringLength(50)]
+    public string Name { get; set; }
+}
+
 public class ProcurementRecordVM
 {
     [Key, StringLength(10)]
-    [Required(ErrorMessage = "Procurement ID is required")]
     [RegularExpression(@"^PR\d{6}$", ErrorMessage = "Format must be 'PR' followed by 6 digits (e.g. PR000001)")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [Range(1, 9999, ErrorMessage = "Quantity must be at least 1")]
     public int Quantity { get; set; }
@@ -76,7 +81,12 @@ public class ProcurementRecordVM
     [RegularExpression(@"SUP\d{3}")]
     public string SupplierId { get; set; }
 
-    [RegularExpression("^(Ordered|Received|Cancelled)$")]
     [StringLength(10)]
-    public string Status { get; set; }
+    [RegularExpression("^(Ordered|Received|Cancelled)$")]
+    public string? Status { get; set; }
+
+    public Decimal TotalPrice { get; set; }
+
+    // other stuff
+    public IFormFile? ProofPhoto { get; set; }
 }

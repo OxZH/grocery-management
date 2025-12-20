@@ -16,7 +16,7 @@
     <input asp-for="Name" value="@Model?.Name" data-trim>
     <span asp-validation-for="Name"></span>
 
-    <label asp-for="SupplierType"></label>
+    <label asp-for="SupplierType">Supplier Type</label>
     <select asp-for="SupplierType"
             class="form-select">
         <option value="">-- Select a category --</option>
@@ -38,9 +38,19 @@
     <input asp-for="Address" value="@Model?.Address">
     <span asp-validation-for="Address"></span>
 
-    <label asp-for="ContactNo"></label>
+    <label asp-for="ContactNo">Contact Number</label>
     <input asp-for="ContactNo" value="@Model?.ContactNo">
     <span asp-validation-for="ContactNo"></span>
+
+    <label>Tags</label>
+    <div>
+        <div>
+            <a href="#" data-check="SupplierTags">Check All</a> |
+            <a href="#" data-uncheck="SupplierTags">Uncheck All</a>
+        </div>
+        <partial name="_CheckBoxList" model='("SupplierTags", ViewBag.SupplierTags, true)'>
+    </div>
+    <br>
 
     <section>
         <button>Submit</button>

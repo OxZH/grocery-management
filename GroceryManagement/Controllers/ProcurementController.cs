@@ -6,7 +6,7 @@ using X.PagedList.Extensions;
 
 namespace GroceryManagement.Controllers;
 
-public class ProcurementController(DB db) : Controller
+public class ProcurementController(DB db, Helper hp) : Controller
 {
     public IActionResult Index(string? sort, string? dir, int page = 1)
     {
@@ -19,6 +19,7 @@ public class ProcurementController(DB db) : Controller
             "Id" => proc => proc.Id,
             "ProcurementDateTime" => proc => proc.ProcurementDateTime,
             "StatusUpdateDateTime" => proc => proc.StatusUpdateDateTime ?? DateTime.MinValue,
+            "TotalPrice" => proc => proc.TotalPrice,
             _ => proc => proc.Id,
         };
 
@@ -83,6 +84,19 @@ public class ProcurementController(DB db) : Controller
         return Json(new { totalPrice = product?.Price * quantity });
     }
 
+    public IActionResult Details(string? id)
+    {
+        var proc = db.ProcurementRecords.Find(id);
+        if (proc == null)
+        {
+            return RedirectToAction("Index");
+        }
+
+        ViewBag.Products = db.Products.Find(proc.ProductId);
+        ViewBag.Suppliers = db.Suppliers.Find(proc.SupplierId);
+        return View(proc);
+    }
+
     [HttpPost]
     public IActionResult Insert(ProcurementRecordVM vm)
     {
@@ -94,9 +108,10 @@ public class ProcurementController(DB db) : Controller
             return View();
         }
 
-        //if (ModelState.IsValid)
-        //{
+        if (ModelState.IsValid)
+        {
             var now = DateTime.Now;
+            var supplier = db.Suppliers.First(p => p.Id == vm.SupplierId);
             db.ProcurementRecords.Add(new()
             {
                 Id = NextId(),
@@ -106,13 +121,13 @@ public class ProcurementController(DB db) : Controller
                 ProcurementDateTime = now,
                 StatusUpdateDateTime = now,
                 Status = "Ordered",
-                SupplierId = vm.SupplierId
+                SupplierId = vm.SupplierId,
             });
             db.SaveChanges();
 
             TempData["Info"] = "Record inserted.";
             return RedirectToAction("Index");
-        //}
+        }
 
         ViewBag.SupplierList = new SelectList(db.Suppliers, "Id", "Name");
         return View();
@@ -153,10 +168,10 @@ public class ProcurementController(DB db) : Controller
             return View(vm);
         }
 
-        //if (!ModelState.IsValid)
-        //{
-        //    return View(vm);
-        //}
+        if (!ModelState.IsValid)
+        {
+            return View(vm);
+        }
 
         proc.SupplierId = vm.SupplierId;
         proc.ProductId = vm.ProductId;
@@ -168,17 +183,66 @@ public class ProcurementController(DB db) : Controller
         return RedirectToAction("Index");
     }
 
-    [HttpPost]
-    public IActionResult UpdateStatus(string id, string status)
+    public IActionResult UpdateStatus(string? id)
     {
         var record = db.ProcurementRecords.Find(id);
-        if (record != null)
+        if (record == null)
         {
-            record.Status = status;
-            record.StatusUpdateDateTime = DateTime.Now;
-            db.SaveChanges();
-            TempData["Info"] = "Status updated.";
+            return RedirectToAction("Index");
         }
+
+        var vm = new ProcurementRecordVM
+        {
+            Id = record.Id,
+            ProductId = record.ProductId,
+            Quantity = record.Quantity,
+            SupplierId = record.SupplierId,
+            TotalPrice = record.TotalPrice,
+            Status = record.Status
+        };
+        return View(vm);
+    }
+
+    [HttpPost]
+    public IActionResult UpdateStatus(ProcurementRecordVM vm)
+    {
+        var record = db.ProcurementRecords.Find(vm.Id);
+        if (record == null)
+        {
+            return View(vm);
+        }
+
+        if (vm.Status == "Received")
+        {
+            if (vm.ProofPhoto == null)
+            {
+                ModelState.AddModelError("Photo", "Please upload a photo of the receipt as proof.");
+            }
+            else
+            {
+                var e = hp.ValidatePhoto(vm.ProofPhoto);
+                if (e != "")
+                {
+                    ModelState.AddModelError("Photo", e);
+                }
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(vm);
+        }
+
+        if (vm.ProofPhoto != null)
+        {
+            record.DeliveryProofPhotoLink = hp.SavePhoto(vm.ProofPhoto, "images/procurement_proof");
+        }
+        record.Status = vm.Status;
+        record.StatusUpdateDateTime = DateTime.Now;
+        
+        db.SaveChanges();
+
+        TempData["Info"] = "Status updated.";
         return RedirectToAction("Index");
     }
 

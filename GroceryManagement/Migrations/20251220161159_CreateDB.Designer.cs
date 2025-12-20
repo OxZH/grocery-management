@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroceryManagement.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20251216160300_CreateDB")]
+    [Migration("20251220161159_CreateDB")]
     partial class CreateDB
     {
         /// <inheritdoc />
@@ -177,6 +177,10 @@ namespace GroceryManagement.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("DeliveryProofPhotoLink")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime>("ProcurementDateTime")
                         .HasColumnType("datetime2");
 
@@ -275,12 +279,28 @@ namespace GroceryManagement.Migrations
 
                     b.Property<string>("SupplierType")
                         .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("nvarchar(12)");
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Suppliers");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.SupplierTag", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SupplierTags");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.User", b =>
@@ -321,6 +341,21 @@ namespace GroceryManagement.Migrations
                     b.HasDiscriminator().HasValue("User");
 
                     b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("SupplierSupplierTag", b =>
+                {
+                    b.Property<string>("SupplierTagsId")
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("SuppliersId")
+                        .HasColumnType("nvarchar(6)");
+
+                    b.HasKey("SupplierTagsId", "SuppliersId");
+
+                    b.HasIndex("SuppliersId");
+
+                    b.ToTable("SupplierSupplierTag");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Manager", b =>
@@ -439,6 +474,21 @@ namespace GroceryManagement.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("SupplierSupplierTag", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.SupplierTag", null)
+                        .WithMany()
+                        .HasForeignKey("SupplierTagsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GroceryManagement.Models.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SuppliersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Staff", b =>

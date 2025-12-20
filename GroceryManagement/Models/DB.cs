@@ -7,6 +7,8 @@ namespace GroceryManagement.Models;
 public class DB(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Supplier> Suppliers { get; set; }
+
+    public DbSet<SupplierTag> SupplierTags { get; set; }
     public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
@@ -201,7 +203,7 @@ public class Supplier
     [MaxLength(100)]
     public string Name { get; set; }
 
-    [MaxLength(12)]
+    [MaxLength(11)]
     public string SupplierType { get; set; }
 
     [MaxLength(250)]
@@ -209,6 +211,21 @@ public class Supplier
 
     [MinLength(11), MaxLength(12)]
     public string ContactNo { get; set; }
+
+    // navigation
+    public List<SupplierTag> SupplierTags { get; set; } = [];
+}
+
+public class SupplierTag
+{
+    [Key, MaxLength(5)]
+    public string Id { get; set; }
+
+    [MaxLength(50)]
+    public string Name { get; set; }
+
+    // Navigation
+    public List<Supplier> Suppliers { get; set; } = [];
 }
 
 public class ProcurementRecord
@@ -233,6 +250,10 @@ public class ProcurementRecord
     [DataType(DataType.Date)]
     public DateTime? StatusUpdateDateTime { get; set; }
 
+    [DataType(DataType.Url)]
+    [MaxLength(100)]
+    public string? DeliveryProofPhotoLink { get; set; }
+
     // FK
     [MaxLength(6)]
     public string ProductId { get; set; }
@@ -241,6 +262,6 @@ public class ProcurementRecord
     public string SupplierId { get; set; }
 
     // Navigation
-    public Product Product { get; set; }
+    public Product Product { get; set; } // TODO: deal with this later
     public Supplier Supplier { get; set; }
 }

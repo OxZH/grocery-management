@@ -11,14 +11,14 @@
     <span>@ViewBag.NextId</span>
     <br/>
 
-    <label asp-for="SupplierId"></label>
+    <label asp-for="SupplierId">Supplier ID</label>
     <select asp-for="SupplierId" asp-items="ViewBag.SupplierList"
             class="supplier-select">
         <option value="">-- Select a supplier --</option>
     </select>
     <span asp-validation-for="SupplierId"></span>
 
-    <label asp-for="ProductId"></label>
+    <label asp-for="ProductId">Product ID</label>
     <select asp-for="ProductId" class="product-select">
         <option value="">-- Select a product --</option>
     </select>

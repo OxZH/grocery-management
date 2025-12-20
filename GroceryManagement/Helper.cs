@@ -1,10 +1,9 @@
-﻿/*using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace GroceryManagement;
 
@@ -40,7 +39,7 @@ public class Helper(IWebHostEnvironment en,
 
         var options = new ResizeOptions
         {
-            Size = new(200, 200),
+            Size = new Size(800, 600),
             Mode = ResizeMode.Crop,
         };
 
@@ -124,4 +123,3 @@ public class Helper(IWebHostEnvironment en,
         return password;
     }
 }
-*/
