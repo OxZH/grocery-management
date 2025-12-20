@@ -25,7 +25,7 @@
         <label class="upload">
             <small>Select Photo...</small>
             <input asp-for="Photo" accept="image/jpeg,image/png" hidden>
-            <img src="/photos/@(Model.PhotoURL ?? "default.png")">
+            <img src="/images/users/@(Model.PhotoURL ?? "default.png")">
         </label>
         <span asp-validation-for="Photo"></span>
 
@@ -38,7 +38,7 @@
     <section>
         <button>Update</button>
         <button type="reset">Reset</button>
-        <a href="/" style="text-decoration: none; padding: 0.5rem;">Back</a>
+        <a href="javascript:history.back()" style="text-decoration: none; padding: 0.5rem;">Back</a>
     </section>
 </form>
 

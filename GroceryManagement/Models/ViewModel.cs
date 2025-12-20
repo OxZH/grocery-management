@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace GroceryManagement.Models;
 
 #nullable disable warnings
@@ -42,9 +43,35 @@ public class LeaveApplyVM
     public LeaveRequestFormVM Form { get; set; } = new();
     public List<LeaveRequest> Requests { get; set; } = [];
 }
+
+public class PayVM
+{
+    public string StaffId { get; set; }
+    public string StaffName { get; set; }
+    public string Role { get; set; } = "Staff";
+    public decimal Salary { get; set; }
+    [DisplayFormat(DataFormatString = "{0:F1}")]
+    public double TotalHours { get; set; }
+    public int MissingCheckouts { get; set; }
+    public decimal TotalSalary { get; set; }
+    public List<DailyPayDetailsVM> DailyDetails { get; set; } = new();
+}
+
+public class DailyPayDetailsVM
+{
+    [DataType(DataType.Date)]
+    public DateOnly Date { get; set; }
+    public string CheckIn { get; set; }
+    public string CheckOut { get; set; }
+    [DisplayFormat(DataFormatString = "{0:F1}")]
+    public double HoursWorked { get; set; }
+    public decimal DailyPay { get; set; }
+    public string Note { get; set; } 
+}
+
 public class RegisterVM
 {
-    [Required(ErrorMessage = "Name is required.")]
+    [Required(ErrorMessage ="Name is required.")]
     [StringLength(100)]
     [RegularExpression(@"^[a-zA-Z\s\.\'-]+$", ErrorMessage = "Name can only contain letters, spaces, and .'-")]
     public string Name { get; set; }
@@ -104,7 +131,6 @@ public class LoginVM
     public bool RememberMe { get; set; }
 
 }
-
 
 public class UpdatePasswordVM
 {
@@ -181,15 +207,3 @@ public class UserUpdateVM
 
     public string? Role { get; set; }
 }
-/*public class ResetPasswordVM
-{
-    [StringLength(100)]
-    [EmailAddress]
-    public string Email { get; set; }
-    public string Token { get; set; }
-    public string CurrentPassword { get; set; }
-    public string NewPassword { get; set; }
-    [Compare("NewPassword")]
-    public string ConfirmNewPassword { get; set; }
-
-}*/

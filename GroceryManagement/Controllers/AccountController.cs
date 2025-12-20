@@ -198,7 +198,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
         {
             if (ModelState.IsValid)
             {
-
+            
                 // 1. Get the Email from the cookie
                 string currentManagerEmail = User.Identity!.Name;
                 // 2. Find the Manager object in the DB using that email
@@ -207,7 +207,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
                 if (currentManager == null) return RedirectToAction("Login", "Account");
                 // save photos and keep the filename in a variable
                 string unqiueFileName = hp.SavePhoto(vm.Photo, "images/users");
-
+                
                 try
                 {
                     // Insert staff object

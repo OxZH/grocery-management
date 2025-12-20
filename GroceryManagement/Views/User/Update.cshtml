@@ -36,9 +36,6 @@
 	<input asp-for="Name" data-trim autofocus />
 	<span asp-validation-for="Name"></span>
 
-	@* 	<label asp-for="Email"></label>
-	<input asp-for="Email" type="email" data-trim />
-	<span asp-validation-for="Email"></span> *@
 
 	<label asp-for="PhoneNum"></label>
 	<input asp-for="PhoneNum" data-trim />
@@ -62,7 +59,7 @@
 		<select asp-for="ManagerId" asp-items="Model.ManagerList">
 			@* Optional: Add a default null option if needed *@
 			@* <option value="">-- Select Manager --</option> *@ 
-		        </select>
+	        </select>
 		<span asp-validation-for="ManagerId"></span>
 
 	}

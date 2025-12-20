@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Net;
+using System.Net.Mail;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using System.Net;
@@ -36,30 +38,6 @@ public class Helper(IWebHostEnvironment en,
 
         return "";
     }
-
-    /*    public string SavePhoto(IFormFile f, string folder)
-        {
-
-            // 1. Create the folder path if it doesn't exist 
-            var uploadFolder = Path.Combine(en.WebRootPath, folder);
-            if (!Directory.Exists(uploadFolder))
-            {
-                Directory.CreateDirectory(uploadFolder);
-            }
-
-            // 2. Generate unique filename
-            var file = Guid.NewGuid().ToString("n") + ".jpg";
-            var filePath = Path.Combine(uploadFolder, file);
-
-            // 3. ACTUAL SAVING (Copy the file stream to disk)
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                f.CopyTo(stream);
-            }
-
-            // 4. Return the filename to be saved in the DB
-            return file;
-        }*/
 
     public string SavePhoto(IFormFile f, string folder)
     {

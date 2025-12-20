@@ -53,11 +53,14 @@
                    href="?name=@ViewBag.Name&sort=Role&dir=@GetNextDir("Role")"
                    class="@GetSortClass("Role")">Role</a>
             </th>
-            <th>
-                <a data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader"
-                   href="?name=@ViewBag.Name&sort=Salary&dir=@GetNextDir("Salary")"
-                   class="@GetSortClass("Salary")">Salary</a>
-            </th>
+            @if(User.IsInRole("Manager"))
+            {
+                <th>
+                    <a data-ajax="true" data-ajax-update="#target" data-ajax-loading="#loader"
+                       href="?name=@ViewBag.Name&sort=Salary&dir=@GetNextDir("Salary")"
+                       class="@GetSortClass("Salary")">Salary</a>
+                </th> 
+            }
             <th>AuthLvl</th>
             <th>Manager ID</th>
             <th>Photo</th>
@@ -81,13 +84,20 @@
 
                 @if (user is Staff staff)
                 {
-                    <td>@staff.Salary</td>
+                    @if(User.IsInRole("Manager"))
+                    {
+                        <td>@staff.Salary</td>
+                    }
+
                     <td>@staff.AuthorizationLvl</td>
                     <td>@staff.ManagerId</td>
                 }
                 else
                 {
-                    <td>-</td>
+                    @if (User.IsInRole("Manager"))
+                    {
+                        <td>-</td>
+                    }
                     <td>-</td>
                     <td>-</td>
                 }
@@ -95,8 +105,8 @@
                 <td style="position:relative">
                     @if (user is Staff staffMember && !string.IsNullOrEmpty(staffMember.PhotoURL))
                     {
-                        <img src="/photos/@staffMember.PhotoURL" width="50" height="50" style="object-fit:cover;" />
-                        <img src="/photos/@staffMember.PhotoURL" class="popup" style="width:150px; height:150px; object-fit:cover; border:1px solid #333;" />
+                        <img src="/images/users/@staffMember.PhotoURL" width="50" height="50" style="object-fit:cover;" />
+                        <img src="/images/users/@staffMember.PhotoURL" class="popup" style="width:150px; height:150px; object-fit:cover; border:1px solid #333;" />
                     }
                     else
                     {

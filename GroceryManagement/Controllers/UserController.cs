@@ -8,8 +8,8 @@ using X.PagedList.Mvc.Core;
 
 namespace GroceryManagement.Controllers;
 
-public class UserController(DB db,
-                            IWebHostEnvironment en,
+public class UserController (DB db, 
+                            IWebHostEnvironment en, 
                             Helper hp) : Controller
 {
     // GET: User/Index

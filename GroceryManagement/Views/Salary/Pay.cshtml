@@ -1,0 +1,64 @@
+﻿@model List<PayVM>
+@{
+    ViewBag.Title = "Monthly Payroll";
+    <h2>Monthly Payroll: @ViewBag.Month / @ViewBag.Year</h2>
+}
+
+<form method="get" class="mb-3 d-flex gap-2 align-items-center">
+    <label>Select Month:</label>
+    <input type="number" name="month" value="@ViewBag.Month" min="1" max="12" class="form-control" style="width:80px">
+    <input type="number" name="year" value="@ViewBag.Year" class="form-control" style="width:100px">
+    <button class="btn btn-primary">Filter</button>
+</form>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Staff</th>
+            <th>Role</th>
+            <th>Salary per Hour (RM)</th>
+            <th>Total Hours</th>
+            <th>Penalty Days</th>
+            <th>Total Salary</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>
+                    <strong>@p.StaffName</strong><br>
+                    <small class="text-muted">@p.StaffId</small>
+                </td>
+                <td>@p.Role</td>
+                <td>@Html.DisplayFor(m => p.Salary)</td>
+                <td>@Html.DisplayFor(m => p.TotalHours)</td>
+                <td>
+                    @if (p.MissingCheckouts > 0)
+                    {
+                        <span class="badge bg-danger">@p.MissingCheckouts Missed</span>
+                    }
+                    else
+                    {
+                        <span class="text-success">-</span>
+                    }
+                </td>
+                <td class="fw-bold text-success">@Html.DisplayFor(m => p.TotalSalary)</td>
+                <td>
+                    <a asp-action="PayDetails"
+                       asp-route-staffId="@p.StaffId"
+                       asp-route-month="@ViewBag.Month"
+                       asp-route-year="@ViewBag.Year"
+                       class="btn btn-sm btn-outline-primary">
+                        View Details
+                    </a>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="7" class="text-center">No records found.</td></tr>
+        }
+    </tbody>
+</table>

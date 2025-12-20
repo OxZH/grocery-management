@@ -3,6 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace GroceryManagement.Models;
 
+#nullable disable warnings
+
 public class DB(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Product> Products { get; set; }
@@ -10,9 +12,9 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<User> Users { get; set; }
     public DbSet<Staff> Staffs { get; set; }
     public DbSet<Manager> Managers { get; set; }
-
     public DbSet<AttendanceRecords> AttendanceRecords { get; set; }
-
+    public DbSet<Expense> Expenses { get; set; }
+    public DbSet<Allocation> Allocations { get; set; }
     public DbSet<LeaveRequest> LeaveRequests { get; set; }
     public DbSet<Expense> Expenses { get; set; }
 
@@ -107,6 +109,7 @@ public class Checkout
     public Staff Staff { get; set; }
     public List<Inventory> Inventories { get; set; } = [];
 }
+*/
 
 public class Allocation
 {
@@ -179,7 +182,6 @@ public class LeaveRequest
     public Staff? Staff { get; set; }
     public Manager? Manager { get; set; }
 }
-
 public class Expense
 {
     [Key, MaxLength(6)]
