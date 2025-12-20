@@ -1,0 +1,84 @@
+@model ApplyTemplateVM
+@{
+    ViewData["Title"] = "Apply Roster Template";
+}
+
+<h1>Apply Roster Template to @Model.Date.ToString("yyyy-MM-dd")</h1>
+
+@Html.Raw(TempData["Info"])
+
+<form method="post" asp-action="ApplyTemplate">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Date" />
+    
+    <div class="form-group">
+        <label asp-for="SelectedTemplateId">Select Roster Template:</label>
+        <select asp-for="SelectedTemplateId" asp-items="Model.Templates" class="form-control" required>
+            <option value="">-- Select a Template --</option>
+        </select>
+        <span asp-validation-for="SelectedTemplateId" class="text-danger"></span>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Note:</strong> This will create task assignments for all staff in the selected template.
+        If any staff are absent or on leave, you'll be notified and can reassign tasks afterward.
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button type="submit" class="btn btn-primary">Apply Template</button>
+        <a href="@Url.Action("Calendar", new { year = Model.Date.Year, month = Model.Date.Month })" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<style>
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    .text-danger {
+        color: #dc3545;
+        font-size: 0.875rem;
+    }
+    .alert {
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    .alert-info {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+    }
+</style>
+

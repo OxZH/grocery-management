@@ -1,0 +1,198 @@
+@model CalendarMonthVM
+@{
+    ViewData["Title"] = "Task Schedule Calendar";
+}
+
+<h1>Task Schedule Calendar - @Model.MonthName @Model.Year</h1>
+
+@Html.Raw(TempData["Info"])
+
+<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <a href="@Url.Action("Calendar", new { year = Model.Month == 1 ? Model.Year - 1 : Model.Year, month = Model.Month == 1 ? 12 : Model.Month - 1 })" class="btn btn-secondary">← Previous Month</a>
+        <a href="@Url.Action("Calendar", new { year = DateTime.Now.Year, month = DateTime.Now.Month })" class="btn btn-secondary">Today</a>
+        <a href="@Url.Action("Calendar", new { year = Model.Month == 12 ? Model.Year + 1 : Model.Year, month = Model.Month == 12 ? 1 : Model.Month + 1 })" class="btn btn-secondary">Next Month →</a>
+    </div>
+    <div>
+        <a href="@Url.Action("Templates")" class="btn btn-primary">Manage Templates</a>
+    </div>
+</div>
+
+<div class="legend" style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
+    <strong>Legend:</strong>
+    <span class="legend-item"><span class="status-empty">⬜</span> No Schedule</span>
+    <span class="legend-item"><span class="status-ok">✓</span> All Staff Available</span>
+    <span class="legend-item"><span class="status-warning">!</span> Staff Unavailable</span>
+    <span class="legend-item"><span class="status-acknowledged">*</span> Unavailable (Acknowledged)</span>
+</div>
+
+<div class="calendar-grid">
+    <div class="calendar-header-row">
+        @foreach (var dayHeader in Model.DayHeaders)
+        {
+            <div class="calendar-header">@dayHeader</div>
+        }
+    </div>
+    
+    @for (int i = 0; i < Model.Days.Count; i += 7)
+    {
+        <div class="calendar-row">
+            @for (int j = 0; j < 7 && i + j < Model.Days.Count; j++)
+            {
+                var day = Model.Days[i + j];
+                var cssClass = "calendar-day";
+                if (!day.IsCurrentMonth) cssClass += " other-month";
+                if (day.HasSchedule) cssClass += " has-schedule";
+                
+                <div class="@cssClass" onclick="handleDayClick('@day.Date.ToString("yyyy-MM-dd")', @day.HasSchedule.ToString().ToLower())">
+                    <div class="day-number">@day.DayNumber</div>
+                    @if (day.HasSchedule)
+                    {
+                        <div class="template-name">@day.TemplateName</div>
+                        <div class="status-indicator status-@day.Status.ToLower()">
+                            @if (day.Status == "OK")
+                            {
+                                <text>✓</text>
+                            }
+                            else if (day.Status == "WARNING")
+                            {
+                                <text>!</text>
+                            }
+                            else if (day.Status == "ACKNOWLEDGED")
+                            {
+                                <text>*</text>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<script>
+    function handleDayClick(dateStr, hasSchedule) {
+        if (hasSchedule) {
+            // View day details
+            window.location.href = '@Url.Action("DayDetails")?dateStr=' + dateStr;
+        } else {
+            // Apply template to empty day
+            if (confirm('Apply a roster template to ' + dateStr + '?')) {
+                window.location.href = '@Url.Action("ApplyTemplate")?dateStr=' + dateStr;
+            }
+        }
+    }
+</script>
+
+<style>
+    .calendar-grid {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .calendar-header-row {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        background-color: #343a40;
+        color: white;
+    }
+    .calendar-header {
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        border-right: 1px solid #495057;
+    }
+    .calendar-header:last-child {
+        border-right: none;
+    }
+    .calendar-row {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+    .calendar-day {
+        min-height: 100px;
+        padding: 8px;
+        border: 2px solid #333;
+        border-top: none;
+        border-left: none;
+        background-color: white;
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s;
+    }
+    .calendar-day:hover {
+        background-color: #f0f8ff;
+    }
+    .calendar-day:nth-child(7n) {
+        border-right: none;
+    }
+    .calendar-day.other-month {
+        background-color: #e8e8e8;
+        color: #999;
+    }
+    .calendar-day.has-schedule {
+        background-color: #fff9e6;
+        border-color: #ffa500;
+    }
+    .day-number {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 5px;
+    }
+    .template-name {
+        font-size: 0.85em;
+        color: #0066cc;
+        margin-bottom: 5px;
+        word-wrap: break-word;
+    }
+    .status-indicator {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+    .status-ok {
+        color: #28a745;
+    }
+    .status-warning {
+        color: #ffc107;
+    }
+    .status-acknowledged {
+        color: #ff9800;
+    }
+    .legend {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+    }
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .legend-item span:first-child {
+        font-size: 1.2em;
+    }
+    .status-empty {
+        color: #ccc;
+    }
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+</style>
+

@@ -14,10 +14,48 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<Manager> Managers { get; set; }
     public DbSet<AttendanceRecords> AttendanceRecords { get; set; }
     public DbSet<Expense> Expenses { get; set; }
+    public DbSet<TaskType> TaskTypes { get; set; }
+    public DbSet<RosterTemplate> RosterTemplates { get; set; }
+    public DbSet<TemplateAllocation> TemplateAllocations { get; set; }
+    public DbSet<DaySchedule> DaySchedules { get; set; }
     public DbSet<Allocation> Allocations { get; set; }
     public DbSet<LeaveRequest> LeaveRequests { get; set; }
-    public DbSet<Expense> Expense { get; set; }
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Configure cascade delete behavior to prevent cycles
+        modelBuilder.Entity<TemplateAllocation>()
+            .HasOne(ta => ta.Staff)
+            .WithMany(s => s.TemplateAllocations)
+            .HasForeignKey(ta => ta.StaffId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete from Staff
+
+        modelBuilder.Entity<TemplateAllocation>()
+            .HasOne(ta => ta.Template)
+            .WithMany(t => t.Allocations)
+            .HasForeignKey(ta => ta.TemplateId)
+            .OnDelete(DeleteBehavior.Cascade); // Allow cascade delete from Template
+
+        modelBuilder.Entity<DaySchedule>()
+            .HasOne(ds => ds.Template)
+            .WithMany(t => t.DaySchedules)
+            .HasForeignKey(ds => ds.TemplateId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete from Template
+
+        modelBuilder.Entity<DaySchedule>()
+            .HasOne(ds => ds.Manager)
+            .WithMany(m => m.DaySchedules)
+            .HasForeignKey(ds => ds.AppliedBy)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete from Manager
+
+        modelBuilder.Entity<Allocation>()
+            .HasOne(a => a.Staff)
+            .WithMany(s => s.Allocations)
+            .HasForeignKey(a => a.StaffId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete from Staff
+    }
 }
 
 public class User
@@ -72,6 +110,7 @@ public class Staff : User
     public List<Allocation> Allocations { get; set; }
     public List<AttendanceRecords> AttendanceRecords { get; set; }
     public List<LeaveRequest> LeaveRequests { get; set; }
+    public List<TemplateAllocation> TemplateAllocations { get; set; } = [];
 
 }
 public class Manager : User
@@ -82,6 +121,8 @@ public class Manager : User
     public List<Expense> Expenses { get; set; } = [];
     public List<AttendanceRecords> AttendenceRecords { get; set; } = [];
     public List<LeaveRequest> LeaveRequests { get; set; }
+    public List<RosterTemplate> RosterTemplates { get; set; } = [];
+    public List<DaySchedule> DaySchedules { get; set; } = [];
 
 }
 
@@ -110,14 +151,123 @@ public class Checkout
     public List<Inventory> Inventories { get; set; } = [];
 }
 
+public class TaskType
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required, MaxLength(100)]
+    public string Name { get; set; }
+
+    [MaxLength(200)]
+    public string? Description { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    [DataType(DataType.DateTime)]
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+}
+
+public class RosterTemplate
+{
+    [Key, MaxLength(8)]
+    [RegularExpression(@"RST\d{5}", ErrorMessage = "Format must be 'RST' followed by 5 digits (e.g. RST00001)")]
+    public string Id { get; set; }
+
+    [Required, MaxLength(100)]
+    public string TemplateName { get; set; }
+
+    [Required, MaxLength(4)]
+    public string ManagerId { get; set; }
+
+    [DataType(DataType.DateTime)]
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    // Navigation
+    public Manager Manager { get; set; }
+    public List<TemplateAllocation> Allocations { get; set; } = [];
+    public List<DaySchedule> DaySchedules { get; set; } = [];
+}
+
+public class TemplateAllocation
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required, MaxLength(8)]
+    public string TemplateId { get; set; }
+
+    [Required, MaxLength(4)]
+    public string StaffId { get; set; }
+
+    [Required, MaxLength(100)]
+    public string TaskName { get; set; }
+
+    public int SortOrder { get; set; }
+
+    // Navigation
+    public RosterTemplate Template { get; set; }
+    public Staff Staff { get; set; }
+}
+
+public class DaySchedule
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required, DataType(DataType.Date)]
+    public DateOnly ScheduleDate { get; set; }
+
+    [Required, MaxLength(8)]
+    public string TemplateId { get; set; }
+
+    [Required, MaxLength(4)]
+    public string AppliedBy { get; set; }
+
+    [DataType(DataType.DateTime)]
+    public DateTime AppliedAt { get; set; } = DateTime.Now;
+
+    public bool HasUnavailableStaff { get; set; } = false;
+
+    public bool IsAcknowledged { get; set; } = false;
+
+    // Navigation
+    public RosterTemplate Template { get; set; }
+    public Manager Manager { get; set; }
+}
 
 public class Allocation
 {
-    [Key, MaxLength(5)]
+    [Key, MaxLength(10)]
+    [RegularExpression(@"ALC\d{7}", ErrorMessage = "Format must be 'ALC' followed by 7 digits (e.g. ALC0000001)")]
     public string Id { get; set; }
-    //add remaining attributes
 
-    //nav
+    [MaxLength(8)]
+    public string? TemplateId { get; set; }
+
+    [Required, MaxLength(4)]
+    public string StaffId { get; set; }
+
+    [Required, MaxLength(100)]
+    public string TaskName { get; set; }
+
+    [Required, DataType(DataType.Date)]
+    public DateOnly AssignedDate { get; set; }
+
+    [Required, MaxLength(15)]
+    [RegularExpression("^(PENDING|IN_PROGRESS|COMPLETED)$")]
+    public string Status { get; set; } = "PENDING";
+
+    [DataType(DataType.DateTime)]
+    public DateTime? StartTime { get; set; }
+
+    [DataType(DataType.DateTime)]
+    public DateTime? CompletionDate { get; set; }
+
+    [MaxLength(300)]
+    public string? Notes { get; set; }
+
+    // Navigation
     public Staff Staff { get; set; }
 }
 

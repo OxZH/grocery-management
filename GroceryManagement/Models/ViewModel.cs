@@ -207,3 +207,228 @@ public class UserUpdateVM
 
     public string? Role { get; set; }
 }
+
+// Task Management ViewModels
+
+public class StaffAvailability
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public string AttendanceStatus { get; set; } // ATTEND, ABSENT, LEAVE
+    public int CurrentTaskCount { get; set; }
+    public string? AuthorizationLvl { get; set; }
+}
+
+public class TaskAssignVM
+{
+    public string? TaskId { get; set; }
+    public string TaskName { get; set; } = string.Empty;
+    public string Priority { get; set; } = "MEDIUM";
+    public string Category { get; set; } = "OTHER";
+    public string? Description { get; set; }
+    public int? DefaultDuration { get; set; }
+    public DateOnly AssignedDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+    public string RecurrencePattern { get; set; } = "NONE";
+    public string? SelectedStaffId { get; set; }
+    
+    public List<StaffAvailability> AvailableStaff { get; set; } = [];
+    public SelectList? TaskTemplates { get; set; }
+}
+
+public class TaskAllocationVM
+{
+    public string AllocationId { get; set; }
+    public string TaskId { get; set; }
+    public string TaskName { get; set; }
+    public string Category { get; set; }
+    public string Priority { get; set; }
+    public string StaffId { get; set; }
+    public string StaffName { get; set; }
+    public string Status { get; set; }
+    public DateOnly AssignedDate { get; set; }
+    public TimeOnly? StartTime { get; set; }
+    public TimeOnly? EndTime { get; set; }
+    public int? EstimatedDuration { get; set; }
+    public string? Notes { get; set; }
+    public bool IsAbsent { get; set; } // Flag if staff is absent
+    public string? AttendanceStatus { get; set; }
+}
+
+public class MonitorDashboardVM
+{
+    public DateOnly SelectedDate { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+    public List<TaskAllocationVM> PendingTasks { get; set; } = [];
+    public List<TaskAllocationVM> InProgressTasks { get; set; } = [];
+    public List<TaskAllocationVM> CompletedTasks { get; set; } = [];
+    public List<TaskAllocationVM> AbsentStaffTasks { get; set; } = [];
+    public int TotalTasks => PendingTasks.Count + InProgressTasks.Count + CompletedTasks.Count;
+}
+
+public class MyTasksVM
+{
+    public string StaffId { get; set; }
+    public string StaffName { get; set; }
+    public DateOnly Today { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+    public List<TaskAllocationVM> HighPriorityTasks { get; set; } = [];
+    public List<TaskAllocationVM> MediumPriorityTasks { get; set; } = [];
+    public List<TaskAllocationVM> LowPriorityTasks { get; set; } = [];
+}
+
+public class TaskTemplateVM
+{
+    public string? Id { get; set; }
+    
+    [Required, MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+    
+    [MaxLength(500)]
+    public string? Description { get; set; }
+    
+    [Required]
+    public string Category { get; set; } = "OTHER";
+    
+    public int? DefaultDuration { get; set; }
+    
+    [Required]
+    public string Priority { get; set; } = "MEDIUM";
+}
+
+public class ReassignTaskVM
+{
+    public string AllocationId { get; set; }
+    public string TaskName { get; set; }
+    public string CurrentStaffId { get; set; }
+    public string CurrentStaffName { get; set; }
+    public DateOnly AssignedDate { get; set; }
+    public List<StaffAvailability> AvailableStaff { get; set; } = [];
+    public string? SelectedNewStaffId { get; set; }
+}
+
+// Roster Template Scheduling ViewModels
+
+public class RosterTemplateFormVM
+{
+    public string? Id { get; set; }
+    
+    [Required(ErrorMessage = "Template name is required")]
+    [MaxLength(100)]
+    public string TemplateName { get; set; }
+    
+    public List<TemplateAllocationVM> Allocations { get; set; } = new();
+}
+
+public class TemplateAllocationVM
+{
+    public int? Id { get; set; }
+    
+    [Required(ErrorMessage = "Please select a staff member")]
+    public string StaffId { get; set; }
+    
+    public string? StaffName { get; set; }
+    
+    [Required(ErrorMessage = "Task name is required")]
+    [MaxLength(100)]
+    public string TaskName { get; set; }
+    
+    public int SortOrder { get; set; }
+}
+
+public class CalendarMonthVM
+{
+    public int Year { get; set; }
+    public int Month { get; set; }
+    public string MonthName { get; set; }
+    public List<CalendarDayVM> Days { get; set; } = new();
+    public List<string> DayHeaders { get; set; } = new() { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+}
+
+public class CalendarDayVM
+{
+    public DateOnly Date { get; set; }
+    public int DayNumber { get; set; }
+    public bool IsCurrentMonth { get; set; }
+    public bool HasSchedule { get; set; }
+    public string? TemplateName { get; set; }
+    public string Status { get; set; } = "EMPTY"; // EMPTY, OK, WARNING, ACKNOWLEDGED
+}
+
+public class ApplyTemplateVM
+{
+    public DateOnly Date { get; set; }
+    
+    [Required(ErrorMessage = "Please select a template")]
+    public string? SelectedTemplateId { get; set; }
+    
+    public SelectList? Templates { get; set; }
+    public List<TemplatePreviewVM> Preview { get; set; } = new();
+}
+
+public class TemplatePreviewVM
+{
+    public string StaffId { get; set; }
+    public string StaffName { get; set; }
+    public string TaskName { get; set; }
+    public string AttendanceStatus { get; set; } = "UNKNOWN"; // ATTEND, ABSENT, LEAVE, UNKNOWN
+}
+
+public class DayDetailsVM
+{
+    public DateOnly Date { get; set; }
+    public string TemplateName { get; set; }
+    public bool HasUnavailableStaff { get; set; }
+    public bool IsAcknowledged { get; set; }
+    public List<DayAllocationVM> Allocations { get; set; } = new();
+    public List<Staff> AvailableStaffForReassignment { get; set; } = new();
+}
+
+public class DayAllocationVM
+{
+    public string AllocationId { get; set; }
+    public string StaffId { get; set; }
+    public string StaffName { get; set; }
+    public string TaskName { get; set; }
+    public string AttendanceStatus { get; set; } = "UNKNOWN";
+    public bool IsUnavailable { get; set; }
+    public string Status { get; set; } // PENDING, IN_PROGRESS, COMPLETED
+    public DateTime? StartTime { get; set; }
+    public DateTime? CompletionDate { get; set; }
+    public string? Notes { get; set; }
+}
+
+public class MyScheduleVM
+{
+    public int Year { get; set; }
+    public int Month { get; set; }
+    public string MonthName { get; set; }
+    public List<MyCalendarDayVM> Days { get; set; } = new();
+    public string StaffId { get; set; }
+    public string StaffName { get; set; }
+}
+
+public class MyCalendarDayVM
+{
+    public DateOnly Date { get; set; }
+    public int DayNumber { get; set; }
+    public bool IsCurrentMonth { get; set; }
+    public bool HasAssignment { get; set; }
+    public string? TaskName { get; set; }
+}
+
+public class MyDayTaskVM
+{
+    public DateOnly Date { get; set; }
+    public string AllocationId { get; set; }
+    public string TaskName { get; set; }
+    public string Status { get; set; } // PENDING, IN_PROGRESS, COMPLETED
+    public DateTime? StartTime { get; set; }
+    public DateTime? CompletionDate { get; set; }
+    public string? Notes { get; set; }
+    public List<TeammateVM> Teammates { get; set; } = new();
+}
+
+public class TeammateVM
+{
+    public string StaffId { get; set; }
+    public string StaffName { get; set; }
+    public string AttendanceStatus { get; set; } = "UNKNOWN";
+}

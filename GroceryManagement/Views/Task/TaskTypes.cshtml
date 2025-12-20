@@ -1,0 +1,92 @@
+@model List<TaskType>
+@{
+    ViewData["Title"] = "Task Types Management";
+}
+
+<h1>Task Types Management</h1>
+
+@Html.Raw(TempData["Info"])
+
+<div style="margin-bottom: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+    <h3>Add New Task Type</h3>
+    <form method="post" asp-action="AddTaskType">
+        @Html.AntiForgeryToken()
+        <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+                <label>Task Type Name:</label>
+                <input type="text" name="name" class="form-control" placeholder="e.g., Cleaning, Restocking, Cashier" required maxlength="100" />
+            </div>
+            <div class="form-group" style="flex: 3;">
+                <label>Description (Optional):</label>
+                <input type="text" name="description" class="form-control" placeholder="Brief description" maxlength="200" />
+            </div>
+            <div class="form-group" style="flex: 1; display: flex; align-items: flex-end;">
+                <button type="submit">Add Task Type</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<h3>Existing Task Types</h3>
+
+@if (!Model.Any())
+{
+    <p>No task types defined yet. Add one above to get started!</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Task Type</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var taskType in Model)
+            {
+                <tr style="@(taskType.IsActive ? "" : "opacity: 0.5;")">
+                    <td><strong>@taskType.Name</strong></td>
+                    <td>@(taskType.Description ?? "-")</td>
+                    <td>
+                        <span class="badge badge-@(taskType.IsActive ? "success" : "secondary")">
+                            @(taskType.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </td>
+                    <td>@taskType.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <form method="post" asp-action="ToggleTaskType" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@taskType.Id" />
+                            <button type="submit">
+                                @(taskType.IsActive ? "Deactivate" : "Activate")
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div style="margin-top: 20px;">
+    <a href="@Url.Action("Templates")"><button>Back to Templates</button></a>
+</div>
+
+<style>
+    .form-row {
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+    }
+    .form-control, input, textarea {
+        padding: 5px;
+        border: 1px solid #333;
+    }
+    .badge-success { background-color: #28a745; color: white; }
+    .badge-secondary { background-color: #999; color: white; }
+</style>
+

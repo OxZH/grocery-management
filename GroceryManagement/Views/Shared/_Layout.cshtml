@@ -46,16 +46,20 @@
         else
         {
             <a href="/">Product</a>
+            
             @if (User.IsInRole("Manager"))
             {
+                <a href="/User/Index">Staff List</a>
+                <a href="/Task/Calendar">Task Schedule</a>
+                <a href="/Task/Templates">Manage Roster Templates</a>
                 <a href="/Attendance/LeaveApprovals">Leave Approvals</a>
                 <a href="/Account/Register">Register Staff</a>
-                <a href="/Salary/Pay">Salary Report</a>
             }
 
             @if (User.IsInRole("Staff"))
             {
                 <a href="/Attendance/CheckInAttendance">Attendance</a>
+                <a href="/Task/MySchedule">My Schedule</a>
                 <a href="/Attendance/ApplyLeave">Apply Leave</a>
                 <a href="/Account/UpdateProfile">Update Profile</a>
             }

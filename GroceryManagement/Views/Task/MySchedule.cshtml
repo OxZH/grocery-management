@@ -1,0 +1,147 @@
+@model MyScheduleVM
+@{
+    ViewData["Title"] = "My Schedule";
+}
+
+<h1>My Schedule - @Model.MonthName @Model.Year</h1>
+<h3>@Model.StaffName (@Model.StaffId)</h3>
+
+@Html.Raw(TempData["Info"])
+
+<div style="margin-bottom: 20px;">
+    <a href="@Url.Action("MySchedule", new { year = Model.Month == 1 ? Model.Year - 1 : Model.Year, month = Model.Month == 1 ? 12 : Model.Month - 1 })" class="btn btn-secondary">← Previous Month</a>
+    <a href="@Url.Action("MySchedule", new { year = DateTime.Now.Year, month = DateTime.Now.Month })" class="btn btn-secondary">This Month</a>
+    <a href="@Url.Action("MySchedule", new { year = Model.Month == 12 ? Model.Year + 1 : Model.Year, month = Model.Month == 12 ? 1 : Model.Month + 1 })" class="btn btn-secondary">Next Month →</a>
+</div>
+
+<div class="calendar-grid">
+    <div class="calendar-header-row">
+        <div class="calendar-header">Sun</div>
+        <div class="calendar-header">Mon</div>
+        <div class="calendar-header">Tue</div>
+        <div class="calendar-header">Wed</div>
+        <div class="calendar-header">Thu</div>
+        <div class="calendar-header">Fri</div>
+        <div class="calendar-header">Sat</div>
+    </div>
+    
+    @for (int i = 0; i < Model.Days.Count; i += 7)
+    {
+        <div class="calendar-row">
+            @for (int j = 0; j < 7 && i + j < Model.Days.Count; j++)
+            {
+                var day = Model.Days[i + j];
+                var cssClass = "calendar-day";
+                if (!day.IsCurrentMonth) cssClass += " other-month";
+                if (day.HasAssignment) cssClass += " has-assignment";
+                
+                <div class="@cssClass" onclick="@(day.HasAssignment ? $"window.location.href='{Url.Action("MyDayTask")}?dateStr={day.Date:yyyy-MM-dd}'" : "")">
+                    <div class="day-number">@day.DayNumber</div>
+                    @if (day.HasAssignment)
+                    {
+                        <div class="task-name">@day.TaskName</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div style="margin-top: 20px;">
+    <div class="legend">
+        <strong>Legend:</strong>
+        <span class="legend-item"><span style="display:inline-block; width:20px; height:20px; background-color:#e3f2fd; border:1px solid #ddd; vertical-align: middle;"></span> Day with assignment</span>
+        <span class="legend-item"><span style="display:inline-block; width:20px; height:20px; background-color:white; border:1px solid #ddd; vertical-align: middle;"></span> No assignment</span>
+    </div>
+</div>
+
+<style>
+    .calendar-grid {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .calendar-header-row {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        background-color: #343a40;
+        color: white;
+    }
+    .calendar-header {
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        border-right: 1px solid #495057;
+    }
+    .calendar-header:last-child {
+        border-right: none;
+    }
+    .calendar-row {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+    .calendar-day {
+        min-height: 100px;
+        padding: 8px;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-left: none;
+        background-color: white;
+        position: relative;
+    }
+    .calendar-day:nth-child(7n) {
+        border-right: none;
+    }
+    .calendar-day.other-month {
+        background-color: #f0f0f0;
+        color: #999;
+    }
+    .calendar-day.has-assignment {
+        background-color: #e3f2fd;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    .calendar-day.has-assignment:hover {
+        background-color: #bbdefb;
+    }
+    .day-number {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 5px;
+    }
+    .task-name {
+        font-size: 0.9em;
+        color: #0066cc;
+        font-weight: bold;
+        word-wrap: break-word;
+    }
+    .legend {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 5px;
+        background-color: #6c757d;
+        color: white;
+    }
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+</style>
+

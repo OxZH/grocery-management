@@ -25,11 +25,40 @@ namespace GroceryManagement.Migrations
             modelBuilder.Entity("GroceryManagement.Models.Allocation", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateOnly>("AssignedDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("CompletionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("StaffId")
+                        .IsRequired()
+                        .HasMaxLength(4)
                         .HasColumnType("nvarchar(4)");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<string>("TaskName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TemplateId")
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
 
                     b.HasKey("Id");
 
@@ -117,6 +146,45 @@ namespace GroceryManagement.Migrations
                     b.ToTable("Checkout");
                 });
 
+            modelBuilder.Entity("GroceryManagement.Models.DaySchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AppliedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AppliedBy")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<bool>("HasUnavailableStaff")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAcknowledged")
+                        .HasColumnType("bit");
+
+                    b.Property<DateOnly>("ScheduleDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("TemplateId")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppliedBy");
+
+                    b.HasIndex("TemplateId");
+
+                    b.ToTable("DaySchedules");
+                });
+
             modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
                 {
                     b.Property<string>("Id")
@@ -153,7 +221,7 @@ namespace GroceryManagement.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("Expense");
+                    b.ToTable("Expenses");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
@@ -282,6 +350,95 @@ namespace GroceryManagement.Migrations
                     b.ToTable("Products");
                 });
 
+            modelBuilder.Entity("GroceryManagement.Models.RosterTemplate", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ManagerId")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("TemplateName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManagerId");
+
+                    b.ToTable("RosterTemplates");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.TaskType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TaskTypes");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.TemplateAllocation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StaffId")
+                        .IsRequired()
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("TaskName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TemplateId")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StaffId");
+
+                    b.HasIndex("TemplateId");
+
+                    b.ToTable("TemplateAllocations");
+                });
+
             modelBuilder.Entity("GroceryManagement.Models.User", b =>
                 {
                     b.Property<string>("Id")
@@ -368,7 +525,9 @@ namespace GroceryManagement.Migrations
                 {
                     b.HasOne("GroceryManagement.Models.Staff", "Staff")
                         .WithMany("Allocations")
-                        .HasForeignKey("StaffId");
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Staff");
                 });
@@ -397,6 +556,25 @@ namespace GroceryManagement.Migrations
                         .HasForeignKey("StaffId");
 
                     b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.DaySchedule", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Manager", "Manager")
+                        .WithMany("DaySchedules")
+                        .HasForeignKey("AppliedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GroceryManagement.Models.RosterTemplate", "Template")
+                        .WithMany("DaySchedules")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("Template");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
@@ -458,6 +636,36 @@ namespace GroceryManagement.Migrations
                     b.Navigation("Staff");
                 });
 
+            modelBuilder.Entity("GroceryManagement.Models.RosterTemplate", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Manager", "Manager")
+                        .WithMany("RosterTemplates")
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Manager");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.TemplateAllocation", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
+                        .WithMany("TemplateAllocations")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GroceryManagement.Models.RosterTemplate", "Template")
+                        .WithMany("Allocations")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Staff");
+
+                    b.Navigation("Template");
+                });
+
             modelBuilder.Entity("GroceryManagement.Models.Staff", b =>
                 {
                     b.HasOne("GroceryManagement.Models.Manager", "Manager")
@@ -477,13 +685,24 @@ namespace GroceryManagement.Migrations
                     b.Navigation("Inventories");
                 });
 
+            modelBuilder.Entity("GroceryManagement.Models.RosterTemplate", b =>
+                {
+                    b.Navigation("Allocations");
+
+                    b.Navigation("DaySchedules");
+                });
+
             modelBuilder.Entity("GroceryManagement.Models.Manager", b =>
                 {
                     b.Navigation("AttendenceRecords");
 
+                    b.Navigation("DaySchedules");
+
                     b.Navigation("Expenses");
 
                     b.Navigation("LeaveRequests");
+
+                    b.Navigation("RosterTemplates");
 
                     b.Navigation("Staffs");
                 });
@@ -499,6 +718,8 @@ namespace GroceryManagement.Migrations
                     b.Navigation("LeaveRequests");
 
                     b.Navigation("ManagedInventory");
+
+                    b.Navigation("TemplateAllocations");
                 });
 #pragma warning restore 612, 618
         }

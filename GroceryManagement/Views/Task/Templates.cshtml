@@ -1,0 +1,73 @@
+@model List<RosterTemplate>
+@{
+    ViewData["Title"] = "Roster Templates";
+}
+
+<h1>Roster Templates</h1>
+
+@Html.Raw(TempData["Info"])
+
+<div style="margin-bottom: 20px;">
+    <a href="@Url.Action("CreateTemplate")"><button>Create New Template</button></a>
+    <a href="@Url.Action("TaskTypes")"><button>Manage Task Types</button></a>
+    <a href="@Url.Action("Calendar")"><button>View Calendar</button></a>
+</div>
+
+@if (!Model.Any())
+{
+    <p>No roster templates found. Create one to get started!</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Template Name</th>
+                <th>Staff Count</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var template in Model)
+            {
+                <tr>
+                    <td><strong>@template.TemplateName</strong></td>
+                    <td>@template.Allocations.Count staff members</td>
+                    <td>@template.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <button type="button" onclick="toggleDetails('@template.Id')">View Details</button>
+                        <a href="@Url.Action("EditTemplate", new { id = template.Id })"><button type="button">Edit</button></a>
+                        <form method="post" action="@Url.Action("DeleteTemplate", new { id = template.Id })" style="display:inline;" onsubmit="return confirm('Delete this template?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr id="details-@template.Id" style="display:none;">
+                    <td colspan="4" style="background-color: #f8f9fa; padding: 15px;">
+                        <h5>Staff Assignments:</h5>
+                        <ul>
+                            @foreach (var alloc in template.Allocations.OrderBy(a => a.SortOrder))
+                            {
+                                <li><strong>@alloc.Staff.Name</strong> (@alloc.StaffId) → <span style="color: #0066cc;">@alloc.TaskName</span></li>
+                            }
+                        </ul>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<script>
+    function toggleDetails(templateId) {
+        var detailsRow = document.getElementById('details-' + templateId);
+        if (detailsRow.style.display === 'none') {
+            detailsRow.style.display = 'table-row';
+        } else {
+            detailsRow.style.display = 'none';
+        }
+    }
+</script>
+
