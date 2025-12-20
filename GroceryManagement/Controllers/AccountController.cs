@@ -7,12 +7,12 @@ namespace GroceryManagement.Controllers;
 
 public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Controller
 {
-    [Authorize(Roles = "Manager")]
+/*    [Authorize(Roles = "Manager")]
     public IActionResult Index()
     {
         var users = db.Users.ToList();
         return View(users);
-    }
+    }*/
     private string NextId(string prefix)
     {
         // only search for id with the specified prefix
@@ -53,9 +53,9 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             if (u is Manager)
             {
                 TimeSpan remaining = u.Locked.Value - DateTime.Now;
-                ModelState.AddModelError("", $"Account locked. Try again in {remaining.Seconds} seconds.");            }
+                ModelState.AddModelError("", $"Account locked. Try again in {(int)remaining.Seconds} seconds.");            }
             else
-                {
+            {
                 ModelState.AddModelError("", $"Account locked due to multiple failed attempts. Please contact a Manager.");
             }
             return View(vm);
@@ -104,6 +104,15 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             {
                 return RedirectToAction("Index", "Home");
             }
+            else if (Url.IsLocalUrl(returnURL))
+            {
+                return Redirect(returnURL);
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
         }
 
         return View(vm);
@@ -196,7 +205,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
                 // Safety check (in case the manager was deleted but still has a cookie)
                 if (currentManager == null) return RedirectToAction("Login", "Account");
                 // save photos and keep the filename in a variable
-                string unqiueFileName = hp.SavePhoto(vm.Photo, "photos");
+                string unqiueFileName = hp.SavePhoto(vm.Photo, "images/users");
                 
                 try
                 {
@@ -224,7 +233,7 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
                 }
                 catch (Exception)
                 {
-                    hp.DeletePhoto(unqiueFileName, "photos");
+                    hp.DeletePhoto(unqiueFileName, "images/users");
                     ModelState.AddModelError("", "Error saving photo. Registration failed.");
                     return View(vm);
                 }
@@ -346,11 +355,11 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
                 // A. Delete old photo if exists
                 if (!string.IsNullOrEmpty(s.PhotoURL))
                 {
-                    hp.DeletePhoto(s.PhotoURL, "photos");
+                    hp.DeletePhoto(s.PhotoURL, "images/users");
                 }
 
                 // B. Save new photo
-                s.PhotoURL = hp.SavePhoto(vm.Photo, "photos");
+                s.PhotoURL = hp.SavePhoto(vm.Photo, "images/users");
             }
 
             db.SaveChanges();
@@ -472,8 +481,8 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
         // Photo Logic (kept from your code)
         var path = u switch
         {
-            Manager => Path.Combine(en.WebRootPath, "photos", "admin.jpg"),
-            Staff s => Path.Combine(en.WebRootPath, "photos", s.PhotoURL),
+            Manager => Path.Combine(en.WebRootPath, "images/users", "admin.jpg"),
+            Staff s => Path.Combine(en.WebRootPath, "images/users", s.PhotoURL),
             _ => "",
         };
 

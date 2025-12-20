@@ -27,7 +27,7 @@
 		<label class="upload">
 			<input asp-for="Photo" accept="image/jpeg,image/png" hidden />
 
-			<img src="/photos/@(Model.ExistingPhotoURL ?? "default.png")" alt="Photo Preview" />
+			<img src="/images/users/@(Model.ExistingPhotoURL ?? "default.png")" alt="Photo Preview" />
 		</label>
 		<span asp-validation-for="Photo"></span>
 	}

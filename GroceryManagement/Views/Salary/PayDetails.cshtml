@@ -1,0 +1,70 @@
+﻿@model PayVM
+@{
+    ViewBag.Title = "Payroll Details";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Payroll Details: @Model.StaffName</h2>
+        <a asp-action="Pay"
+           asp-route-month="@ViewBag.Month"
+           asp-route-year="@ViewBag.Year"
+           class="btn btn-secondary">
+            Back to List
+        </a>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <p class="mb-0 text-muted">Staff ID</p>
+                    <h5>@Model.StaffId</h5>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-0 text-muted">Position</p>
+                    <h5>@Model.Role</h5>
+                </div>
+                <div class="col-md-3">
+                    <p class="mb-0 text-muted">Salary per Hour (RM)</p>
+                    <h5>@Html.DisplayFor(m => m.Salary)</h5>
+                </div>
+                <div class="col-md-3 text-end">
+                    <p class="mb-0 text-muted">Total Payout (RM)</p>
+                    <h3 class="text-success">@Html.DisplayFor(m => m.TotalSalary)</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4>Daily Attendance Breakdown</h4>
+    <table class="table table-striped mt-2">
+        <thead class="table-light">
+            <tr>
+                <th>Date</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Hours</th>
+                <th>Daily Pay (RM)</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var day in Model.DailyDetails)
+            {
+                <tr class="@(day.Note != "" ? "table-warning" : "")">
+                    <td>@day.Date.ToString("ddd, dd MMM yyyy")</td>
+                    <td>@day.CheckIn</td>
+                    <td>@day.CheckOut</td>
+                    <td>@day.HoursWorked.ToString("F2")</td>
+                    <td>@Html.DisplayFor(m => day.DailyPay)</td>
+                    <td class="text-danger fw-bold">@day.Note</td>
+                </tr>
+            }
+            @if (!Model.DailyDetails.Any())
+            {
+                <tr><td colspan="6" class="text-center">No attendance records found for this month.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

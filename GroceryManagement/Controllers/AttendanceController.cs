@@ -1,9 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System.Linq;
 
 namespace GroceryManagement.Controllers;
 
+[Authorize]
 public class AttendanceController(DB db) : Controller
 {
     public IActionResult CheckInAttendance(string? staffId = null, string? overrideDate = null, string? overrideTime = null)
@@ -53,7 +57,7 @@ public class AttendanceController(DB db) : Controller
 
         return View();
     }
-
+    [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult CheckIn(string staffId, string? overrideDate = null, string? overrideTime = null)
@@ -107,7 +111,7 @@ public class AttendanceController(DB db) : Controller
             overrideTime = checkTime.ToString("HH:mm")
         });
     }
-
+    [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult CheckOut(string staffId, string? overrideDate = null, string? overrideTime = null)

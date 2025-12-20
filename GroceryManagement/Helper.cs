@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Net;
 using System.Net.Mail;
-//using SixLabors.ImageSharp;
-//using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
+using static System.Net.Mime.MediaTypeNames.Image;
 
 namespace GroceryManagement;
 
@@ -37,9 +37,10 @@ public class Helper(IWebHostEnvironment en,
         return "";
     }
 
-    public string SavePhoto(IFormFile f, string folder)
+/*    public string SavePhoto(IFormFile f, string folder)
     {
-        // 1. Create the folder path if it doesn't exist (Safety Check)
+
+        // 1. Create the folder path if it doesn't exist 
         var uploadFolder = Path.Combine(en.WebRootPath, folder);
         if (!Directory.Exists(uploadFolder))
         {
@@ -58,26 +59,36 @@ public class Helper(IWebHostEnvironment en,
 
         // 4. Return the filename to be saved in the DB
         return file;
-    }
+    }*/
 
-    /*public string SavePhoto(IFormFile f, string folder)
+    public string SavePhoto(IFormFile f, string folder)
     {
         var file = Guid.NewGuid().ToString("n") + ".jpg";
         var path = Path.Combine(en.WebRootPath, folder, file);
 
-       *//* var options = new ResizeOptions
+        // Create directory if missing
+        if (!Directory.Exists(Path.GetDirectoryName(path)))
         {
-            Size = new(200, 200),
-            Mode = ResizeMode.Crop,
-        };*//*
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        }
+        // Load image
+        using var img = Image.Load(f.OpenReadStream());
 
-        using var stream = new FileStream(path, FileMode.Create);
-        //using var img = Image.Load(stream);
-        //img.Mutate(x => x.Resize(options));
-        //img.Save(path);
+        // Config resize options 
+        var options = new ResizeOptions
+        {
+            Size = new(800, 800),
+            Mode = ResizeMode.Crop,
+        };
+        // Resize
+        img.Mutate(x => x.Resize(options));
+
+        //using var stream = new FileStream(path, FileMode.Create);
+
+        img.SaveAsJpeg(path);
 
         return file;
-    }*/
+    }
 
     public void DeletePhoto(string file, string folder)
     {
@@ -89,7 +100,27 @@ public class Helper(IWebHostEnvironment en,
         }
     }
 
+    // Helper: Finds the highest ID number in the DB and returns (Max + 1)
+    public int GetNextExpenseSequence(DB db)
+    {
+        // 1. Fetch all IDs
+        var existing = db.Expenses.Select(e => e.Id).ToList();
 
+        var max = 0;
+        foreach (var id in existing)
+        {
+            if (string.IsNullOrEmpty(id)) continue;
+
+            // Strip "EX" prefix to get the number
+            var digits = id.StartsWith("EX") ? id.Substring(2) : id;
+
+            // Track the highest number found
+            if (int.TryParse(digits, out var n)) max = Math.Max(max, n);
+        }
+
+        // Return the next number in the sequence
+        return max + 1;
+    }
 
     // ------------------------------------------------------------------------
     // Security Helper Functions
@@ -111,6 +142,13 @@ public class Helper(IWebHostEnvironment en,
 
     public void SignIn(string email, string role, bool rememberMe, string phone)
     {
+        if (role == "Staff")
+        {
+            rememberMe = false;
+        }
+        // Set expiry duration to 1 day for manager
+        DateTime? expiry = rememberMe ? DateTime.UtcNow.AddDays(1) : null;
+
         // (1) Claim, identity and principal
         List<Claim> claims =
         [
@@ -128,6 +166,8 @@ public class Helper(IWebHostEnvironment en,
         AuthenticationProperties properties = new()
         {
             IsPersistent = rememberMe,
+            // Force 1 day limit
+            ExpiresUtc = expiry,
         };
 
         // (3) Sign in
@@ -138,21 +178,6 @@ public class Helper(IWebHostEnvironment en,
     {
         // Sign out
         ct.HttpContext!.SignOutAsync();
-    }
-
-    public string RandomPassword()
-    {
-        string s = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        string password = "";
-
-        Random r = new();
-
-        for (int i = 1; i <= 10; i++)
-        {
-            password += s[r.Next(s.Length)]; //s[r.Next(36)] -> s[10] so the random value is A
-        }
-
-        return password;
     }
 
     // ------------------------------------------------------------------------

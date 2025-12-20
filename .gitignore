@@ -6,6 +6,7 @@
 #user-specific folder
 obj/
 bin/
+Migrations/
 
 # User-specific files
 *.rsuser

@@ -120,17 +120,40 @@ namespace GroceryManagement.Migrations
             modelBuilder.Entity("GroceryManagement.Models.Expense", b =>
                 {
                     b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("ManagerId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("StaffId")
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ManagerId");
 
-                    b.ToTable("Expense");
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("Expenses");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
@@ -192,7 +215,7 @@ namespace GroceryManagement.Migrations
                     b.Property<string>("PhotoURL")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal>("SellPrice")
                         .HasPrecision(7, 2)
                         .HasColumnType("decimal(7,2)");
 
@@ -328,9 +351,17 @@ namespace GroceryManagement.Migrations
                 {
                     b.HasOne("GroceryManagement.Models.Manager", "Manager")
                         .WithMany("Expenses")
-                        .HasForeignKey("ManagerId");
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId");
 
                     b.Navigation("Manager");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Inventory", b =>
