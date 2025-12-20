@@ -1,0 +1,128 @@
+@model List<GroceryManagement.Models.LeaveRequest>
+@{
+    ViewBag.Title = "Leave Approvals";
+    var info = TempData["Info"] as string;
+}
+
+<h2>Leave Approvals</h2>
+
+<div style="margin-bottom: 20px;">
+    <label for="globalManagerId">Select Manager:</label>
+    <select id="globalManagerId" asp-items="ViewBag.Managers">
+        <option value="">-- Select manager --</option>
+    </select>
+    <small>Choose a manager to approve/reject requests</small>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(info))
+{
+    <div class="alert">@Html.Raw(info)</div>
+}
+
+@if (Model is null || !Model.Any())
+{
+    <p>No leave requests found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Staff</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Approved By</th>
+                <th>Attachment</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td>@r.StaffId</td>
+                <td>@r.LeaveDate</td>
+                <td>@r.Type</td>
+                <td>@r.Status</td>
+                <td>@r.SubmittedAt</td>
+                <td>@(string.IsNullOrWhiteSpace(r.ApprovedBy) ? "-" : r.ApprovedBy)</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(r.AttachmentPath))
+                    {
+                        <a href="@r.AttachmentPath" target="_blank">View</a>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+                <td>
+                    @if (r.Status == "PENDING")
+                    {
+                        <form asp-action="ApproveLeave" method="post" style="display:inline" class="approval-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@r.Id" />
+                            <input type="hidden" name="managerId" class="managerIdInput" value="" />
+                            <button type="submit" class="approve-btn">Approve</button>
+                        </form>
+                        <form asp-action="RejectLeave" method="post" style="display:inline" class="approval-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@r.Id" />
+                            <input type="hidden" name="managerId" class="managerIdInput" value="" />
+                            <button type="submit" class="reject-btn">Reject</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span>Already @r.Status</span>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const managerDropdown = document.getElementById('globalManagerId');
+    const approvalForms = document.querySelectorAll('.approval-form');
+    const approveButtons = document.querySelectorAll('.approve-btn');
+    const rejectButtons = document.querySelectorAll('.reject-btn');
+    
+    function updateManagerId() {
+        const selectedManagerId = managerDropdown.value;
+        const managerInputs = document.querySelectorAll('.managerIdInput');
+        
+        managerInputs.forEach(input => {
+            input.value = selectedManagerId;
+        });
+        
+        // Enable/disable buttons based on selection
+        const isDisabled = !selectedManagerId;
+        approveButtons.forEach(btn => btn.disabled = isDisabled);
+        rejectButtons.forEach(btn => btn.disabled = isDisabled);
+    }
+    
+    // Initial state
+    updateManagerId();
+    
+    // Update on change
+    managerDropdown.addEventListener('change', updateManagerId);
+    
+    // Prevent submission without manager
+    approvalForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const managerId = this.querySelector('.managerIdInput').value;
+            if (!managerId) {
+                e.preventDefault();
+                alert('Please select a manager before approving/rejecting.');
+            }
+        });
+    });
+});
+</script>

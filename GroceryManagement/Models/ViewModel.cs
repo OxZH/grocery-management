@@ -20,3 +20,26 @@ public class InventoryInsertVM
     [Range(0, 9999, ErrorMessage = "Quantity cannot be negative")]
     public int StoreFrontQty { get; set; }
 }
+
+public class LeaveRequestFormVM
+{
+    [Required(ErrorMessage = "Please select a staff")]
+    [RegularExpression(@"^[a-zA-Z][0-9]{2,3}$", ErrorMessage = "Staff ID must be letter + 2-3 digits")]
+    public string StaffId { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Leave date is required")]
+    [DataType(DataType.Date)]
+    public DateOnly LeaveDate { get; set; }
+
+    [Required(ErrorMessage = "Type is required")]
+    public string Type { get; set; } = "ADVANCE";
+
+    [MaxLength(300)]
+    public string? Reason { get; set; }
+}
+
+public class LeaveApplyVM
+{
+    public LeaveRequestFormVM Form { get; set; } = new();
+    public List<LeaveRequest> Requests { get; set; } = [];
+}

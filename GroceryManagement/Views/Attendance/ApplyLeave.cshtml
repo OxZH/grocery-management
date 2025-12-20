@@ -1,0 +1,106 @@
+@model GroceryManagement.Models.LeaveApplyVM
+@{
+    ViewBag.Title = "Apply Leave";
+    var info = TempData["Info"] as string;
+}
+
+<h2>Apply Leave</h2>
+
+<p>Two categories: <b>ADVANCE</b> (submit before leave date) and <b>MC</b> (can submit after leave date, attachment required).</p>
+
+@if (!string.IsNullOrWhiteSpace(info))
+{
+    <div class="alert">@Html.Raw(info)</div>
+}
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-action="ApplyLeave" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <div>
+        <label asp-for="Form.StaffId">Staff</label>
+        <select asp-for="Form.StaffId" asp-items="ViewBag.Staffs">
+            <option value="">-- Select staff --</option>
+        </select>
+        <span asp-validation-for="Form.StaffId" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Form.Type">Type</label>
+        <select asp-for="Form.Type">
+            <option value="ADVANCE">ADVANCE</option>
+            <option value="MC">MC</option>
+        </select>
+        <span asp-validation-for="Form.Type" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Form.LeaveDate">Leave Date</label>
+        <input asp-for="Form.LeaveDate" type="date" />
+        <span asp-validation-for="Form.LeaveDate" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label asp-for="Form.Reason">Reason</label>
+        <textarea asp-for="Form.Reason" rows="3" placeholder="Optional reason"></textarea>
+        <span asp-validation-for="Form.Reason" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label for="attachment">Attachment (PNG/JPG/PDF, max 2MB)</label>
+        <input id="attachment" name="attachment" type="file" accept=".png,.jpg,.jpeg,.pdf" />
+        <small>Required for MC; optional for Advance.</small>
+    </div>
+
+    <button type="submit">Submit leave request</button>
+</form>
+
+<hr />
+
+<h3>Recent requests</h3>
+@if (Model.Requests is null || !Model.Requests.Any())
+{
+    <p>No requests yet for this staff.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th>Approved By</th>
+                <th>Reason</th>
+                <th>Attachment</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var r in Model.Requests)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td>@r.LeaveDate</td>
+                <td>@r.Type</td>
+                <td>@r.Status</td>
+                <td>@r.SubmittedAt</td>
+                <td>@(string.IsNullOrWhiteSpace(r.ApprovedBy) ? "-" : r.ApprovedBy)</td>
+                <td>@(string.IsNullOrWhiteSpace(r.Reason) ? "-" : r.Reason)</td>
+                <td>
+                    @if (!string.IsNullOrWhiteSpace(r.AttachmentPath))
+                    {
+                        <a href="@r.AttachmentPath" target="_blank">View</a>
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+

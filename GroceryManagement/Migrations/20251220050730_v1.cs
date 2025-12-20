@@ -141,6 +141,38 @@ namespace GroceryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "LeaveRequests",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    StaffId = table.Column<string>(type: "nvarchar(4)", nullable: false),
+                    LeaveDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    AttachmentPath = table.Column<string>(type: "nvarchar(260)", maxLength: 260, nullable: true),
+                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ApprovedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ManagerId = table.Column<string>(type: "nvarchar(4)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LeaveRequests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LeaveRequests_Users_ManagerId",
+                        column: x => x.ManagerId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_LeaveRequests_Users_StaffId",
+                        column: x => x.StaffId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Inventories",
                 columns: table => new
                 {
@@ -214,6 +246,16 @@ namespace GroceryManagement.Migrations
                 column: "StaffId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_LeaveRequests_ManagerId",
+                table: "LeaveRequests",
+                column: "ManagerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LeaveRequests_StaffId",
+                table: "LeaveRequests",
+                column: "StaffId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_ManagerId",
                 table: "Users",
                 column: "ManagerId");
@@ -233,6 +275,9 @@ namespace GroceryManagement.Migrations
 
             migrationBuilder.DropTable(
                 name: "Inventories");
+
+            migrationBuilder.DropTable(
+                name: "LeaveRequests");
 
             migrationBuilder.DropTable(
                 name: "Checkout");

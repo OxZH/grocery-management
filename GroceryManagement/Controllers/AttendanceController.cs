@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Http;
 using System.Linq;
+using System.IO;
 
 namespace GroceryManagement.Controllers;
 
-public class AttendanceController(DB db) : Controller
+public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
 {
     public IActionResult CheckInAttendance(string? staffId = null, string? overrideDate = null, string? overrideTime = null)
     {
@@ -161,6 +163,172 @@ public class AttendanceController(DB db) : Controller
         });
     }
 
+    public IActionResult ApplyLeave(string? staffId = null)
+    {
+        LoadStaffDropdown(staffId);
+
+        var vm = new LeaveApplyVM
+        {
+            Form = new LeaveRequestFormVM
+            {
+                StaffId = staffId ?? string.Empty,
+                Type = "ADVANCE",
+                LeaveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1))
+            },
+            Requests = string.IsNullOrWhiteSpace(staffId)
+                ? []
+                : db.LeaveRequests
+                    .Where(l => l.StaffId == staffId)
+                    .OrderByDescending(l => l.SubmittedAt)
+                    .Take(50)
+                    .ToList()
+        };
+
+        ViewBag.SelectedStaffId = staffId;
+        return View("ApplyLeave", vm);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ApplyLeave(LeaveApplyVM vm, IFormFile? attachment)
+    {
+        if (vm?.Form is null)
+        {
+            TempData["Info"] = "<p class='error'>Invalid form submission.</p>";
+            return RedirectToAction(nameof(ApplyLeave));
+        }
+
+        var staffId = vm.Form.StaffId;
+        var leaveDate = vm.Form.LeaveDate;
+        var type = vm.Form.Type?.ToUpperInvariant();
+        var today = DateOnly.FromDateTime(DateTime.Now);
+
+        LoadStaffDropdown(staffId);
+
+        if (string.IsNullOrWhiteSpace(staffId))
+        {
+            ModelState.AddModelError("Form.StaffId", "Please select a staff.");
+        }
+
+        if (type is null || (type != "ADVANCE" && type != "MC"))
+        {
+            ModelState.AddModelError("Form.Type", "Type must be ADVANCE or MC.");
+        }
+        else
+        {
+            vm.Form.Type = type;
+        }
+
+        if (type == "ADVANCE" && leaveDate <= today)
+        {
+            ModelState.AddModelError("Form.LeaveDate", "Advance leave must be submitted before the leave date.");
+        }
+
+        if (type == "MC" && attachment is null)
+        {
+            ModelState.AddModelError("", "Medical leave requires an attachment (image or PDF).");
+        }
+
+        string? relativePath = null;
+        if (attachment is not null)
+        {
+            if (!IsAllowedFile(attachment))
+            {
+                ModelState.AddModelError("", "Only PNG, JPG, JPEG, or PDF up to 2MB are allowed.");
+            }
+            else
+            {
+                relativePath = SaveAttachment(attachment);
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
+            var errors = string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+            TempData["Info"] = $"<p class='error'>Validation failed: {errors}</p>";
+            
+            vm.Requests = string.IsNullOrWhiteSpace(staffId)
+                ? []
+                : db.LeaveRequests
+                    .Where(l => l.StaffId == staffId)
+                    .OrderByDescending(l => l.SubmittedAt)
+                    .Take(50)
+                    .ToList();
+            return View("ApplyLeave", vm);
+        }
+
+        var leave = new LeaveRequest
+        {
+            Id = GenerateLeaveId(),
+            StaffId = staffId,
+            LeaveDate = leaveDate,
+            Type = type,
+            Status = "PENDING",
+            Reason = vm.Form.Reason,
+            AttachmentPath = relativePath,
+            SubmittedAt = DateTime.Now
+        };
+
+        db.LeaveRequests.Add(leave);
+        db.SaveChanges();
+
+        TempData["Info"] = $"<p class='success'>Leave application {leave.Id} submitted for approval. Type: {leave.Type}, Date: {leave.LeaveDate}</p>";
+        return RedirectToAction(nameof(ApplyLeave), new { staffId });
+    }
+
+    public IActionResult LeaveApprovals()
+    {
+        LoadManagerDropdown();
+        
+        var requests = db.LeaveRequests
+            .OrderBy(r => r.Status == "PENDING" ? 0 : 1)
+            .ThenByDescending(r => r.SubmittedAt)
+            .Take(200)
+            .ToList();
+
+        return View("LeaveApprovals", requests);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ApproveLeave(string id, string? managerId)
+    {
+        var req = db.LeaveRequests.FirstOrDefault(r => r.Id == id);
+        if (req is null)
+        {
+            TempData["Info"] = "<p class='error'>Leave request not found.</p>";
+            return RedirectToAction(nameof(LeaveApprovals));
+        }
+
+        req.Status = "APPROVED";
+        req.ApprovedBy = managerId;
+        req.ApprovedAt = DateTime.Now;
+        db.SaveChanges();
+
+        TempData["Info"] = $"<p class='success'>Approved {req.Id}.</p>";
+        return RedirectToAction(nameof(LeaveApprovals));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult RejectLeave(string id, string? managerId)
+    {
+        var req = db.LeaveRequests.FirstOrDefault(r => r.Id == id);
+        if (req is null)
+        {
+            TempData["Info"] = "<p class='error'>Leave request not found.</p>";
+            return RedirectToAction(nameof(LeaveApprovals));
+        }
+
+        req.Status = "REJECTED";
+        req.ApprovedBy = managerId;
+        req.ApprovedAt = DateTime.Now;
+        db.SaveChanges();
+
+        TempData["Info"] = $"<p class='success'>Rejected {req.Id}.</p>";
+        return RedirectToAction(nameof(LeaveApprovals));
+    }
+
     private void LoadStaffDropdown(string? selectedStaffId)
     {
         var staffs = db.Staffs
@@ -172,6 +340,19 @@ public class AttendanceController(DB db) : Controller
             .ToList();
 
         ViewBag.Staffs = new SelectList(staffs, "Id", "Name", selectedStaffId);
+    }
+
+    private void LoadManagerDropdown(string? selectedManagerId = null)
+    {
+        var managers = db.Managers
+            .Select(m => new
+            {
+                m.Id,
+                Name = $"{m.Id} - {m.Name}"
+            })
+            .ToList();
+
+        ViewBag.Managers = new SelectList(managers, "Id", "Name", selectedManagerId);
     }
 
     private string GenerateAttendanceId()
@@ -192,6 +373,48 @@ public class AttendanceController(DB db) : Controller
         }
 
         return $"ATT{nextNumber:D5}";
+    }
+
+    private string GenerateLeaveId()
+    {
+        var lastId = db.LeaveRequests
+            .OrderByDescending(a => a.Id)
+            .Select(a => a.Id)
+            .FirstOrDefault();
+
+        var nextNumber = 1;
+        if (!string.IsNullOrWhiteSpace(lastId) && lastId.Length > 2)
+        {
+            var numericPart = lastId.Substring(2);
+            if (int.TryParse(numericPart, out var parsed))
+            {
+                nextNumber = parsed + 1;
+            }
+        }
+
+        return $"LR{nextNumber:D5}";
+    }
+
+    private bool IsAllowedFile(IFormFile file)
+    {
+        var allowedTypes = new[] { "image/png", "image/jpeg", "application/pdf" };
+        var maxSize = 2 * 1024 * 1024;
+        return file.Length > 0 && file.Length <= maxSize && allowedTypes.Contains(file.ContentType);
+    }
+
+    private string SaveAttachment(IFormFile file)
+    {
+        var uploadsDir = Path.Combine(env.WebRootPath, "uploads", "leave");
+        Directory.CreateDirectory(uploadsDir);
+
+        var extension = Path.GetExtension(file.FileName);
+        var fileName = $"{Guid.NewGuid():N}{extension}";
+        var physicalPath = Path.Combine(uploadsDir, fileName);
+
+        using var stream = System.IO.File.Create(physicalPath);
+        file.CopyTo(stream);
+
+        return $"/uploads/leave/{fileName}";
     }
 }
 

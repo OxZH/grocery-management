@@ -11,6 +11,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<Staff> Staffs { get; set; }
     public DbSet<Manager> Managers { get; set; }
     public DbSet<AttendanceRecords> AttendanceRecords { get; set; }
+    public DbSet<LeaveRequest> LeaveRequests { get; set; }
 
 }
 
@@ -55,6 +56,7 @@ public class Staff : User
     public List<Checkout> Checkout { get; set; }
     public List<Allocation> Allocations { get; set; }
     public List<AttendanceRecords> AttendanceRecords { get; set; }
+    public List<LeaveRequest> LeaveRequests { get; set; }
 
 }
 public class Manager : User
@@ -64,6 +66,7 @@ public class Manager : User
     public List<Staff> Staffs { get; set; } = [];
     public List<Expense> Expenses { get; set; } = [];
     public List<AttendanceRecords> AttendenceRecords { get; set; } = [];
+    public List<LeaveRequest> LeaveApprovals { get; set; } = [];
 
 }
 
@@ -121,6 +124,46 @@ public class AttendanceRecords
 
     public Staff Staff { get; set; }
     public Manager Manager { get; set; }
+}
+
+public class LeaveRequest
+{
+    [Key, MaxLength(8)]
+    [RegularExpression(@"LR\d{5}", ErrorMessage = "Format must be 'LR' followed by 5 digits (e.g. LR00001)")]
+    public string Id { get; set; }
+
+    [Required, RegularExpression(@"^[a-zA-Z][0-9]{2,3}$", ErrorMessage = "Staff ID must be letter + 2-3 digits")]
+    public string StaffId { get; set; }
+
+    [Required, DataType(DataType.Date)]
+    public DateOnly LeaveDate { get; set; }
+
+    [Required, MaxLength(10)]
+    [RegularExpression("^(ADVANCE|MC)$", ErrorMessage = "Type must be ADVANCE or MC")]
+    public string Type { get; set; }
+
+    [Required, MaxLength(10)]
+    [RegularExpression("^(PENDING|APPROVED|REJECTED)$", ErrorMessage = "Status must be PENDING, APPROVED, or REJECTED")]
+    public string Status { get; set; } = "PENDING";
+
+    [MaxLength(300)]
+    public string? Reason { get; set; }
+
+    [MaxLength(260)]
+    public string? AttachmentPath { get; set; }
+
+    [DataType(DataType.DateTime)]
+    public DateTime SubmittedAt { get; set; } = DateTime.Now;
+
+    [RegularExpression(@"^[a-zA-Z][0-9]{2,3}$")]
+    public string? ApprovedBy { get; set; }
+
+    [DataType(DataType.DateTime)]
+    public DateTime? ApprovedAt { get; set; }
+
+    // Navigation
+    public Staff? Staff { get; set; }
+    public Manager? Manager { get; set; }
 }
 public class Expense
 {

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GroceryManagement.Migrations
 {
     [DbContext(typeof(DB))]
-    [Migration("20251215072204_v1")]
+    [Migration("20251220050730_v1")]
     partial class v1
     {
         /// <inheritdoc />
@@ -169,6 +169,58 @@ namespace GroceryManagement.Migrations
                     b.HasIndex("StaffId");
 
                     b.ToTable("Inventories");
+                });
+
+            modelBuilder.Entity("GroceryManagement.Models.LeaveRequest", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AttachmentPath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateOnly>("LeaveDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ManagerId")
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("StaffId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ManagerId");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("LeaveRequests");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Product", b =>
@@ -348,6 +400,23 @@ namespace GroceryManagement.Migrations
                     b.Navigation("Staff");
                 });
 
+            modelBuilder.Entity("GroceryManagement.Models.LeaveRequest", b =>
+                {
+                    b.HasOne("GroceryManagement.Models.Manager", "Manager")
+                        .WithMany("LeaveApprovals")
+                        .HasForeignKey("ManagerId");
+
+                    b.HasOne("GroceryManagement.Models.Staff", "Staff")
+                        .WithMany("LeaveRequests")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("Staff");
+                });
+
             modelBuilder.Entity("GroceryManagement.Models.Staff", b =>
                 {
                     b.HasOne("GroceryManagement.Models.Manager", "Manager")
@@ -373,6 +442,8 @@ namespace GroceryManagement.Migrations
 
                     b.Navigation("Expenses");
 
+                    b.Navigation("LeaveApprovals");
+
                     b.Navigation("Staffs");
                 });
 
@@ -383,6 +454,8 @@ namespace GroceryManagement.Migrations
                     b.Navigation("AttendanceRecords");
 
                     b.Navigation("Checkout");
+
+                    b.Navigation("LeaveRequests");
 
                     b.Navigation("ManagedInventory");
                 });
