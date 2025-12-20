@@ -6,36 +6,7 @@
 
 <h1>Product Details</h1>
 
-<style>
-    /* Simple styling for the detail table */
-    .detail-table {
-        width: 100%;
-        max-width: 600px;
-        border-collapse: collapse;
-    }
-
-        .detail-table th {
-            text-align: left;
-            padding: 10px;
-            width: 150px;
-            background-color: #f2f2f2;
-        }
-
-        .detail-table td {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-    .detail-photo {
-        width: 200px;
-        height: 200px;
-        object-fit: cover;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-    }
-</style>
-
-<table class="detail-table">
+<table class="detail-container">
     <tr>
         <th>Photo</th>
         <td>
@@ -67,9 +38,11 @@
         <td>@Model.StoreFrontQty</td>
     </tr>
 </table>
-
-<div style="margin-top: 20px;">
-    <a asp-action="Index" class="button">Back to List</a> |
-    <a asp-action="Update" asp-route-id="@Model.Id" class="button">Edit</a> |
-    <a asp-action="Delete" asp-route-id="@Model.Id" class="button">Delete</a>
-</div>
+<section class="actions" style="margin-top: 20px;">
+    <button data-get="/Product/Update/@Model.Id">Edit</button>
+    <button data-post="/Product/Delete/@Model.Id"
+            data-confirm="Are you sure you want to delete Product @Model.Id?">
+        Delete
+    </button>
+    <a href="/Product/Index" class="button">Back to List</a>
+</section>

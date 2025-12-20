@@ -12,6 +12,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<User> Users { get; set; }
     public DbSet<Staff> Staffs { get; set; }
     public DbSet<Manager> Managers { get; set; }
+    public DbSet<Checkout> Checkout { get; set; }
 
 }
 

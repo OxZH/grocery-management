@@ -1,42 +1,111 @@
-﻿@model Inventory
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model Inventory
 
 @{
-    ViewBag.Title = $"Inventory Detail | {Model.Id}";
+    ViewBag.Title = $"Inventory Detail";
+    var batchList = ViewBag.BatchList as IPagedList<Inventory>;
 }
+<style>
 
-<table class="table">
-    <tr>
-        <th>Batch ID</th>
-        <td>@Model.Id</td>
-    </tr>
-    <tr>
-        <th>Product ID</th>
-        <td>@Model.ProductId</td>
-    </tr>
-    <tr>
-        <th>Expiry Date</th>
-        <td>@Model.ExpiryDate.ToShortDateString()</td>
-    </tr>
-    <tr>
-        <th>Staff ID</th>
-        <td>@Model.StaffId</td>
-    </tr>
-    <tr>
-        <th>Checkout ID</th>
-        <td>@Model.StaffId</td>
-    </tr>
-    <tr>
-        <th>Checkout ID</th>
-        <td>@(string.IsNullOrEmpty(Model.CheckoutId) ? "N/A" : Model.CheckoutId)</td>
-    </tr>
-    <tr>
-        <th>Status</th>
-        <td>@Model.Status</td>
-    </tr>
+</style>
+<div class="detail-container">
 
-</table>
+    <div class="left-panel">
+        <table class="table">
+            <tr>
+                <th>Inventory ID</th>
+                <td>@Model.Id</td>
+            </tr>
+            <tr>
+                <th>Product ID</th>
+                <td>@Model.ProductId</td>
+            </tr>
+            <tr>
+                <th>Expiry Date</th>
+                <td>@Model.ExpiryDate.ToShortDateString()</td>
+            </tr>
+            <tr>
+                <th>Staff ID</th>
+                <td>@Model.StaffId</td>
+            </tr>
+            <tr>
+                <th>Checkout ID</th>
+                <td>@(string.IsNullOrEmpty(Model.CheckoutId) ? "N/A" : Model.CheckoutId)</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>
+                    <span class="@(Model.Status == "AVAILABLE" ? "badge-avail" : Model.Status == "SOLD" ? "badge-sold" : "badge-disp")">
+                        @Model.Status
+                    </span>
+                </td>
+            </tr>
+        </table>
 
-<section class="actions">
-    <button data-get="/Home/Update/@Model.Id">Edit</button>
-    <a href="/Home/Index" class="button">Back to List</a>
-</section>
+        <section class="actions" style="margin-top: 20px;">
+            <button data-get="/Home/Update/@Model.Id">Edit</button>
+            <button data-post="/Home/Delete/@Model.Id"
+                    data-confirm="Are you sure you want to delete Inventory @Model.Id?">
+                Delete
+            </button>
+            <a href="/Home/Index" class="button">Back to List</a>
+        </section>
+    </div>
+
+    <div class="right-panel">
+        @if (batchList != null && batchList.Count > 0)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Inventory ID</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in batchList)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>
+                                <span class="@(item.Status == "AVAILABLE" ? "badge-avail" : item.Status == "SOLD" ? "badge-sold" : "badge-disp")">
+                                    @item.Status
+                                </span>
+                            </td>
+                            <td>
+                                <a href="/Home/Detail/@item.Id">View</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div style="margin-top: 10px;">
+                @Html.PagedListPager(batchList, page => Url.Action("Detail", new { id = Model.Id, page = page }),
+                        PagedListRenderOptions.ClassicPlusFirstAndLast)
+            </div>
+
+            <div style="font-size: 0.8em; color: #666; margin-top:5px;">
+                Page @batchList.PageNumber of @batchList.PageCount
+            </div>
+        }
+        else
+        {
+            <p><i>No other items found in this batch.</i></p>
+        }
+        <section class="actions" style="margin-top: 20px;">
+            <button data-post="/Home/DeleteBatch/@Model.Id"
+                    data-confirm="WARNING: This will delete ALL @ViewBag.BatchList.Count items in this batch. Are you sure?">
+                Delete All Batch
+            </button>
+        </section>
+        <h3>Other Items in Same Batch</h3> 
+        <p class="same-batch-decs">
+            (Same Product, Expiry & Staff)
+        </p>
+       
+        
+    </div>
+
+</div>

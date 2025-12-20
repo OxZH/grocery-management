@@ -15,21 +15,86 @@
     <input asp-for="SellPrice" type="number">
     <span asp-validation-for="SellPrice"></span>
 
-    <label asp-for ="PhotoURL">Photo URL</label>
+    <label asp-for="PhotoURL">Photo URL</label>
     <label class="upload">
-        <input asp-for="PhotoURL" accept="image/jpeg,image/png" hidden>
-        <img src="/images/photo.jpg">
+
+        <input asp-for="PhotoURL" accept="image/jpeg,image/png" hidden onchange="previewFile(this)">
+        <img src="/images/photo.jpg" id="previewImage" style="transition: transform 0.3s ease;">
     </label>
-    <span asp-validation-for="PhotoURL"></span>
+
+    <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; background-color: #f9f9f9;">
+        <strong>Advanced Image Options:</strong>
+        <span>Rotate:</span>
+        <label style="margin-right: 10px;">
+            <input type="radio" name="Direction" value="None" checked> None
+        </label>
+        <label style="margin-right: 10px;">
+            <input type="radio" name="Direction" value="Left"> ↺ Left
+        </label>
+        <label>
+            <input type="radio" name="Direction" value="Right"> ↻ Right
+        </label>
+        <label style="margin-top: 5px; display:block;">
+            <input type="checkbox" name="Flip" value="true"> ↔ Flip Horizontally
+        </label>
+        <span asp-validation-for="PhotoURL"></span>
+    </div>
+    
 
     <label asp-for="Category"></label>
-    <select asp-for="Category" asp-items="ViewBag.ProductList">
-        <option value="">- Select One -</option>
-    </select>
+    <input asp-for="Category" list="categoryOptions" placeholder="Select or type new..." autocomplete="off" data-upper>
     <span asp-validation-for="Category"></span>
+
+    <datalist id="categoryOptions">
+        @foreach (var cat in ViewBag.ProductList)
+        {
+            <option value="@cat"></option>
+        }
+    </datalist>
 
     <section>
         <button>Submit</button>
         <button type="reset">Reset</button>
     </section>
 </form>
+@section Scripts {
+    <script>
+        function previewFile(input) {
+            var file = input.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function () {
+                    $("#previewImage").attr("src", reader.result);
+                    // Reset rotation when a new file is chosen
+                    currentRotation = 0;
+                    applyRotation();
+                    // Reset radio buttons to 'None'
+                    $("input[name='Direction'][value='None']").prop("checked", true);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        var currentRotation = 0;
+
+        $(document).ready(function () {
+            $('input[name="Direction"]').change(function () {
+                var val = $(this).val();
+                if (val === "Left") currentRotation = -90;
+                else if (val === "Right") currentRotation = 90;
+                else currentRotation = 0;
+
+                applyRotation();
+            });
+
+            $('input[name="Flip"]').change(function () {
+                applyRotation();
+            });
+        });
+
+        function applyRotation() {
+            var flipVal = $('input[name="Flip"]').is(':checked') ? "scaleX(-1)" : "scaleX(1)";
+            $("#previewImage").css("transform", `rotate(${currentRotation}deg) ${flipVal}`);
+        }
+    </script>
+}

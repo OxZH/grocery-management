@@ -5,7 +5,7 @@ $(document).on('click', '[data-get]', e => {
     location = url || location;
 });
 
-// Initiate POST request (AJAX-supported)
+/*// Initiate POST request (AJAX-supported)
 $(document).on('click', '[data-post]', e => {
     e.preventDefault();
     const url = e.target.dataset.post;
@@ -13,7 +13,36 @@ $(document).on('click', '[data-post]', e => {
     f.method = 'post';
     f.action = url || location;
     f.submit();
+});*/
+
+
+// POST Button Logic (Unblock / Delete)
+$(document).on('click', 'button[data-post]', function (e) {
+    // Stop the button from doing anything automatically (fix cancel also submit form)
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 1. Get the custom message, or use a default if missing
+    var message = $(this).data('confirm') || "Are you sure?";
+
+    // 2. Show the popup
+    if (confirm(message)) {
+        // 3. If clicked OK, submit the form
+        var url = $(this).data('post');
+        var form = $('<form action="' + url + '" method="post"></form>');
+
+        // Add CSRF token if your app uses it (Standard ASP.NET Core)
+        // var token = $('input[name="__RequestVerificationToken"]').val();
+        // if (token) {
+        //     form.append('<input type="hidden" name="__RequestVerificationToken" value="' + token + '" />');
+        // }
+
+        $('body').append(form);
+        form.submit();
+    }
+    // Nothing happens if cancel is clicked
 });
+
 
 // Trim input
 $('[data-trim]').on('change', e => {
@@ -51,7 +80,7 @@ $('[data-uncheck]').on('click', e => {
 // Row checkable (AJAX-supported)
 $(document).on('click', '[data-checkable]', e => {
     if ($(e.target).is(':input,a')) return;
-    
+
     $(e.currentTarget)
         .find(':checkbox')
         .prop('checked', (i, v) => !v);
@@ -75,4 +104,22 @@ $('.upload input').on('change', e => {
 
     // Trigger input validation
     $(e.target).valid();
+});
+$(document).ready(function () {
+    if ($.fn.select2) {
+
+        // Initialize Product Search Dropdown
+        $('#ProductSearch').select2({
+            placeholder: "- Type to Search -",
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Initialize Supplier Search Dropdown
+        $('#SupplierSearch').select2({
+            placeholder: "- Type to Search -",
+            allowClear: true,
+            width: '100%',
+        });
+    }
 });

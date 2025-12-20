@@ -1,0 +1,97 @@
+﻿@model UserUpdateVM
+
+@{
+	ViewBag.Title = "Update Account";
+	// Check if the current model is a Staff member to show extra fields
+	bool isStaff = Model.Role == "Staff";
+}
+
+<form method="post" class="form" enctype="multipart/form-data">
+	<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+	<input type="hidden" asp-for="Id" />
+	<input type="hidden" asp-for="Role" />
+	<input type="hidden" asp-for="ExistingPhotoURL" />
+
+	<section>
+		<h1>Update Account</h1>
+	</section>
+
+	<label asp-for="Id"></label>
+	<input asp-for="Id" class="form-control" readonly style="background-color: #eee;" />
+	<span asp-validation-for="Id"></span>
+
+	@if (isStaff)
+	{
+		<label>Photo</label>
+		<label class="upload">
+			<input asp-for="Photo" accept="image/jpeg,image/png" hidden />
+
+			<img src="/photos/@(Model.ExistingPhotoURL ?? "default.png")" alt="Photo Preview" />
+		</label>
+		<span asp-validation-for="Photo"></span>
+	}
+
+	<label asp-for="Name"></label>
+	<input asp-for="Name" data-trim autofocus />
+	<span asp-validation-for="Name"></span>
+
+@* 	<label asp-for="Email"></label>
+	<input asp-for="Email" type="email" data-trim />
+	<span asp-validation-for="Email"></span> *@
+
+	<label asp-for="PhoneNum"></label>
+	<input asp-for="PhoneNum" data-trim />
+	<span asp-validation-for="PhoneNum"></span>
+
+	@if (isStaff)
+	{
+		<label asp-for="Salary">Salary (RM)</label>
+		<input asp-for="Salary" type="number" step="0.01" min="0" />
+		<span asp-validation-for="Salary"></span>
+
+		<label asp-for="AuthorizationLvl">Job Role</label>
+		<select asp-for="AuthorizationLvl">
+			<option value="CASHIER">Cashier</option>
+			<option value="INVENTORY">Inventory</option>
+			<option value="CLEANING">Cleaning</option>
+		</select>
+		<span asp-validation-for="AuthorizationLvl"></span>
+
+		<label asp-for="ManagerId">Under</label>
+		<select asp-for="ManagerId" asp-items="Model.ManagerList">
+			@* Optional: Add a default null option if needed *@
+			@* <option value="">-- Select Manager --</option> *@ 
+	        </select>
+		<span asp-validation-for="ManagerId"></span>
+
+	}
+
+	<label>Account Type</label>
+	<input value="@Model.Role" readonly style="background-color: #eee;" />
+	<span></span>
+
+	<section>
+		<button class="btn btn-primary">Save Changes</button>
+		<a asp-action="Index" class="btn btn-link">Back to List</a>
+	</section>
+</form>
+
+@section foot {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+  <script>
+        // Use jQuery to detect file input change
+        // Note: Assuming your label has class 'upload' and input is inside
+        $(".upload input").change(function () {
+            const file = this.files[0];
+            if (file) {
+                // Create a temporary URL for the selected file
+                const url = URL.createObjectURL(file);
+                // Find the <img> tag next to this input and update src
+                $(this).next("img").attr("src", url);
+            }
+        });
+    </script>
+} 

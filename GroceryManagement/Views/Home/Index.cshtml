@@ -1,11 +1,12 @@
 ﻿@using X.PagedList
 @using X.PagedList.Mvc.Core
 @model IPagedList<Inventory>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
 
 @{
     ViewBag.Title = "Home | Inventory";
     // Define the fields available for sorting and display
-    string[] fields = ["Id", "ExpiryDate", "ProductId", "Status", "SupplierId"];
+    string[] fields = ["Id", "ExpiryDate", "ProductId", "SupplierId", "Status", "CheckoutId"];
 
     // Local function to generate sort links
     string GetSortUrl(string col)
@@ -31,6 +32,8 @@
         }
         return "";
     }
+    var today = DateOnly.FromDateTime(DateTime.Today);
+    var nearLimit = today.AddDays(3);
 }
 
 @* SEARCH FORM *@
@@ -44,14 +47,13 @@
 </form>
 
 <p>
+    <button data-get="/Home/Insert">Insert</button>
     @Model.Count() of @Model.TotalItemCount record(s) |
     Page @Model.PageNumber of @Model.PageCount
+    
 </p>
 
 <table class="table">
-    <tr>
-        <td><button data-get="/Home/Insert">Insert</button></td>
-    </tr>
     <tr>
         @* SORTABLE HEADERS *@
         @foreach (var f in fields)
@@ -71,20 +73,31 @@
         }
         <th>Actions</th>
     </tr>
-
     @* DATA ROWS *@
     @foreach (var s in Model)
     {
-        <tr>
-            <td><a href="/Home/Detail/@s.Id">@s.Id</a></td>
+        bool isAvailable = s.Status == "AVAILABLE";
+        bool isExpired = isAvailable && s.ExpiryDate < today;
+        bool isNear = isAvailable && !isExpired && s.ExpiryDate <= nearLimit;
+        string style = "";
+        if (isExpired)
+        {
+            style = "color: red; font-weight: bold;";
+        }
+        else if (isNear)
+        {
+            style = "color: #d39e00; font-weight: bold;";
+        }
+        <tr id="row-@s.Id" style="@style">
+            <td><a href="/Home/Detail/@s.Id" style="@style">@s.Id</a></td>
             <td>@s.ExpiryDate</td>
             <td>@s.ProductId</td>
-            <td>@s.Status</td>
             <td>@s.SupplierId</td>
+            <td class="col-status">@s.Status</td>
+            <td class="col-checkout">@s.CheckoutId</td>
             <td>
                 <button data-get="/Home/Detail/@s.Id">Detail</button>
                 <button data-get="/Home/Update/@s.Id">Update</button>
-                <button data-post="/Home/Delete/@s.Id">Delete</button>
             </td>
         </tr>
     }
@@ -104,3 +117,36 @@ Model,
 page => $"?name={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={page}",
 options
 )
+<script>
+    // Connect to the Hub
+    var connection = new signalR.HubConnectionBuilder().withUrl("/InventoryHub").build();
+
+    connection.start().then(function () {
+        console.log("SignalR Connected!");
+    }).catch(function (err) {
+        console.error(err.toString());
+    });
+
+    // Listen for "ReceiveUpdate" messages from the Controller
+    connection.on("ReceiveUpdate", function (id, newStatus, newCheckoutId) {
+
+        // Find the specific row using the ID
+        var row = document.getElementById("row-" + id);
+
+        if (row) {
+            // Find the specific cells inside that row
+            var statusCell = row.querySelector(".col-status");
+            var checkoutCell = row.querySelector(".col-checkout");
+
+            // Update the text
+            if(statusCell) statusCell.innerText = newStatus;
+            if(checkoutCell) checkoutCell.innerText = newCheckoutId;
+
+            // Optional: Flash Yellow effect to show it updated
+            row.style.backgroundColor = "#fff3cd";
+            setTimeout(function() {
+                row.style.backgroundColor = ""; // Reset color after 1 second
+            }, 1000);
+        }
+    });
+</script>
