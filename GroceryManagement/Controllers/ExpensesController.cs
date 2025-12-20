@@ -24,9 +24,9 @@ public class ExpensesController : Controller
     }
 
     // GET: /Expenses/Create
-    public IActionResult Create()
+    public IActionResult Create(string type)
     {
-        var model = new Expense { Date = DateTime.Today };
+        var model = new Expense { Date = DateTime.Today, Type = "Payment Reconciliation" };
         return View(model);
     }
 
@@ -35,6 +35,19 @@ public class ExpensesController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Create(Expense model)
     {
+        // force type to Payment Reconciliation
+        model.Type = "Payment Reconciliation";
+        // ensure no staff association for non-salary entries
+        if (!string.Equals(model.Type, "Salary", StringComparison.OrdinalIgnoreCase))
+        {
+            model.StaffId = null;
+        }
+        // force payment reconciliation to note cash-only
+        if (string.Equals(model.Type, "Payment Reconciliation", StringComparison.OrdinalIgnoreCase) && string.IsNullOrWhiteSpace(model.Details))
+        {
+            model.Details = "Payment Method: Cash";
+        }
+
         // auto-generate Id if not provided (EX + 3 digits to fit legacy 5-char column)
         if (string.IsNullOrWhiteSpace(model.Id))
         {
