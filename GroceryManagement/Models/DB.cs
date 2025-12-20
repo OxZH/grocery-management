@@ -27,7 +27,7 @@ public class User
     [EmailAddress]
     public string Email { get; set; }
     [MaxLength(100)]
-//    [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
+    //    [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$", ErrorMessage = "Password must be at least 8 characters and contain letters and numbers.")]
     public string Password { get; set; }
     [MaxLength(11)]
     [RegularExpression(@"^01[0-9]-?[0-9]{7,8}$", ErrorMessage = "Invalid Phone Number format.")]
@@ -94,16 +94,6 @@ public class Checkout
     public List<Inventory> Inventories { get; set; } = [];
 }
 
-public class Allocation
-{
-    [Key,MaxLength(5)]
-    public string Id { get; set; }
-    //add remaining attributes
-
-    //nav
-    public Staff Staff { get; set; }
-}
-
 
 public class AttendanceRecords
 {
@@ -112,11 +102,11 @@ public class AttendanceRecords
     public string Id { get; set; }
     public string StaffId { get; set; }
     [DataType(DataType.Date)]
-    public DateOnly Date { get; set; } 
+    public DateOnly Date { get; set; }
     [DataType(DataType.Time)]
-    public TimeOnly? CheckInTime { get; set; } 
+    public TimeOnly? CheckInTime { get; set; }
     [DataType(DataType.Time)]
-    public TimeOnly? CheckOutTime { get; set; } 
+    public TimeOnly? CheckOutTime { get; set; }
 
     [RegularExpression("^(ATTEND|ABSENT|LATE|LEAVE)$", ErrorMessage = "Status must be one of: ATTEND, ABSENT, LATE, or LEAVE")]
     [MaxLength(10)]
@@ -125,6 +115,18 @@ public class AttendanceRecords
     public Staff Staff { get; set; }
     public Manager Manager { get; set; }
 }
+public class Allocation
+{
+    [Key, MaxLength(5)]
+
+    public string Id { get; set; }
+    //add remainning attributes
+
+    //nav
+
+    public Staff Staff { get; set; }
+}
+
 
 public class LeaveRequest
 {

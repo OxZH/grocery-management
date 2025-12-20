@@ -1,0 +1,46 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+@using X.PagedList
+@model IPagedList<GroceryManagement.Models.User>
+
+<h1>User Index</h1>
+
+<form asp-action="Index" method="get"
+      data-ajax="true"
+      data-ajax-update="#target"
+      data-ajax-loading="#loader"
+      id="searchForm"
+      style="margin-bottom: 20px;">
+
+    <label>
+        Name:
+        <input type="text" name="name" value="@ViewBag.Name" placeholder="Search by Name/Email" autofocus />
+    </label>
+
+    <button>Search</button>
+
+    <span id="loader" style="display:none; color: #666; margin-left: 10px;">
+        Loading...
+    </span>
+</form>
+
+<div id="target">
+    <partial name="_StaffTable" model="Model" />
+</div>
+
+@section Scripts {
+    <script>
+        let timer = null;
+
+        $('#searchForm input[name="name"]').on('input', e => {
+            clearTimeout(timer); //clear previous timer if user keeps typing
+            timer = setTimeout(() => $(e.target.form).submit(), 500);
+        });
+        // Button Logic
+        $(document).on('click', 'button[data-get]', function(e) {
+            e.preventDefault(); // Prevent default if inside form
+            window.location.href = $(this).data('get');
+        });
+    </script>
+}

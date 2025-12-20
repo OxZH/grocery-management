@@ -20,7 +20,6 @@ public class HomeController(DB db, IWebHostEnvironment en) : Controller
     [HttpPost]
     public IActionResult Insert(InventoryInsertVM vm)
     {
-
         if (ModelState.IsValid("Id") &&
             db.Products.Any(s => s.Id == vm.Id))
         {
@@ -51,15 +50,17 @@ public class HomeController(DB db, IWebHostEnvironment en) : Controller
             TempData["Info"] = "Record inserted.";
             return RedirectToAction("Index");
         }
-        ViewBag.ProgramList = new SelectList(db.Inventories, "Id", "Name");
+        ViewBag.ProductList = new SelectList(db.Products.ToList(), "Id", "Name");
         return View();
     }
 
     public IActionResult TestDBUsers()
     {
-        var users = db.Users;
-        return View(users);
+        ViewBag.ProductList = new SelectList(db.Products.ToList(), "Id", "Name");
+        return View();
     }
+
+
 
 
 }

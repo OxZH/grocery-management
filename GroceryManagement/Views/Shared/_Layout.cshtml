@@ -1,10 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@inject DB db
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title</title>
-    <link rel="shortcut icon" href="/images/favicon.png">
+    @* <link rel="shortcut icon" href="/images/favicon.png"> *@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="/css/pager.css">
     <link rel="stylesheet" href="/css/app.css" asp-append-version="true">
@@ -15,15 +17,48 @@
 
     <header>
         <h1><a href="/">Grocery Management</a></h1>
+
+        @if (User.Identity!.IsAuthenticated)
+        {
+            <div>
+                @User.Identity.Name |
+                @(User.IsInRole("Manager") ? "Manager" : "")
+                @(User.IsInRole("Staff") ? "Staff" : "")
+            </div>
+        }
+
+        @if (User.IsInRole("Staff"))
+        {
+            var staff = db.Staffs.FirstOrDefault(s => s.Email == User.Identity!.Name);
+            if (staff != null)
+            {
+                <img src="/photos/@staff.PhotoURL">
+            }
+        }
     </header>
 
     <nav>
-        <a href="/">Index</a>
-        <a href="/Home/TestDBUsers">Test User DB</a>
-        <a href="/Attendance/CheckInAttendance">Attendance</a>
-        <a href="/Attendance/ApplyLeave">Leave Apply</a>
-        <a href="/Attendance/LeaveApprovals">Leave Approvals</a>
-        <div></div>
+        @if (!User.Identity!.IsAuthenticated)
+        {
+            <a href="/Account/Login">Login</a>
+            <a href="/Account/ForgotPassword">Forgot Password</a>
+        }
+        else
+        {
+            <a href="/">Product</a>
+            <a href="/User/Index">Staff List</a>
+            <a href="/Attendance/CheckInAttendance">Attendance</a>
+            <a href="/Account/UpdatePassword">Update Password</a>
+            @if (User.IsInRole("Staff"))
+            {
+                <a href="/Account/UpdateProfile">Update Profile</a>
+            }
+            <a href="/Account/Logout">Logout</a>
+            @if (User.IsInRole("Manager"))
+            {
+                <a href="/Account/Register">Register Staff</a>
+            }
+        }
     </nav>
 
     <main>
@@ -41,6 +76,8 @@
     <script src="/js/jquery.validate.min.js"></script>
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
     <script src="/js/app.js" asp-append-version="true"></script>
+
     @RenderSection("foot", false)
+	@RenderSection("Scripts", required: false)
 </body>
 </html>
