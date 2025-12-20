@@ -1,0 +1,12 @@
+@model GroceryManagement.Models.FinanceReportVM
+@{
+    ViewBag.Title = "Finance Reports";
+}
+
+<h2>Profit & Loss</h2>
+<table class="table">
+    <tr><th>Revenue (Checkout Total)</th><td>@Model.Revenue</td></tr>
+    <tr><th>Expenses</th><td>@Model.ExpenseTotal</td></tr>
+    <tr><th>Procurement Cost</th><td>@Model.ProcurementCost</td></tr>
+    <tr><th>Net Profit</th><td>@Model.NetProfit</td></tr>
+</table>

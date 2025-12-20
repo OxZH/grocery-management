@@ -1,0 +1,60 @@
+@model Checkout
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Packing Slip - @Model.Id</title>
+    <style>
+        body { font-family: Arial, Helvetica, sans-serif; }
+        .container { width: 700px; margin: 0 auto; }
+        .header { text-align: center; }
+        .items { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Packing Slip</h1>
+            <p>Checkout: @Model.Id</p>
+            <p>Date: @Model.Date</p>
+        </div>
+        <div class="items">
+            <h3>Items</h3>
+            @{
+                var invs = Model.Inventories ?? new List<GroceryManagement.Models.Inventory>();
+                var grouped = invs.GroupBy(i => i.ProductId).ToList();
+            }
+            @if (invs.Count == 0)
+            {
+                <p>No inventories linked to this checkout.</p>
+            }
+            else
+            {
+                <table style="width:100%; border-collapse: collapse;" border="1" cellpadding="6">
+                    <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Line Total</th></tr>
+                    @foreach (var g in grouped)
+                    {
+                        var prod = g.First().Product;
+                        var price = prod?.Price ?? 0m;
+                        var qty = g.Count();
+                        <tr>
+                            <td>@(prod?.Name ?? g.Key)</td>
+                            <td style="text-align:right;">@qty</td>
+                            <td style="text-align:right;">@price</td>
+                            <td style="text-align:right;">@(price * qty)</td>
+                        </tr>
+                    }
+                </table>
+            }
+            <p>Total: @Model.Total</p>
+        </div>
+    </div>
+    <script>
+        window.print();
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+@model IEnumerable<GroceryManagement.Models.Checkout>
+@{
+    var pageNumber = (int?)(ViewBag.PageNumber ?? 1) ?? 1;
+    var totalPages = (int?)(ViewBag.TotalPages ?? 1) ?? 1;
+    var totalCount = (int?)(ViewBag.TotalCount ?? Model.Count());
+}
+
+<p>@totalCount checkouts</p>
+<table class="table">
+    <tr>
+        <th><a href="#" data-sort="Id">Id</a></th>
+        <th><a href="#" data-sort="Date">Date</a></th>
+        <th><a href="#" data-sort="Total">Total</a></th>
+        <th>Status</th>
+        <th></th>
+    </tr>
+    @foreach(var o in Model)
+    {
+        <tr>
+            <td>@o.Id</td>
+            <td>@o.Date</td>
+            <td>@o.Total</td>
+            <td>@o.Status</td>
+            <td>
+                <a href="/Checkout/Details/@o.Id">Details</a>
+                <a href="/Checkout/PackingSlip/@o.Id" target="_blank">Print Slip</a>
+                <form method="post" action="/Checkout/Delete" style="display:inline">
+                    <input type="hidden" name="id" value="@o.Id" />
+                    <button type="submit" onclick="return confirm('Delete checkout @o.Id ?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+
+<div class="pager">
+    <button data-page="@(pageNumber-1)" @(pageNumber<=1?"disabled":null)>Prev</button>
+    <span>@($"Page {pageNumber} of {totalPages}")</span>
+    <button data-page="@(pageNumber+1)" @(pageNumber>=totalPages?"disabled":null)>Next</button>
+</div>

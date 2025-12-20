@@ -1,0 +1,127 @@
+@model GroceryManagement.Models.CheckoutCreateVM
+@{
+    ViewBag.Title = "Create Checkout";
+    var workflow = (string[])ViewBag.Workflow ?? new string[] { "PENDING","PICKING","PACKED","READY","COMPLETED","CANCELLED" };
+    var products = ViewBag.Products as List<GroceryManagement.Models.Product> ?? new List<GroceryManagement.Models.Product>();
+}
+
+<h2>Create Checkout</h2>
+
+<form method="post" class="form">
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(false)
+
+    <label asp-for="CustomerId">CustomerId (digits only)</label>
+    <input asp-for="CustomerId" pattern="\d+" title="Numbers only" required />
+    <span asp-validation-for="CustomerId" class="field-validation-error"></span>
+
+    <label asp-for="PaymentMethod">Payment Method</label>
+    <select asp-for="PaymentMethod">
+        <option value="CASH" selected="selected">Cash</option>
+        <option value="CREDIT CARD">Credit Card</option>
+        <option value="TOUCH N GO">Touch N Go</option>
+        <option value="DEBIT CARD">Debit Card</option>
+    </select>
+    <span asp-validation-for="PaymentMethod" class="field-validation-error"></span>
+
+    <label>Items (product + quantity)</label>
+    <div id="itemRows" style="grid-column: 1 / -1; display: grid; gap: 8px;">
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+            <div class="item-row" data-index="@i" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: center;">
+                <select name="Items[@i].ProductId" required>
+                    <option value="">Select product</option>
+                    @foreach (var p in products)
+                    {
+                        var selected = string.Equals(p.Id, Model.Items[i].ProductId, StringComparison.OrdinalIgnoreCase) ? "selected" : null;
+                        <option value="@p.Id" selected="@selected">@p.Id - @p.Name (@p.Price)</option>
+                    }
+                </select>
+                <input type="number" name="Items[@i].Quantity" value="@Model.Items[i].Quantity" min="1" required />
+                <button type="button" class="remove-item">Remove</button>
+            </div>
+        }
+    </div>
+    <button type="button" id="addItem">Add Item</button>
+    <span asp-validation-for="Items" class="field-validation-error"></span>
+
+    <label asp-for="Status">Status</label>
+    <select asp-for="Status">
+        @foreach(var s in workflow) { <option value="@s">@s</option> }
+    </select>
+    <span asp-validation-for="Status" class="field-validation-error"></span>
+
+    <section>
+        <button type="submit">Create</button>
+        <button type="reset">Reset</button>
+    </section>
+</form>
+
+<template id="item-template">
+    <div class="item-row" data-index="__idx__" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; align-items: center;">
+        <select name="Items[__idx__].ProductId" required>
+            <option value="">Select product</option>
+            @foreach (var p in products)
+            {
+                <option value="@p.Id">@p.Id - @p.Name (@p.Price)</option>
+            }
+        </select>
+        <input type="number" name="Items[__idx__].Quantity" value="1" min="1" required />
+        <button type="button" class="remove-item">Remove</button>
+    </div>
+</template>
+
+<script>
+    (function(){
+        const container = document.getElementById('itemRows');
+        const template = document.getElementById('item-template').innerHTML;
+
+        function renumber(){
+            const rows = container.querySelectorAll('.item-row');
+            rows.forEach((row, idx) => {
+                row.dataset.index = idx;
+                row.querySelectorAll('select, input').forEach(el => {
+                    if (el.name.includes('ProductId')) el.name = `Items[${idx}].ProductId`;
+                    if (el.name.includes('Quantity')) el.name = `Items[${idx}].Quantity`;
+                });
+            });
+        }
+
+        document.getElementById('addItem').addEventListener('click', () => {
+            const idx = container.querySelectorAll('.item-row').length;
+            const html = template.replace(/__idx__/g, idx);
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html.trim();
+            container.appendChild(wrapper.firstChild);
+            renumber();
+        });
+
+        container.addEventListener('click', e => {
+            if (e.target.classList.contains('remove-item')) {
+                e.preventDefault();
+                const row = e.target.closest('.item-row');
+                row?.remove();
+                renumber();
+            }
+        });
+
+        // Drop any empty product rows right before submit so model binding doesn't fail
+        document.querySelector('form').addEventListener('submit', e => {
+            const rows = Array.from(container.querySelectorAll('.item-row'));
+            rows.forEach(r => {
+                const product = r.querySelector('select');
+                if (!product || !product.value) {
+                    r.remove();
+                }
+            });
+            renumber();
+            if (container.querySelectorAll('.item-row').length === 0) {
+                e.preventDefault();
+                alert('Please add at least one product.');
+            }
+        });
+
+        // Ensure existing rows are indexed correctly on load
+        renumber();
+    })();
+</script>

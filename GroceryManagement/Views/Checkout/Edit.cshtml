@@ -1,10 +1,10 @@
 @model Checkout
 @{
-    ViewBag.Title = "Edit Order - " + Model.Id;
+    ViewBag.Title = "Edit Checkout - " + Model.Id;
     var workflow = (string[])ViewBag.Workflow ?? new string[] { "PENDING","PICKING","PACKED","READY","COMPLETED","CANCELLED" };
 }
 
-<h2>Edit Order @Model.Id</h2>
+<h2>Edit Checkout @Model.Id</h2>
 
 <form method="post">
     <input type="hidden" name="Id" value="@Model.Id" />
