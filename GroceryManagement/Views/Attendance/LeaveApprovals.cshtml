@@ -2,17 +2,12 @@
 @{
     ViewBag.Title = "Leave Approvals";
     var info = TempData["Info"] as string;
+    var managerId = ViewBag.ManagerId as string ?? "";
 }
 
 <h2>Leave Approvals</h2>
 
-<div style="margin-bottom: 20px;">
-    <label for="globalManagerId">Select Manager:</label>
-    <select id="globalManagerId" asp-items="ViewBag.Managers">
-        <option value="">-- Select manager --</option>
-    </select>
-    <small>Choose a manager to approve/reject requests</small>
-</div>
+<p><strong>Manager ID:</strong> @managerId</p>
 
 @if (!string.IsNullOrWhiteSpace(info))
 {
@@ -63,17 +58,15 @@ else
                 <td>
                     @if (r.Status == "PENDING")
                     {
-                        <form asp-action="ApproveLeave" method="post" style="display:inline" class="approval-form">
+                        <form asp-action="ApproveLeave" method="post" style="display:inline">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@r.Id" />
-                            <input type="hidden" name="managerId" class="managerIdInput" value="" />
-                            <button type="submit" class="approve-btn">Approve</button>
+                            <button type="submit">Approve</button>
                         </form>
-                        <form asp-action="RejectLeave" method="post" style="display:inline" class="approval-form">
+                        <form asp-action="RejectLeave" method="post" style="display:inline">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="id" value="@r.Id" />
-                            <input type="hidden" name="managerId" class="managerIdInput" value="" />
-                            <button type="submit" class="reject-btn">Reject</button>
+                            <button type="submit">Reject</button>
                         </form>
                     }
                     else
@@ -86,43 +79,3 @@ else
         </tbody>
     </table>
 }
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const managerDropdown = document.getElementById('globalManagerId');
-    const approvalForms = document.querySelectorAll('.approval-form');
-    const approveButtons = document.querySelectorAll('.approve-btn');
-    const rejectButtons = document.querySelectorAll('.reject-btn');
-    
-    function updateManagerId() {
-        const selectedManagerId = managerDropdown.value;
-        const managerInputs = document.querySelectorAll('.managerIdInput');
-        
-        managerInputs.forEach(input => {
-            input.value = selectedManagerId;
-        });
-        
-        // Enable/disable buttons based on selection
-        const isDisabled = !selectedManagerId;
-        approveButtons.forEach(btn => btn.disabled = isDisabled);
-        rejectButtons.forEach(btn => btn.disabled = isDisabled);
-    }
-    
-    // Initial state
-    updateManagerId();
-    
-    // Update on change
-    managerDropdown.addEventListener('change', updateManagerId);
-    
-    // Prevent submission without manager
-    approvalForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const managerId = this.querySelector('.managerIdInput').value;
-            if (!managerId) {
-                e.preventDefault();
-                alert('Please select a manager before approving/rejecting.');
-            }
-        });
-    });
-});
-</script>

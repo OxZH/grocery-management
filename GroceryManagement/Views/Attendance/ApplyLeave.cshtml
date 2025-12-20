@@ -2,9 +2,12 @@
 @{
     ViewBag.Title = "Apply Leave";
     var info = TempData["Info"] as string;
+    var staffId = ViewBag.StaffId as string ?? "";
 }
 
 <h2>Apply Leave</h2>
+
+<p><strong>Staff ID:</strong> @staffId</p>
 
 <p>Two categories: <b>ADVANCE</b> (submit before leave date) and <b>MC</b> (can submit after leave date, attachment required).</p>
 
@@ -17,13 +20,6 @@
 
 <form asp-action="ApplyLeave" method="post" enctype="multipart/form-data">
     @Html.AntiForgeryToken()
-    <div>
-        <label asp-for="Form.StaffId">Staff</label>
-        <select asp-for="Form.StaffId" asp-items="ViewBag.Staffs">
-            <option value="">-- Select staff --</option>
-        </select>
-        <span asp-validation-for="Form.StaffId" class="text-danger"></span>
-    </div>
 
     <div>
         <label asp-for="Form.Type">Type</label>

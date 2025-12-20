@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Http;
@@ -8,9 +9,22 @@ namespace GroceryManagement.Controllers;
 
 public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
 {
-    public IActionResult CheckInAttendance(string? staffId = null, string? overrideDate = null, string? overrideTime = null)
+    private string? GetCurrentUserId()
     {
-        LoadStaffDropdown(staffId);
+        var email = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(email)) return null;
+        
+        return db.Users.FirstOrDefault(u => u.Email == email)?.Id;
+    }
+    [Authorize(Roles = "Staff")]
+    public IActionResult CheckInAttendance(string? overrideDate = null, string? overrideTime = null)
+    {
+        var staffId = GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(staffId))
+        {
+            TempData["Info"] = "<p class='error'>Unable to identify current user.</p>";
+            return RedirectToAction("Index", "Home");
+        }
 
         var currentDate = string.IsNullOrWhiteSpace(overrideDate)
             ? DateOnly.FromDateTime(DateTime.Now).ToString("yyyy-MM-dd")
@@ -23,34 +37,31 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         ViewBag.CurrentTime = currentTime;
         ViewBag.OverrideDate = overrideDate;
         ViewBag.OverrideTime = overrideTime;
-        ViewBag.SelectedStaffId = staffId;
+        ViewBag.StaffId = staffId;
         ViewBag.HasCheckIn = false;
         ViewBag.HasCheckout = false;
         ViewBag.CanCheckout = false;
 
-        if (!string.IsNullOrWhiteSpace(staffId))
-        {
-            var parsedDate = DateOnly.Parse(currentDate);
-            var existingRecord = db.AttendanceRecords
-                .FirstOrDefault(a => a.StaffId == staffId && a.Date == parsedDate);
+        var parsedDate = DateOnly.Parse(currentDate);
+        var existingRecord = db.AttendanceRecords
+            .FirstOrDefault(a => a.StaffId == staffId && a.Date == parsedDate);
 
-            if (existingRecord != null)
+        if (existingRecord != null)
+        {
+            ViewBag.HasCheckIn = true;
+            ViewBag.AlreadyCheckedIn = true;
+            ViewBag.CheckInInfo = $"Checked in on {existingRecord.Date:yyyy-MM-dd} at {existingRecord.CheckInTime}";
+            ViewBag.HasCheckout = existingRecord.CheckOutTime != null;
+            ViewBag.CanCheckout = true; // allow rewriting checkout time
+            if (existingRecord.CheckOutTime is not null)
             {
-                ViewBag.HasCheckIn = true;
-                ViewBag.AlreadyCheckedIn = true;
-                ViewBag.CheckInInfo = $"Checked in on {existingRecord.Date:yyyy-MM-dd} at {existingRecord.CheckInTime}";
-                ViewBag.HasCheckout = existingRecord.CheckOutTime != null;
-                ViewBag.CanCheckout = true; // allow rewriting checkout time
-                if (existingRecord.CheckOutTime is not null)
-                {
-                    ViewBag.CheckOutInfo = $"Checked out at {existingRecord.CheckOutTime}";
-                }
+                ViewBag.CheckOutInfo = $"Checked out at {existingRecord.CheckOutTime}";
             }
-            else
-            {
-                ViewBag.AlreadyCheckedIn = false;
-                ViewBag.CheckInInfo = "No check-in found for this date.";
-            }
+        }
+        else
+        {
+            ViewBag.AlreadyCheckedIn = false;
+            ViewBag.CheckInInfo = "No check-in found for this date.";
         }
 
         return View();
@@ -58,11 +69,13 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult CheckIn(string staffId, string? overrideDate = null, string? overrideTime = null)
+    [Authorize(Roles = "Staff")]
+    public IActionResult CheckIn(string? overrideDate = null, string? overrideTime = null)
     {
+        var staffId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(staffId))
         {
-            TempData["Info"] = "<p class='error'>Please select a staff member before checking in.</p>";
+            TempData["Info"] = "<p class='error'>Unable to identify current user.</p>";
             return RedirectToAction(nameof(CheckInAttendance));
         }
 
@@ -82,7 +95,6 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
             TempData["Info"] = $"<p class='error'>You already checked in at {alreadyCheckedIn.CheckInTime} on {alreadyCheckedIn.Date:yyyy-MM-dd}.</p>";
             return RedirectToAction(nameof(CheckInAttendance), new
             {
-                staffId,
                 overrideDate = checkDate.ToString("yyyy-MM-dd"),
                 overrideTime = checkTime.ToString("HH:mm")
             });
@@ -104,7 +116,6 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
 
         return RedirectToAction(nameof(CheckInAttendance), new
         {
-            staffId,
             overrideDate = checkDate.ToString("yyyy-MM-dd"),
             overrideTime = checkTime.ToString("HH:mm")
         });
@@ -112,11 +123,13 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult CheckOut(string staffId, string? overrideDate = null, string? overrideTime = null)
+    [Authorize(Roles = "Staff")]
+    public IActionResult CheckOut(string? overrideDate = null, string? overrideTime = null)
     {
+        var staffId = GetCurrentUserId();
         if (string.IsNullOrWhiteSpace(staffId))
         {
-            TempData["Info"] = "<p class='error'>Please select a staff member before checking out.</p>";
+            TempData["Info"] = "<p class='error'>Unable to identify current user.</p>";
             return RedirectToAction(nameof(CheckInAttendance));
         }
 
@@ -136,7 +149,6 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
             TempData["Info"] = $"<p class='error'>No check-in record found for {checkDate:yyyy-MM-dd}. Cannot check out.</p>";
             return RedirectToAction(nameof(CheckInAttendance), new
             {
-                staffId,
                 overrideDate = checkDate.ToString("yyyy-MM-dd"),
                 overrideTime = checkTime.ToString("HH:mm")
             });
@@ -157,58 +169,60 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
 
         return RedirectToAction(nameof(CheckInAttendance), new
         {
-            staffId,
             overrideDate = checkDate.ToString("yyyy-MM-dd"),
             overrideTime = checkTime.ToString("HH:mm")
         });
     }
 
-    public IActionResult ApplyLeave(string? staffId = null)
+    [Authorize(Roles = "Staff")]
+    public IActionResult ApplyLeave()
     {
-        LoadStaffDropdown(staffId);
+        var staffId = GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(staffId))
+        {
+            TempData["Info"] = "<p class='error'>Unable to identify current user.</p>";
+            return RedirectToAction("Index", "Home");
+        }
 
         var vm = new LeaveApplyVM
         {
             Form = new LeaveRequestFormVM
             {
-                StaffId = staffId ?? string.Empty,
                 Type = "ADVANCE",
                 LeaveDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1))
             },
-            Requests = string.IsNullOrWhiteSpace(staffId)
-                ? []
-                : db.LeaveRequests
-                    .Where(l => l.StaffId == staffId)
-                    .OrderByDescending(l => l.SubmittedAt)
-                    .Take(50)
-                    .ToList()
+            Requests = db.LeaveRequests
+                .Where(l => l.StaffId == staffId)
+                .OrderByDescending(l => l.SubmittedAt)
+                .Take(50)
+                .ToList()
         };
 
-        ViewBag.SelectedStaffId = staffId;
+        ViewBag.StaffId = staffId;
         return View("ApplyLeave", vm);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Staff")]
     public IActionResult ApplyLeave(LeaveApplyVM vm, IFormFile? attachment)
     {
+        var staffId = GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(staffId))
+        {
+            TempData["Info"] = "<p class='error'>Unable to identify current user.</p>";
+            return RedirectToAction(nameof(ApplyLeave));
+        }
+
         if (vm?.Form is null)
         {
             TempData["Info"] = "<p class='error'>Invalid form submission.</p>";
             return RedirectToAction(nameof(ApplyLeave));
         }
 
-        var staffId = vm.Form.StaffId;
         var leaveDate = vm.Form.LeaveDate;
         var type = vm.Form.Type?.ToUpperInvariant();
         var today = DateOnly.FromDateTime(DateTime.Now);
-
-        LoadStaffDropdown(staffId);
-
-        if (string.IsNullOrWhiteSpace(staffId))
-        {
-            ModelState.AddModelError("Form.StaffId", "Please select a staff.");
-        }
 
         if (type is null || (type != "ADVANCE" && type != "MC"))
         {
@@ -247,13 +261,12 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
             var errors = string.Join(" | ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
             TempData["Info"] = $"<p class='error'>Validation failed: {errors}</p>";
             
-            vm.Requests = string.IsNullOrWhiteSpace(staffId)
-                ? []
-                : db.LeaveRequests
-                    .Where(l => l.StaffId == staffId)
-                    .OrderByDescending(l => l.SubmittedAt)
-                    .Take(50)
-                    .ToList();
+            vm.Requests = db.LeaveRequests
+                .Where(l => l.StaffId == staffId)
+                .OrderByDescending(l => l.SubmittedAt)
+                .Take(50)
+                .ToList();
+            ViewBag.StaffId = staffId;
             return View("ApplyLeave", vm);
         }
 
@@ -273,12 +286,18 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         db.SaveChanges();
 
         TempData["Info"] = $"<p class='success'>Leave application {leave.Id} submitted for approval. Type: {leave.Type}, Date: {leave.LeaveDate}</p>";
-        return RedirectToAction(nameof(ApplyLeave), new { staffId });
+        return RedirectToAction(nameof(ApplyLeave));
     }
 
+    [Authorize(Roles = "Manager")]
     public IActionResult LeaveApprovals()
     {
-        LoadManagerDropdown();
+        var managerId = GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(managerId))
+        {
+            TempData["Info"] = "<p class='error'>Unable to identify current manager.</p>";
+            return RedirectToAction("Index", "Home");
+        }
         
         var requests = db.LeaveRequests
             .OrderBy(r => r.Status == "PENDING" ? 0 : 1)
@@ -286,13 +305,22 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
             .Take(200)
             .ToList();
 
+        ViewBag.ManagerId = managerId;
         return View("LeaveApprovals", requests);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult ApproveLeave(string id, string? managerId)
+    [Authorize(Roles = "Manager")]
+    public IActionResult ApproveLeave(string id)
     {
+        var managerId = GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(managerId))
+        {
+            TempData["Info"] = "<p class='error'>Unable to identify current manager.</p>";
+            return RedirectToAction(nameof(LeaveApprovals));
+        }
+
         var req = db.LeaveRequests.FirstOrDefault(r => r.Id == id);
         if (req is null)
         {
@@ -311,8 +339,16 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult RejectLeave(string id, string? managerId)
+    [Authorize(Roles = "Manager")]
+    public IActionResult RejectLeave(string id)
     {
+        var managerId = GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(managerId))
+        {
+            TempData["Info"] = "<p class='error'>Unable to identify current manager.</p>";
+            return RedirectToAction(nameof(LeaveApprovals));
+        }
+
         var req = db.LeaveRequests.FirstOrDefault(r => r.Id == id);
         if (req is null)
         {
@@ -327,32 +363,6 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
 
         TempData["Info"] = $"<p class='success'>Rejected {req.Id}.</p>";
         return RedirectToAction(nameof(LeaveApprovals));
-    }
-
-    private void LoadStaffDropdown(string? selectedStaffId)
-    {
-        var staffs = db.Staffs
-            .Select(s => new
-            {
-                s.Id,
-                Name = $"{s.Id} - {s.Name}"
-            })
-            .ToList();
-
-        ViewBag.Staffs = new SelectList(staffs, "Id", "Name", selectedStaffId);
-    }
-
-    private void LoadManagerDropdown(string? selectedManagerId = null)
-    {
-        var managers = db.Managers
-            .Select(m => new
-            {
-                m.Id,
-                Name = $"{m.Id} - {m.Name}"
-            })
-            .ToList();
-
-        ViewBag.Managers = new SelectList(managers, "Id", "Name", selectedManagerId);
     }
 
     private string GenerateAttendanceId()

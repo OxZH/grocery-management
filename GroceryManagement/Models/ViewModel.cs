@@ -26,10 +26,6 @@ public class InventoryInsertVM
 
 public class LeaveRequestFormVM
 {
-    [Required(ErrorMessage = "Please select a staff")]
-    [RegularExpression(@"^[a-zA-Z][0-9]{2,3}$", ErrorMessage = "Staff ID must be letter + 2-3 digits")]
-    public string StaffId { get; set; } = string.Empty;
-
     [Required(ErrorMessage = "Leave date is required")]
     [DataType(DataType.Date)]
     public DateOnly LeaveDate { get; set; }
