@@ -67,11 +67,6 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
         ViewBag.SupplierList = new SelectList(db.Supplier.ToList(), "Id", "Id");
         return View();
     }
-    public IActionResult Insert()
-    {
-        ViewBag.ProductList = new SelectList(db.Products.ToList(), "Id", "Name");
-        return View();
-    }
 
     // POST: Home/Insert
     [HttpPost]
