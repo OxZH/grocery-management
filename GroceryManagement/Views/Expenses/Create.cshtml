@@ -33,8 +33,7 @@
     </div>
     <div>
         <label>Date</label>
-        <input type="date" name="Date" value="@Model.Date.ToString("yyyy-MM-dd")" required />
-        @Html.ValidationMessage("Date")
+        <input type="text" value="@Model.Date.ToString("yyyy-MM-dd")" readonly />
     </div>
     <div>
         <label>Amount</label>
@@ -44,7 +43,3 @@
     <button type="submit">Save</button>
     <a href="/Expenses">Cancel</a>
 </form>
-
-<script>
-    // no salary option; no staff toggle needed
-</script>

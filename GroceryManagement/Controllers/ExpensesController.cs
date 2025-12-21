@@ -38,6 +38,9 @@ public class ExpensesController : Controller
         // capture payment method from form (no dedicated column)
         var paymentMethod = (Request?.Form?["PaymentMethod"].ToString() ?? "Cash").Trim();
 
+        // auto-set date to today
+        model.Date = DateTime.Today;
+
         // no salary option; always clear staff
         model.StaffId = null;
 
