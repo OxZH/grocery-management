@@ -1,4 +1,5 @@
 using GroceryManagement.Hubs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
@@ -10,7 +11,8 @@ namespace GroceryManagement.Controllers;
 
 public class HomeController(DB db, IWebHostEnvironment en, IHubContext<InventoryHub> hub) : Controller
 {
-    // GET: Home/Index
+    // GET: Home/Inde
+    [Authorize]
     public IActionResult Index(string? name, string? sort, string? dir, int page = 1)
     {
         // Searching by ProductId

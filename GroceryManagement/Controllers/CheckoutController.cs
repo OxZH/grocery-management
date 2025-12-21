@@ -1,9 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
+using GroceryManagement.Hubs;
+using GroceryManagement.Models;
 using Microsoft.AspNetCore.Authorization;
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using GroceryManagement.Models;
+using System.Text.Json;
 
 namespace GroceryManagement.Controllers;
 
@@ -14,12 +16,14 @@ public class CheckoutController : Controller
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<CheckoutController> _logger;
     private static readonly string[] Workflow = new[] { "PENDING", "PICKING", "PACKED", "READY", "COMPLETED", "CANCELLED" };
+    private readonly IHubContext<InventoryHub> _hub;
 
-    public CheckoutController(DB db, IWebHostEnvironment env, ILogger<CheckoutController> logger)
+    public CheckoutController(DB db, IWebHostEnvironment env, ILogger<CheckoutController> logger, IHubContext<InventoryHub> hub)
     {
         _db = db;
         _env = env;
         _logger = logger;
+        _hub = hub;
     }
 
     // GET: /Checkout
@@ -88,7 +92,7 @@ public class CheckoutController : Controller
 
     // POST: /Checkout/Create
     [HttpPost]
-    public IActionResult Create(CheckoutCreateVM model)
+    public async Task <IActionResult> Create(CheckoutCreateVM model)
     {
         if (model == null) return BadRequest();
 
@@ -227,7 +231,7 @@ public class CheckoutController : Controller
             ModelState.AddModelError("", "Failed to create order - database error: " + ex.Message);
             return View(model);
         }
-
+        await _hub.Clients.All.SendAsync("ReceiveUpdate", checkout.InventoryId, "SOLD", checkoutId);
         TempData["Info"] = $"Order {checkout.Id} created";
         var referer = Request?.Headers?["Referer"].FirstOrDefault();
         if (!string.IsNullOrEmpty(referer)) return Redirect(referer);
