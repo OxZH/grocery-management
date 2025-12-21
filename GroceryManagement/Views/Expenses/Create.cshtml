@@ -11,18 +11,13 @@
 <div>
     <label>Type</label>
     <select name="Type" required>
-        @foreach (var t in new[] { "Utilities", "Office Supplies", "Salary", "Maintenance", "Insurance", "Payment Reconciliation" })
+        @foreach (var t in new[] { "Utilities", "Office Supplies", "Maintenance", "Insurance", "Payment Reconciliation" })
         {
             <option value="@t" selected="@(t==Model.Type ? "selected" : null)">@t</option>
         }
     </select>
     @Html.ValidationMessage("Type")
 </div>
-    <div>
-        <label>Staff Id (for Salary)</label>
-        <input name="StaffId" id="StaffId" value="@Model.StaffId" />
-        @Html.ValidationMessage("StaffId")
-    </div>
     <div>
         <label>Payment Method</label>
         <select name="PaymentMethod">
@@ -51,16 +46,5 @@
 </form>
 
 <script>
-    (function() {
-        const typeSel = document.querySelector('select[name="Type"]');
-        const staffInput = document.getElementById('StaffId');
-        if (!typeSel || !staffInput) return;
-        const toggle = () => {
-            const isSalary = (typeSel.value || '').toLowerCase() === 'salary';
-            staffInput.disabled = !isSalary;
-            if (!isSalary) staffInput.value = '';
-        };
-        typeSel.addEventListener('change', toggle);
-        toggle();
-    })();
+    // no salary option; no staff toggle needed
 </script>

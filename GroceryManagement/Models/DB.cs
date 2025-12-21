@@ -346,6 +346,7 @@ public class Expense
     public DateTime Date { get; set; }
 
     [Precision(10, 2)]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Amount must be positive")]
     public decimal Amount { get; set; }
     // added optional staffid
     public string? StaffId { get; set; }

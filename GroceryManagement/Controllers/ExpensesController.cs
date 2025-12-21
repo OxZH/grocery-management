@@ -38,11 +38,8 @@ public class ExpensesController : Controller
         // capture payment method from form (no dedicated column)
         var paymentMethod = (Request?.Form?["PaymentMethod"].ToString() ?? "Cash").Trim();
 
-        // ensure staff only for salary entries
-        if (!string.Equals(model.Type, "Salary", StringComparison.OrdinalIgnoreCase))
-        {
-            model.StaffId = null;
-        }
+        // no salary option; always clear staff
+        model.StaffId = null;
 
         // persist payment method into details prefix
         var detail = (model.Details ?? string.Empty).Trim();
