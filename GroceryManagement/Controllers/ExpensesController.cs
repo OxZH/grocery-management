@@ -44,11 +44,11 @@ public class ExpensesController : Controller
         // no salary option; always clear staff
         model.StaffId = null;
 
-        // persist payment method into details prefix
+        // only store user details; if empty, fall back to payment method text
         var detail = (model.Details ?? string.Empty).Trim();
         model.Details = string.IsNullOrEmpty(detail)
-            ? $"Payment Method: {paymentMethod}"
-            : $"Payment Method: {paymentMethod}; {detail}";
+            ? paymentMethod
+            : detail;
 
         // auto-generate Id if not provided (EX + 3 digits to fit legacy 5-char column)
         if (string.IsNullOrWhiteSpace(model.Id))
