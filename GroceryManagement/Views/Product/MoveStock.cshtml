@@ -1,0 +1,48 @@
+﻿@model ProductMoveVM
+
+@{
+    ViewBag.Title = "Product | Move Stock";
+}
+
+<h2>Move Stock to Store Front</h2>
+
+<div class="card" style="padding: 20px; border: 1px solid #ccc; max-width: 500px;">
+
+    <div style="display:flex; gap:20px; align-items:center; margin-bottom:20px;">
+        @if (!string.IsNullOrEmpty(Model.PhotoURL))
+        {
+            <img src="/images/productImg/@Model.PhotoURL" style="width:80px; height:80px; object-fit:cover; border-radius:5px;">
+        }
+        <div>
+            <h3>@Model.Name</h3>
+            <p>ID: @Model.Id</p>
+        </div>
+    </div>
+
+    <form method="post">
+        <input asp-for="Id" hidden />
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; background: #f9f9f9; padding: 10px;">
+            <div style="text-align: center;">
+                <label>Warehouse</label>
+                <h3>@Model.WarehouseQty</h3>
+            </div>
+            <div style="align-self: center; font-weight: bold; font-size: 20px;">
+                ➜
+            </div>
+            <div style="text-align: center;">
+                <label>Store Front</label>
+                <h3>@Model.StoreFrontQty</h3>
+            </div>
+        </div>
+
+        <label asp-for="QtyToMove">Quantity to Move:</label>
+        <input asp-for="QtyToMove" type="number" min="1" autofocus class="form-control">
+        <span asp-validation-for="QtyToMove" class="text-danger"></span>
+
+        <div style="margin-top: 20px;">
+            <button class="btn-primary">Confirm Move</button>
+            <button class="btn-primary">Cancel</button>
+        </div>
+    </form>
+</div>

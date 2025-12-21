@@ -1,5 +1,6 @@
 global using GroceryManagement.Models;
 global using GroceryManagement;
+using GroceryManagement.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
@@ -10,14 +11,14 @@ builder.Services.AddSqlServer<DB>($@"
 builder.Services.AddScoped<Helper>();
 builder.Services.AddAuthentication().AddCookie();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapHub<InventoryHub>("/InventoryHub");
 app.MapDefaultControllerRoute();
 
 using (var scope = app.Services.CreateScope())

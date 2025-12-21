@@ -80,7 +80,7 @@ $('[data-uncheck]').on('click', e => {
 // Row checkable (AJAX-supported)
 $(document).on('click', '[data-checkable]', e => {
     if ($(e.target).is(':input,a')) return;
-    
+
     $(e.currentTarget)
         .find(':checkbox')
         .prop('checked', (i, v) => !v);
@@ -104,4 +104,22 @@ $('.upload input').on('change', e => {
 
     // Trigger input validation
     $(e.target).valid();
+});
+$(document).ready(function () {
+    if ($.fn.select2) {
+
+        // Initialize Product Search Dropdown
+        $('#ProductSearch').select2({
+            placeholder: "- Type to Search -",
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Initialize Supplier Search Dropdown
+        $('#SupplierSearch').select2({
+            placeholder: "- Type to Search -",
+            allowClear: true,
+            width: '100%',
+        });
+    }
 });

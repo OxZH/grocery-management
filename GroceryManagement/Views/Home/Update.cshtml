@@ -1,0 +1,58 @@
+﻿@model InventoryUpdateVM
+
+@{
+    ViewBag.Title = "Home | Update";
+    string min = DateTime.Today.AddDays(0).ToString("yyyy-MM-dd");
+
+    // Status options for a dropdown (matching the validation in HomeController.cs)
+    var statusOptions = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "AVAILABLE", Text = "Available" },
+        new SelectListItem { Value = "SOLD", Text = "Sold" },
+        new SelectListItem { Value = "DISPOSED", Text = "Disposed" }
+    };
+    ViewBag.StatusList = new SelectList(statusOptions, "Value", "Text");
+}
+
+<form method="post" class="form">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <label asp-for="Id">Id</label>
+    <input asp-for="Id" readonly class="form-control">
+    <span></span>
+
+    <label asp-for="ProductId">Product</label>
+    <select asp-for="ProductId" asp-items="ViewBag.ProductList" class="form-control" id="ProductSearch" style="text-transform: uppercase">
+        <option value="">- Select Product -</option>
+    </select>
+    <span asp-validation-for="ProductId" class="text-danger"></span>
+
+    <label asp-for="ExpiryDate"></label>
+    <div>
+        <input asp-for="ExpiryDate" min="@min">
+    </div>
+    <span asp-validation-for="ExpiryDate"></span>
+
+    <label asp-for="StaffId">Staff ID</label>
+    <input asp-for="StaffId" data-upper>
+    <span asp-validation-for="StaffId"></span>
+
+    <label asp-for="SupplierId">SupplierId</label>
+    <input asp-for="SupplierId" data-upper>
+    <span asp-validation-for="StaffId"></span>
+
+    <label asp-for="CheckoutId">Checkout ID</label>
+    <input asp-for="CheckoutId" data-upper>
+    <span asp-validation-for="CheckoutId"></span>
+
+    <label asp-for="Status"></label>
+    <select asp-for="Status" asp-items="ViewBag.StatusList" class="form-control">
+        <option value="">- Select Status -</option>
+    </select>
+    <span asp-validation-for="Status" class="text-danger"></span>
+
+    <section>
+        <button>Save Changes</button>
+        <button type="reset">Reset</button>
+    </section>
+</form>

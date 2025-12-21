@@ -4,23 +4,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Net;
 using System.Net.Mail;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
+//using System.Security.Claims;
 using System.Text.RegularExpressions;
 using static System.Net.Mime.MediaTypeNames.Image;
 
 namespace GroceryManagement;
 
-// TODO
 public class Helper(IWebHostEnvironment en,
                     IHttpContextAccessor ct,
                     IConfiguration cf)
 {
-    // ------------------------------------------------------------------------
-    // Photo Upload
-    // ------------------------------------------------------------------------
+    //------------------------------------------------------------------------
+    //Photo Upload
+    //------------------------------------------------------------------------
 
     public string ValidatePhoto(IFormFile f)
     {
@@ -82,7 +83,74 @@ public class Helper(IWebHostEnvironment en,
             return null;
         }
     }
+    public string ProSavePhoto(IFormFile f, string folder, int rotateDegrees = 0, bool flip = false)
+    {
+        var file = Guid.NewGuid().ToString("n") + ".jpg";
+        var path = Path.Combine(en.WebRootPath, folder, file);
 
+        if (!Directory.Exists(Path.GetDirectoryName(path)))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        }
+        using var img = Image.Load(f.OpenReadStream());
+        // 1. APPLY ROTATION (Advanced Feature)
+        if (rotateDegrees != 0)
+        {
+            img.Mutate(x => x.Rotate(rotateDegrees));
+        }
+
+        // 2. APPLY FLIP (Advanced Feature)
+        if (flip)
+        {
+            img.Mutate(x => x.Flip(FlipMode.Horizontal));
+        }
+
+        // 3. Then Resize
+        var options = new ResizeOptions
+        {
+            Size = new(800, 800),
+            Mode = ResizeMode.Crop,
+        };
+        img.Mutate(x => x.Resize(options));
+
+        img.SaveAsJpeg(path);
+
+        return file;
+    }
+    public string ProCurrentPhoto(string fileName, string folder, int degrees, bool flip)
+    {
+        // 1. Find the existing file on the server
+        var oldPath = Path.Combine(en.WebRootPath, folder, fileName);
+
+        // Safety check: if file doesn't exist, do nothing
+        if (!File.Exists(oldPath)) return fileName;
+
+        // 2. Load the image
+        using var img = Image.Load(oldPath);
+
+        // 3. Apply Rotate/Flip
+        if (degrees != 0) img.Mutate(x => x.Rotate(degrees));
+        if (flip) img.Mutate(x => x.Flip(FlipMode.Horizontal));
+
+        // 4. Save as a NEW file (Important! This forces the browser to see the change)
+        var newFileName = Guid.NewGuid().ToString("n") + ".jpg";
+        var newPath = Path.Combine(en.WebRootPath, folder, newFileName);
+
+        // Maintain the standard size (optional, ensures consistency)
+        img.Mutate(x => x.Resize(new ResizeOptions
+        {
+            Size = new(800, 800),
+            Mode = ResizeMode.Crop
+        }));
+
+        img.SaveAsJpeg(newPath);
+
+        // 5. Delete the old file to save space
+        // (Note: In a real app, you might keep backups, but for this assignment, deleting is fine)
+        try { File.Delete(oldPath); } catch { }
+
+        return newFileName; // Return the new name so the Database can update
+    }
     public void DeletePhoto(string file, string folder)
     {
         file = Path.GetFileName(file);
@@ -115,11 +183,9 @@ public class Helper(IWebHostEnvironment en,
         return max + 1;
     }
 
-    // ------------------------------------------------------------------------
-    // Security Helper Functions
-    // ------------------------------------------------------------------------
-
-
+    //// ------------------------------------------------------------------------
+    //// Security Helper Functions
+    //// ------------------------------------------------------------------------
     private readonly PasswordHasher<object> ph = new();
 
     public string HashPassword(string password)
@@ -237,4 +303,5 @@ public class Helper(IWebHostEnvironment en,
 
         return new SelectList(list);
     }
+
 }

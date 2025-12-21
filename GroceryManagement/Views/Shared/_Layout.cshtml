@@ -1,5 +1,4 @@
 ﻿@inject DB db
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,6 +7,7 @@
     <title>@ViewBag.Title</title>
     @* <link rel="shortcut icon" href="/images/favicon.png"> *@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/css/pager.css">
     <link rel="stylesheet" href="/css/app.css" asp-append-version="true">
     @RenderSection("head", false)
@@ -17,7 +17,6 @@
 
     <header>
         <h1><a href="/">Grocery Management</a></h1>
-
         @if (User.Identity!.IsAuthenticated)
         {
             <div>
@@ -26,7 +25,6 @@
                 @(User.IsInRole("Staff") ? "Staff" : "")
             </div>
         }
-
         @if (User.IsInRole("Staff"))
         {
             var staff = db.Staffs.FirstOrDefault(s => s.Email == User.Identity!.Name);
@@ -45,8 +43,8 @@
         }
         else
         {
-            <a href="/">Product</a>
-            
+            <a href="/Home/Index">Inventory</a>
+            <a href="/Product/Index">Product</a>
             @if (User.IsInRole("Manager"))
             {
                 <a href="/User/Index">Staff List</a>
@@ -85,6 +83,7 @@
     <script src="/js/jquery.unobtrusive-ajax.min.js"></script>
     <script src="/js/jquery.validate.min.js"></script>
     <script src="/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="/js/app.js" asp-append-version="true"></script>
 
     @RenderSection("foot", false)

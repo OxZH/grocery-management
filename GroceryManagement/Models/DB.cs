@@ -7,6 +7,8 @@ namespace GroceryManagement.Models;
 
 public class DB(DbContextOptions options) : DbContext(options)
 {
+    public DbSet<Supplier> Supplier { get; set; }
+    public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
     public DbSet<User> Users { get; set; }
@@ -20,6 +22,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<DaySchedule> DaySchedules { get; set; }
     public DbSet<Allocation> Allocations { get; set; }
     public DbSet<LeaveRequest> LeaveRequests { get; set; }
+    public DbSet<Checkout> Checkout { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -137,8 +140,7 @@ public class Checkout
     public decimal Total { get; set; }
     [DataType(DataType.DateTime)]
     public DateTime Date { get; set; }
-
-    [RegularExpression("^(CONFIRMED|PENDING|FAILED)$", ErrorMessage = "Status must be one of: VONFIRMED, PENDING or FAILED")]
+    [RegularExpression("^(CONFIRMED|PENDING|FAILED)$", ErrorMessage = "Status must be one of: CONFIRMED, PENDING or FAILED")]
     [MaxLength(10)]
     public string Status { get; set; }
     [DataType(DataType.DateTime)]
@@ -419,5 +421,56 @@ public class Inventory
     public Product Product { get; set; }
     public Staff Staff { get; set; }
     public Checkout Checkout { get; set; }
+    public Supplier Supplier { get; set; }
+}
+public class Supplier
+{
+    [Key, MaxLength(6)]
+    public string Id { get; set; }
 
+    [MaxLength(100)]
+    public string Name { get; set; }
+
+    [MaxLength(12)]
+    public string SupplierType { get; set; }
+
+    [MaxLength(250)]
+    public string Address { get; set; }
+
+    [MinLength(11), MaxLength(12)]
+    public string ContactNo { get; set; }
+}
+
+public class ProcurementRecord
+{
+    [Key, MaxLength(10)]
+    public string Id { get; set; }
+
+    public int Quantity { get; set; }
+
+    [Precision(6, 2)]
+    [DataType(DataType.Currency)]
+    public Decimal TotalPrice { get; set; }
+
+    // quick access
+    [MaxLength(10)]
+    public string Status { get; set; }
+
+    // automated
+    [DataType(DataType.DateTime)]
+    public DateTime ProcurementDateTime { get; set; }
+
+    [DataType(DataType.Date)]
+    public DateTime? StatusUpdateDateTime { get; set; }
+
+    // FK
+    [MaxLength(6)]
+    public string ProductId { get; set; }
+
+    [MaxLength(6)]
+    public string SupplierId { get; set; }
+
+    // Navigation
+    public Product Product { get; set; }
+    public Supplier Supplier { get; set; }
 }

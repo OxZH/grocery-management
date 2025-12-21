@@ -257,3 +257,42 @@ label > * {
     min-width: 30px;
     text-align: center;
 }
+/* Same batch ---------------------------------------------------------------- */
+/* Layout Container */
+.detail-container {
+    display: flex;
+    gap: 30px; /* Space between the two tables */
+    align-items: flex-start; /* Align to top */
+    flex-wrap: wrap; /* Allow wrapping on small mobile screens */
+}
+
+/* Left Side */
+.left-panel {
+    flex: 0 0 400px; /* Fixed width for details */
+}
+
+/* Right Side */
+.right-panel {
+    flex: 1; /* Takes up remaining empty space */
+    min-width: 300px;
+}
+
+/* Status Badges */
+.badge-avail {
+    color: green;
+    font-weight: bold;
+}
+
+.badge-sold {
+    color: blue;
+    font-weight: bold;
+}
+
+.badge-disp {
+    color: red;
+    font-weight: bold;
+}
+.same-batch-decs {
+    color: #666;
+    font-size: 0.9em;
+}
