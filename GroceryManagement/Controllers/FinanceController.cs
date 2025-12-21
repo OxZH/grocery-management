@@ -206,7 +206,7 @@ public class FinanceController : Controller
         if (string.IsNullOrEmpty(id)) return BadRequest();
         var pr = _db.Set<ProcurementRecord>().FirstOrDefault(p => p.Id == id);
         if (pr == null) return NotFound();
-        pr.Status = "PAID";
+        pr.PaymentStatus = "Paid";
         pr.StatusUpdateDateTime = DateTime.Now;
         _db.SaveChanges();
         TempData["Info"] = $"Procurement {id} marked as paid.";

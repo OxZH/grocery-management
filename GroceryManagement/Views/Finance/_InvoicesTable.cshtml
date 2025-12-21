@@ -31,7 +31,7 @@
             <td>@p.SupplierId</td>
             <td><a href="/Finance/Invoice?type=procurement&id=@p.Id" target="_blank">View</a></td>
             <td>
-                @if (string.Equals(p.Status, "PAID", StringComparison.OrdinalIgnoreCase))
+                @if (string.Equals(p.PaymentStatus, "Paid", StringComparison.OrdinalIgnoreCase))
                 {
                     <span>Paid</span>
                 }
