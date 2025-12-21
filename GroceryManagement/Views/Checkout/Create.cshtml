@@ -34,7 +34,7 @@
                     @foreach (var p in products)
                     {
                         var selected = string.Equals(p.Id, Model.Items[i].ProductId, StringComparison.OrdinalIgnoreCase) ? "selected" : null;
-                        <option value="@p.Id" selected="@selected">@p.Id - @p.Name (@p.Price)</option>
+                        <option value="@p.Id" selected="@selected">@p.Id - @p.Name (@p.SellPrice)</option>
                     }
                 </select>
                 <input type="number" name="Items[@i].Quantity" value="@Model.Items[i].Quantity" min="1" required />
@@ -63,7 +63,7 @@
             <option value="">Select product</option>
             @foreach (var p in products)
             {
-                <option value="@p.Id">@p.Id - @p.Name (@p.Price)</option>
+                <option value="@p.Id">@p.Id - @p.Name (@p.SellPrice)</option>
             }
         </select>
         <input type="number" name="Items[__idx__].Quantity" value="1" min="1" required />

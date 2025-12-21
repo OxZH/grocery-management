@@ -12,13 +12,11 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
-    public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Expense> Expenses { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Staff> Staffs { get; set; }
     public DbSet<Manager> Managers { get; set; }
     public DbSet<AttendanceRecords> AttendanceRecords { get; set; }
-    public DbSet<Expense> Expenses { get; set; }
     public DbSet<TaskType> TaskTypes { get; set; }
     public DbSet<RosterTemplate> RosterTemplates { get; set; }
     public DbSet<TemplateAllocation> TemplateAllocations { get; set; }

@@ -200,7 +200,7 @@ public class CheckoutController : Controller
                     inv.CheckoutId = checkout.Id;
                     inv.Status = "SOLD";
                 }
-                total += prod.Price * taken.Count;
+                total += prod.SellPrice * taken.Count;
 
                 // decrement storefront quantity only (clamp at zero)
                 if (prod != null && taken.Count > 0)

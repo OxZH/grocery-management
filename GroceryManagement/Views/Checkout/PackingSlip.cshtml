@@ -39,7 +39,7 @@
                     @foreach (var g in grouped)
                     {
                         var prod = g.First().Product;
-                        var price = prod?.Price ?? 0m;
+                        var price = prod?.SellPrice ?? 0m;
                         var qty = g.Count();
                         <tr>
                             <td>@(prod?.Name ?? g.Key)</td>

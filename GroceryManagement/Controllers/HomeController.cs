@@ -17,7 +17,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
         ViewBag.Name = name = name?.Trim().ToUpper() ?? "";
 
         // Search Inventories where ProductId contains the search term
-        var searched = db.Inventories.Where(i => 
+        var searched = db.Inventories.Where(i =>
         i.ProductId.Contains(name) ||
         i.Status.Contains(name));
 
@@ -250,7 +250,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
 
     // POST: Home/Update
     [HttpPost]
-    public async Task <IActionResult> Update(InventoryUpdateVM vm)
+    public async Task<IActionResult> Update(InventoryUpdateVM vm)
     {
         vm.ProductId = vm.ProductId?.ToUpper();
         vm.SupplierId = vm.SupplierId?.ToUpper();
@@ -463,51 +463,4 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
 
         return RedirectToAction("Index");
     }
-    public IActionResult Insert()
-    {
-        ViewBag.ProductList = new SelectList(db.Products.ToList(), "Id", "Name");
-        return View();
-    }
-
-    // POST: Home/Insert
-    [HttpPost]
-    public IActionResult Insert(InventoryInsertVM vm)
-    {
-
-        if (ModelState.IsValid("Id") &&
-            db.Products.Any(s => s.Id == vm.Id))
-        {
-            ModelState.AddModelError("Id", "Duplicated ID. ");
-        }
-        if (ModelState.IsValid("ProductId") &&
-            !db.Products.Any(p => p.Id == vm.ProductId))
-        {
-            ModelState.AddModelError("ProductId", "Invalid PRODUCT. ");
-        }
-        if (ModelState.IsValid("ExpiryDate"))
-        {
-            var a = DateTime.Today.AddDays(-30).ToDateOnly();
-            if (vm.ExpiryDate < a)
-            {
-                ModelState.AddModelError("Date", "Date out of range.");
-            }
-        }
-        if (ModelState.IsValid)
-        {
-            db.Inventories.Add(new()
-            {
-                Id = vm.Id.Trim().ToUpper(),
-                ProductId = vm.ProductId,
-                ExpiryDate = vm.ExpiryDate,
-            });
-            db.SaveChanges();
-            TempData["Info"] = "Record inserted.";
-            return RedirectToAction("Index");
-        }
-        ViewBag.ProgramList = new SelectList(db.Inventories, "Id", "Name");
-        return View();
-    }
-
-
-
 }

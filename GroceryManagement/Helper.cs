@@ -183,17 +183,6 @@ public class Helper(IWebHostEnvironment en,
         return max + 1;
     }
 
-            // Strip "EX" prefix to get the number
-            var digits = id.StartsWith("EX") ? id.Substring(2) : id;
-
-            // Track the highest number found
-            if (int.TryParse(digits, out var n)) max = Math.Max(max, n);
-        }
-
-        // Return the next number in the sequence
-        return max + 1;
-    }
-
     //// ------------------------------------------------------------------------
     //// Security Helper Functions
     //// ------------------------------------------------------------------------
