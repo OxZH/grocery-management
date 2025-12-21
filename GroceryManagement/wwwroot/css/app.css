@@ -52,6 +52,18 @@ nav {
 
 .dropdown {
     position: relative;
+    display: inline-block;
+}
+.dropdown > a {
+    background: #666;
+    color: #fff;
+    text-decoration: none;
+    padding: 5px 10px;
+    white-space: nowrap;
+    display: block;
+}
+.dropdown > a:hover {
+    background: #333;
 }
 .dropdown .dropdown-content {
     display: none;
@@ -59,12 +71,23 @@ nav {
     background: #666;
     min-width: 160px;
     z-index: 1;
-    padding: 5px;
+    padding: 0;
+    top: 100%;
+    left: 0;
 }
 .dropdown:hover .dropdown-content {
     display: block;
 }
-.dropdown .dropdown-content a { display: block; padding: 5px; color: #fff; text-decoration: none; }
+.dropdown .dropdown-content a {
+    display: block;
+    padding: 5px 10px;
+    color: #fff;
+    text-decoration: none;
+    background: #666;
+}
+.dropdown .dropdown-content a:hover {
+    background: #333;
+}
 
 nav a {
     background: #666;
@@ -83,7 +106,7 @@ nav b {
     white-space: nowrap;
 }
 
-nav div {
+nav > div:not(.dropdown) {
     flex: 1;
 }
 
