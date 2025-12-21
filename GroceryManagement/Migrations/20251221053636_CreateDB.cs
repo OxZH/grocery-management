@@ -45,18 +45,6 @@ namespace GroceryManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SupplierTags",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SupplierTags", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -89,6 +77,7 @@ namespace GroceryManagement.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(6,2)", precision: 6, scale: 2, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    PaymentStatus = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
                     ProcurementDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     StatusUpdateDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeliveryProofPhotoLink = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
@@ -106,54 +95,6 @@ namespace GroceryManagement.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ProcurementRecords_Suppliers_SupplierId",
-                        column: x => x.SupplierId,
-                        principalTable: "Suppliers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SupplierSupplierTag",
-                columns: table => new
-                {
-                    SupplierTagsId = table.Column<string>(type: "nvarchar(5)", nullable: false),
-                    SuppliersId = table.Column<string>(type: "nvarchar(6)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SupplierSupplierTag", x => new { x.SupplierTagsId, x.SuppliersId });
-                    table.ForeignKey(
-                        name: "FK_SupplierSupplierTag_SupplierTags_SupplierTagsId",
-                        column: x => x.SupplierTagsId,
-                        principalTable: "SupplierTags",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_SupplierSupplierTag_Suppliers_SuppliersId",
-                        column: x => x.SuppliersId,
-                        principalTable: "Suppliers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SupplierSupplierTags",
-                columns: table => new
-                {
-                    SupplierId = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
-                    SupplierTagId = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SupplierSupplierTags", x => new { x.SupplierId, x.SupplierTagId });
-                    table.ForeignKey(
-                        name: "FK_SupplierSupplierTags_SupplierTags_SupplierTagId",
-                        column: x => x.SupplierTagId,
-                        principalTable: "SupplierTags",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_SupplierSupplierTags_Suppliers_SupplierId",
                         column: x => x.SupplierId,
                         principalTable: "Suppliers",
                         principalColumn: "Id",
@@ -330,16 +271,6 @@ namespace GroceryManagement.Migrations
                 column: "SupplierId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SupplierSupplierTag_SuppliersId",
-                table: "SupplierSupplierTag",
-                column: "SuppliersId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SupplierSupplierTags_SupplierTagId",
-                table: "SupplierSupplierTags",
-                column: "SupplierTagId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Users_ManagerId",
                 table: "Users",
                 column: "ManagerId");
@@ -364,19 +295,10 @@ namespace GroceryManagement.Migrations
                 name: "ProcurementRecords");
 
             migrationBuilder.DropTable(
-                name: "SupplierSupplierTag");
-
-            migrationBuilder.DropTable(
-                name: "SupplierSupplierTags");
-
-            migrationBuilder.DropTable(
                 name: "Checkout");
 
             migrationBuilder.DropTable(
                 name: "Products");
-
-            migrationBuilder.DropTable(
-                name: "SupplierTags");
 
             migrationBuilder.DropTable(
                 name: "Suppliers");

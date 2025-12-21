@@ -4,17 +4,32 @@
     ViewBag.Title = "Reports | Procurement Analytics";
 }
 
-<label asp-for="StartDate"></label>
-<input asp-for="StartDate">
-<span asp-validation-for="StartDate"></span>
+<form method="post">
+    <label asp-for="StartDate"></label>
+    <input asp-for="StartDate">
+    <span asp-validation-for="StartDate"></span>
 
-<label asp-for="EndDate"></label>
-<input asp-for="EndDate">
-<span asp-validation-for="EndDate"></span>
+    <label asp-for="EndDate"></label>
+    <input asp-for="EndDate">
+    <span asp-validation-for="EndDate"></span>
 
-@* <div id="target">
-    <partial name="_Last30Days">
-</div> *@
+    <button type="submit" id="load-report">Load Report</button>
+</form>
+<br />
+
+@if (ViewBag.Procurements != null)
+{
+    if (ViewBag.Procurements.Count > 0)
+    {
+        <div id="target">
+            <partial name="_Last30Days">
+        </div>
+    }
+    else
+    {
+        <p>Unable to generate report: no procurement records found between @Model.StartDate and @Model.EndDate.</p>
+    }
+}
 
 @section foot {
     <script>
@@ -53,6 +68,18 @@
                     } else {
                         // Fallback to today - 30
                         startEl.valueAsDate = new Date().addDays(-30);
+                    }
+                });
+
+                $('#StartDate').on('input', () => {
+                    if (!startEl || !endEl) return;
+
+                    if (startEl.valueAsDate) {
+                        // Use valueAsDate for date inputs
+                        endEl.valueAsDate = startEl.valueAsDate.addDays(30);
+                    } else {
+                        // Fallback to today - 30
+                        endEl.valueAsDate = new Date().addDays(30);
                     }
                 });
 

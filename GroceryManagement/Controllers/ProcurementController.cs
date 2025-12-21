@@ -92,8 +92,8 @@ public class ProcurementController(DB db, Helper hp) : Controller
             return RedirectToAction("Index");
         }
 
-        ViewBag.Products = db.Products.Find(proc.ProductId);
-        ViewBag.Suppliers = db.Suppliers.Find(proc.SupplierId);
+        ViewBag.Product = db.Products.Find(proc.ProductId);
+        ViewBag.Supplier = db.Suppliers.Find(proc.SupplierId);
         return View(proc);
     }
 
@@ -121,6 +121,7 @@ public class ProcurementController(DB db, Helper hp) : Controller
                 ProcurementDateTime = now,
                 StatusUpdateDateTime = now,
                 Status = "Ordered",
+                PaymentStatus = "Unpaid",
                 SupplierId = vm.SupplierId,
             });
             db.SaveChanges();

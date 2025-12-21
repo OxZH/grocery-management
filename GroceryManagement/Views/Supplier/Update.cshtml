@@ -42,16 +42,6 @@
     <input asp-for="ContactNo" value="@Model?.ContactNo">
     <span asp-validation-for="ContactNo"></span>
 
-    <label>Tags</label>
-    <div>
-        <div>
-            <a href="#" data-check="SupplierTags">Check All</a> |
-            <a href="#" data-uncheck="SupplierTags">Uncheck All</a>
-        </div>
-        <partial name="_CheckBoxList" model='("SupplierTags", ViewBag.SupplierTags, true)'>
-    </div>
-    <br>
-
     <section>
         <button>Submit</button>
         <button type="reset">Reset</button>

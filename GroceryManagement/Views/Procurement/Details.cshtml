@@ -4,8 +4,6 @@
     ViewBag.Title = "Procurement | Detail";
 }
 
-<iframe id="map-iframe" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>
-
 <table class="table detail">
     <tr>
         <th>Id</th>
@@ -17,7 +15,7 @@
     </tr>
     <tr>
         <th>Supplier</th>
-        <td>@ViewBag.Supplier.Name (@Model.SupplierId)</td>
+        <td>@ViewBag.Supplier.Name (@Model.SupplierId) <button data-get="/Supplier/Details/@Model.SupplierId">Details</button></td>
     </tr>
     <tr>
         <th>Product</th>

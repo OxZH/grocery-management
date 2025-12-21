@@ -8,9 +8,6 @@ namespace GroceryManagement.Models;
 public class DB(DbContextOptions options) : DbContext(options)
 {
     public DbSet<Supplier> Suppliers { get; set; }
-
-    public DbSet<SupplierSupplierTag> SupplierSupplierTags { get; set; }
-    public DbSet<SupplierTag> SupplierTags { get; set; }
     public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
@@ -213,33 +210,6 @@ public class Supplier
 
     [MinLength(11), MaxLength(12)]
     public string ContactNo { get; set; }
-
-    // navigation
-    public List<SupplierTag> SupplierTags { get; set; } = [];
-}
-
-[PrimaryKey(nameof(SupplierId), nameof(SupplierTagId))]
-public class SupplierSupplierTag
-{
-    [MaxLength(6)]
-    public string SupplierId { get; set; }
-    public Supplier Supplier { get; set; }
-
-    [MaxLength(5)]
-    public string SupplierTagId { get; set; }
-    public SupplierTag SupplierTag { get; set; }
-}
-
-public class SupplierTag
-{
-    [Key, MaxLength(5)]
-    public string Id { get; set; }
-
-    [MaxLength(50)]
-    public string Name { get; set; }
-
-    // Navigation
-    public List<Supplier> Suppliers { get; set; } = [];
 }
 
 public class ProcurementRecord
@@ -256,6 +226,10 @@ public class ProcurementRecord
     // quick access
     [MaxLength(10)]
     public string Status { get; set; }
+
+    [MaxLength(6)]
+    [RegularExpression("^(Paid|Unpaid)$", ErrorMessage = "Invalid payment status")]
+    public string PaymentStatus { get; set; }
 
     // automated
     [DataType(DataType.DateTime)]

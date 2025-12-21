@@ -52,15 +52,6 @@ public class SupplierVM
     [StringLength(12)]
     [RegularExpression(@"01\d-(\d){7,8}", ErrorMessage = "Invalid {0}")]
     public string ContactNo { get; set; }
-
-    public List<SupplierTag> SupplierTags { get; set; }
-}
-
-public class SupplierTagVM
-{
-    [Required(ErrorMessage = "Tag Name is required")]
-    [StringLength(50)]
-    public string Name { get; set; }
 }
 
 public class ProcurementRecordVM

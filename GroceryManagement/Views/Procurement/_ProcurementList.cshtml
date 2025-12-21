@@ -3,7 +3,7 @@
 @model IPagedList<ProcurementRecord>
 
 @{
-    string[] fields = ["Id", "Created", "Total Price", "Status", "Last Updated", "Image Links"];
+    string[] fields = ["Id", "Created", "Total Price", "Status", "Last Updated", "Links"];
 }
 
 @Html.Hidden("sort", "", new { form = "f" })
@@ -51,11 +51,13 @@
             </td>
             <td>@s.StatusUpdateDateTime</td>
             <td>
-                @* (TODO: uncomment when merging) <a href="/Finance/Invoice/@s.Id">View Invoice</a> *@
-                @if (s.Status == "Received")
-                {
-                    <a href="~/images/procurement_proof/@s.DeliveryProofPhotoLink">View Delivery Proof</a>
-                }
+                <div>
+                    @* (TODO: uncomment when merging) <button data-get="/Finance/Invoice/@s.Id">View Invoice</button> *@
+                    @if (s.Status == "Received")
+                    {
+                        <button data-get="/images/procurement_proof/@s.DeliveryProofPhotoLink">View Delivery Proof</button>
+                    }
+                </div>
             </td>
             <td>
                 <button data-get="/Procurement/Details/@s.Id">Details</button>

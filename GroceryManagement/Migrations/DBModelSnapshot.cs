@@ -178,6 +178,11 @@ namespace GroceryManagement.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
                     b.Property<DateTime>("ProcurementDateTime")
                         .HasColumnType("datetime2");
 
@@ -284,39 +289,6 @@ namespace GroceryManagement.Migrations
                     b.ToTable("Suppliers");
                 });
 
-            modelBuilder.Entity("GroceryManagement.Models.SupplierSupplierTag", b =>
-                {
-                    b.Property<string>("SupplierId")
-                        .HasMaxLength(6)
-                        .HasColumnType("nvarchar(6)");
-
-                    b.Property<string>("SupplierTagId")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
-
-                    b.HasKey("SupplierId", "SupplierTagId");
-
-                    b.HasIndex("SupplierTagId");
-
-                    b.ToTable("SupplierSupplierTags");
-                });
-
-            modelBuilder.Entity("GroceryManagement.Models.SupplierTag", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SupplierTags");
-                });
-
             modelBuilder.Entity("GroceryManagement.Models.User", b =>
                 {
                     b.Property<string>("Id")
@@ -355,21 +327,6 @@ namespace GroceryManagement.Migrations
                     b.HasDiscriminator().HasValue("User");
 
                     b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("SupplierSupplierTag", b =>
-                {
-                    b.Property<string>("SupplierTagsId")
-                        .HasColumnType("nvarchar(5)");
-
-                    b.Property<string>("SuppliersId")
-                        .HasColumnType("nvarchar(6)");
-
-                    b.HasKey("SupplierTagsId", "SuppliersId");
-
-                    b.HasIndex("SuppliersId");
-
-                    b.ToTable("SupplierSupplierTag");
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Manager", b =>
@@ -488,40 +445,6 @@ namespace GroceryManagement.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Supplier");
-                });
-
-            modelBuilder.Entity("GroceryManagement.Models.SupplierSupplierTag", b =>
-                {
-                    b.HasOne("GroceryManagement.Models.Supplier", "Supplier")
-                        .WithMany()
-                        .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GroceryManagement.Models.SupplierTag", "SupplierTag")
-                        .WithMany()
-                        .HasForeignKey("SupplierTagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Supplier");
-
-                    b.Navigation("SupplierTag");
-                });
-
-            modelBuilder.Entity("SupplierSupplierTag", b =>
-                {
-                    b.HasOne("GroceryManagement.Models.SupplierTag", null)
-                        .WithMany()
-                        .HasForeignKey("SupplierTagsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GroceryManagement.Models.Supplier", null)
-                        .WithMany()
-                        .HasForeignKey("SuppliersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("GroceryManagement.Models.Staff", b =>

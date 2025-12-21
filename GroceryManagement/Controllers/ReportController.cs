@@ -12,8 +12,12 @@ public class ReportController(DB db) : Controller
 {
     public IActionResult Index()
     {
-        
-        return View();
+        DateRangeVM vm = new()
+        {
+            StartDate = DateTime.Now.AddDays(-30).ToDateOnly(),
+            EndDate = DateTime.Now.ToDateOnly()
+        };
+        return View(vm);
     }
 
     [HttpPost]
@@ -28,6 +32,11 @@ public class ReportController(DB db) : Controller
             .ToList();
         ViewBag.Products = db.Products.ToList();
         ViewBag.Suppliers = db.Suppliers.ToList();
+
+        //if (Request.IsAjax())
+        //{
+        //    return PartialView("_Last30Days", vm);
+        //}
 
         return View(vm);
     }

@@ -2,9 +2,15 @@
 
 @{
     ViewBag.Title = "Suppliers | Detail";
+    var encodedAddress = Uri.EscapeDataString(Model.Address);
 }
 
-<iframe id="map-iframe" width="600" height="450" frameborder="0" style="border:0" allowfullscreen></iframe>
+<iframe
+  class="map-embed"
+  src="https://www.google.com/maps?q=@encodedAddress&output=embed"
+  loading="lazy">
+</iframe>
+<br/>
 
 <table class="table detail">
     <tr>

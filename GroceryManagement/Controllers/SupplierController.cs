@@ -15,13 +15,6 @@ public class SupplierController(DB db) : Controller
         return (n + 1).ToString("'SUP'000");
     }
 
-    private string NextSupplierTagId()
-    {
-        string max = db.SupplierTags.Max(t => t.Id) ?? "ST000";
-        int n = int.Parse(max[2..]);
-        return (n + 1).ToString("'ST'000");
-    }
-
     public IActionResult Index()
     {
         return View(db.Suppliers);
@@ -41,12 +34,11 @@ public class SupplierController(DB db) : Controller
     public IActionResult Insert()
     {
         ViewBag.NextId = NextId();
-        ViewBag.SupplierTags = new MultiSelectList(db.SupplierTags, "Id", "Name");
         return View();
     }
 
     [HttpPost]
-    public IActionResult Insert(SupplierVM vm, string[] tags)
+    public IActionResult Insert(SupplierVM vm)
     {
         if (ModelState.IsValid)
         {
@@ -59,10 +51,6 @@ public class SupplierController(DB db) : Controller
                 Address = vm.Address.Trim(),
                 ContactNo = vm.ContactNo,
             });
-            db.SupplierSupplierTags.Add(new()
-            {
-                SupplierId = nextId,
-            });
             db.SaveChanges();
 
             TempData["Info"] = "Record inserted.";
@@ -70,8 +58,7 @@ public class SupplierController(DB db) : Controller
         }
 
         ViewBag.NextId = NextId();
-        ViewBag.SupplierTags = new MultiSelectList(db.SupplierTags, "Id", "Name");
-        return View();
+        return View(vm);
     }
 
     public IActionResult Update(string? id)
@@ -91,13 +78,11 @@ public class SupplierController(DB db) : Controller
             ContactNo = sup.ContactNo,
         };
 
-        var selected = sup.SupplierTags.Select(t => t.Id);
-        ViewBag.SupplierTags = new MultiSelectList(db.SupplierTags, "Id", "Name", selected);
         return View(vm);
     }
 
     [HttpPost]
-    public IActionResult Update(SupplierVM vm, string[] tags)
+    public IActionResult Update(SupplierVM vm)
     {
         var sup = db.Suppliers.Find(vm.Id);
         if (sup == null)
@@ -114,10 +99,6 @@ public class SupplierController(DB db) : Controller
         sup.SupplierType = vm.SupplierType;
         sup.Address = vm.Address.Trim();
         sup.ContactNo = vm.ContactNo;
-        sup.SupplierTags = db.SupplierTags
-                   .Where(t => tags.Contains(t.Id))
-                   .ToList();
-
         db.SaveChanges();
 
         TempData["Info"] = "Record updated.";
@@ -135,46 +116,5 @@ public class SupplierController(DB db) : Controller
             TempData["Info"] = "Record deleted.";
         }
         return RedirectToAction("Index");
-    }
-
-    // supplier tags
-    public IActionResult Tags()
-    {
-        ViewBag.SupplierTags = db.SupplierTags;
-        return View();
-    }
-
-    [HttpPost]
-    public IActionResult Tags(SupplierTagVM vm)
-    {
-        if (ModelState.IsValid)
-        {
-            var id = NextSupplierTagId();
-            db.SupplierTags.Add(new()
-            {
-                Id = id,
-                Name = vm.Name
-            });
-            db.SaveChanges();
-
-            TempData["Info"] = $"Tag {id} inserted.";
-            return RedirectToAction("Tags");
-        }
-
-        ViewBag.SupplierTags = db.SupplierTags;
-        return View(vm);
-    }
-
-    [HttpPost]
-    public IActionResult DeleteTag(string? id)
-    {
-        var tag = db.SupplierTags.Find(id);
-        if (tag != null)
-        {
-            db.SupplierTags.Remove(tag);
-            db.SaveChanges();
-            TempData["Info"] = "Tag deleted.";
-        }
-        return RedirectToAction("Tags");
     }
 }
