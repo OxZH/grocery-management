@@ -3,19 +3,58 @@
     ViewData["Title"] = "Task Schedule Calendar";
 }
 
-<h1>Task Schedule Calendar - @Model.MonthName @Model.Year</h1>
+<h1>Task Schedule Calendar</h1>
 
 @Html.Raw(TempData["Info"])
 
-<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <a href="@Url.Action("Calendar", new { year = Model.Month == 1 ? Model.Year - 1 : Model.Year, month = Model.Month == 1 ? 12 : Model.Month - 1 })" class="btn btn-secondary">← Previous Month</a>
-        <a href="@Url.Action("Calendar", new { year = DateTime.Now.Year, month = DateTime.Now.Month })" class="btn btn-secondary">Today</a>
-        <a href="@Url.Action("Calendar", new { year = Model.Month == 12 ? Model.Year + 1 : Model.Year, month = Model.Month == 12 ? 1 : Model.Month + 1 })" class="btn btn-secondary">Next Month →</a>
-    </div>
+<div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+    <!-- Month/Year Selector -->
+    <form method="get" asp-action="Calendar" style="display: flex; gap: 10px; align-items: center;">
+        <label style="font-weight: bold;">Select Month/Year:</label>
+        <select name="month" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            @{
+                var months = new[] {
+                    (1, "January"), (2, "February"), (3, "March"), (4, "April"),
+                    (5, "May"), (6, "June"), (7, "July"), (8, "August"),
+                    (9, "September"), (10, "October"), (11, "November"), (12, "December")
+                };
+            }
+            @foreach (var (value, name) in months)
+            {
+                if (Model.Month == value)
+                {
+                    <option value="@value" selected>@name</option>
+                }
+                else
+                {
+                    <option value="@value">@name</option>
+                }
+            }
+        </select>
+        <select name="year" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            @for (int y = DateTime.Now.Year - 2; y <= DateTime.Now.Year + 2; y++)
+            {
+                if (Model.Year == y)
+                {
+                    <option value="@y" selected>@y</option>
+                }
+                else
+                {
+                    <option value="@y">@y</option>
+                }
+            }
+        </select>
+        <button type="submit" class="btn btn-primary">Go</button>
+    </form>
+
+    <!-- Templates Link -->
     <div>
         <a href="@Url.Action("Templates")" class="btn btn-primary">Manage Templates</a>
     </div>
+</div>
+
+<div style="margin-bottom: 10px;">
+    <strong style="font-size: 1.2em; color: #333;">Viewing: @Model.MonthName @Model.Year</strong>
 </div>
 
 <div class="legend" style="margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 4px;">
@@ -72,15 +111,8 @@
 
 <script>
     function handleDayClick(dateStr, hasSchedule) {
-        if (hasSchedule) {
-            // View day details
-            window.location.href = '@Url.Action("DayDetails")?dateStr=' + dateStr;
-        } else {
-            // Apply template to empty day
-            if (confirm('Apply a roster template to ' + dateStr + '?')) {
-                window.location.href = '@Url.Action("ApplyTemplate")?dateStr=' + dateStr;
-            }
-        }
+        // Always go to Day Management first (with tabs for Attendance List + Schedule Details)
+        window.location.href = '@Url.Action("DayManagement")?dateStr=' + dateStr;
     }
 </script>
 

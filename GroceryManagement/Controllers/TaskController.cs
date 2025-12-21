@@ -558,6 +558,50 @@ public class TaskController(DB db) : Controller
         }
     }
 
+    // NEW: Day Management with Tabs (Apply Template + Attendance List + Schedule Details)
+    [Authorize(Roles = "Manager")]
+    public IActionResult DayManagement(string dateStr)
+    {
+        if (!DateOnly.TryParse(dateStr, out var date))
+        {
+            TempData["Info"] = "<p class='error'>Invalid date.</p>";
+            return RedirectToAction(nameof(Calendar));
+        }
+
+        // Check if day has schedule
+        var hasSchedule = db.DaySchedules.Any(ds => ds.ScheduleDate == date);
+
+        // Get templates for Apply Template tab
+        var templates = db.RosterTemplates
+            .Include(t => t.Allocations)
+            .OrderBy(t => t.TemplateName)
+            .ToList();
+
+        // Get all staff with their attendance status for that day
+        var allStaff = db.Staffs.OrderBy(s => s.Name).ToList();
+        var attendanceRecords = db.AttendanceRecords
+            .Where(a => a.Date == date)
+            .ToDictionary(a => a.StaffId, a => a.Status);
+
+        var staffList = allStaff.Select(s => new StaffAttendanceVM
+        {
+            StaffId = s.Id,
+            StaffName = s.Name,
+            PhotoURL = s.PhotoURL,
+            AttendanceStatus = attendanceRecords.ContainsKey(s.Id) ? attendanceRecords[s.Id] : "UNKNOWN"
+        }).ToList();
+
+        var vm = new DayManagementVM
+        {
+            Date = date,
+            HasSchedule = hasSchedule,
+            Templates = templates,
+            StaffList = staffList
+        };
+
+        return View(vm);
+    }
+
     [Authorize(Roles = "Manager")]
     public IActionResult DayDetails(string dateStr)
     {
@@ -609,6 +653,102 @@ public class TaskController(DB db) : Controller
 
         LoadTaskTypeDropdown();
         return View(vm);
+    }
+
+    // Add Staff to Day Schedule
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Manager")]
+    public IActionResult AddStaffToDay(string staffId, string taskName, string dateStr)
+    {
+        if (!DateOnly.TryParse(dateStr, out var date))
+        {
+            TempData["Info"] = "<p class='error'>Invalid date.</p>";
+            return RedirectToAction(nameof(Calendar));
+        }
+
+        if (string.IsNullOrWhiteSpace(staffId) || string.IsNullOrWhiteSpace(taskName))
+        {
+            TempData["Info"] = "<p class='error'>Please select both staff and task.</p>";
+            return RedirectToAction(nameof(DayDetails), new { dateStr });
+        }
+
+        // Check if staff already assigned on this day
+        var existingAllocation = db.Allocations
+            .FirstOrDefault(a => a.StaffId == staffId && a.AssignedDate == date);
+
+        if (existingAllocation != null)
+        {
+            TempData["Info"] = "<p class='error'>This staff member is already assigned on this day.</p>";
+            return RedirectToAction(nameof(DayDetails), new { dateStr });
+        }
+
+        // Create new allocation
+        var newAllocation = new Allocation
+        {
+            Id = GenerateAllocationId(),
+            StaffId = staffId,
+            TaskName = taskName,
+            AssignedDate = date,
+            Status = "PENDING"
+        };
+
+        db.Allocations.Add(newAllocation);
+        
+        // Update day schedule status
+        var daySchedule = db.DaySchedules.FirstOrDefault(ds => ds.ScheduleDate == date);
+        if (daySchedule != null)
+        {
+            var attendance = GetStaffAttendance(date);
+            var allAllocations = db.Allocations.Where(a => a.AssignedDate == date).ToList();
+            allAllocations.Add(newAllocation);
+            daySchedule.HasUnavailableStaff = allAllocations.Any(a =>
+                attendance.GetValueOrDefault(a.StaffId, "UNKNOWN") != "ATTEND"
+            );
+        }
+
+        db.SaveChanges();
+
+        TempData["Info"] = "<p class='success'>Staff added to schedule successfully.</p>";
+        return RedirectToAction(nameof(DayDetails), new { dateStr });
+    }
+
+    // Delete Staff from Day Schedule
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Manager")]
+    public IActionResult DeleteStaffAllocation(string allocationId, string dateStr)
+    {
+        var allocation = db.Allocations.FirstOrDefault(a => a.Id == allocationId);
+        
+        if (allocation == null)
+        {
+            TempData["Info"] = "<p class='error'>Allocation not found.</p>";
+            return RedirectToAction(nameof(DayDetails), new { dateStr });
+        }
+
+        var staffName = db.Staffs.FirstOrDefault(s => s.Id == allocation.StaffId)?.Name ?? allocation.StaffId;
+        
+        db.Allocations.Remove(allocation);
+        
+        // Update day schedule status
+        if (DateOnly.TryParse(dateStr, out var date))
+        {
+            var daySchedule = db.DaySchedules.FirstOrDefault(ds => ds.ScheduleDate == date);
+            if (daySchedule != null)
+            {
+                var attendance = GetStaffAttendance(date);
+                var allAllocations = db.Allocations.Where(a => a.AssignedDate == date).ToList();
+                daySchedule.HasUnavailableStaff = allAllocations.Any(a =>
+                    attendance.GetValueOrDefault(a.StaffId, "UNKNOWN") != "ATTEND"
+                );
+            }
+        }
+
+        db.SaveChanges();
+
+        TempData["Info"] = $"<p class='success'>{staffName} removed from schedule.</p>";
+        return RedirectToAction(nameof(DayDetails), new { dateStr });
     }
 
     [HttpPost]

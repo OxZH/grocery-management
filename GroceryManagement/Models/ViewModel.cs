@@ -519,3 +519,23 @@ public class TeammateVM
     public string StaffName { get; set; }
     public string AttendanceStatus { get; set; } = "UNKNOWN";
 }
+
+public class DayManagementVM
+{
+    public DateOnly Date { get; set; }
+    public bool HasSchedule { get; set; }
+    
+    // For Apply Template Tab
+    public List<RosterTemplate> Templates { get; set; } = new();
+    
+    // For Attendance Tab
+    public List<StaffAttendanceVM> StaffList { get; set; } = new();
+}
+
+public class StaffAttendanceVM
+{
+    public string StaffId { get; set; }
+    public string StaffName { get; set; }
+    public string? PhotoURL { get; set; }
+    public string AttendanceStatus { get; set; } = "UNKNOWN";
+}

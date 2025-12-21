@@ -23,24 +23,28 @@
     </div>
 }
 
-<div style="margin-bottom: 20px;">
+<div>
     @if (Model.HasUnavailableStaff && !Model.IsAcknowledged)
     {
-        <form method="post" asp-action="AcknowledgeDay" style="display:inline;">
+        <form method="post" asp-action="AcknowledgeDay" class="inline-form">
             @Html.AntiForgeryToken()
             <input type="hidden" name="dateStr" value="@Model.Date.ToString("yyyy-MM-dd")" />
             <button type="submit" onclick="return confirm('Acknowledge unavailable staff and keep current assignments?');">Acknowledge All</button>
         </form>
     }
-    <form method="post" asp-action="DeleteSchedule" style="display:inline;">
+    <form method="post" asp-action="DeleteSchedule" class="inline-form">
         @Html.AntiForgeryToken()
         <input type="hidden" name="dateStr" value="@Model.Date.ToString("yyyy-MM-dd")" />
         <button type="submit" onclick="return confirm('Delete this entire schedule?');">Delete Schedule</button>
     </form>
-    <a href="@Url.Action("Calendar", new { year = Model.Date.Year, month = Model.Date.Month })">Back to Calendar</a>
+    <a href="@Url.Action("DayManagement", new { dateStr = Model.Date.ToString("yyyy-MM-dd") })">Back to Day Management</a>
 </div>
 
 <h3>Task Assignments</h3>
+
+<div>
+    <button type="button" onclick="showAddStaffModal()">+ Add Staff to Schedule</button>
+</div>
 
 <table class="table">
     <thead>
@@ -65,11 +69,11 @@
                     <strong>@alloc.TaskName</strong>
                     @if (alloc.StartTime != null)
                     {
-                        <br/><small style="color: #666;">Started: @alloc.StartTime.Value.ToString("HH:mm")</small>
+                        <br/><small>Started: @alloc.StartTime.Value.ToString("HH:mm")</small>
                     }
                     @if (alloc.CompletionDate != null)
                     {
-                        <br/><small style="color: #28a745;">Completed: @alloc.CompletionDate.Value.ToString("HH:mm")</small>
+                        <br/><small>Completed: @alloc.CompletionDate.Value.ToString("HH:mm")</small>
                     }
                 </td>
                 <td>
@@ -86,18 +90,20 @@
                     <button type="button" onclick="showEditTaskForm('@alloc.AllocationId', '@alloc.StaffName', '@alloc.TaskName')">
                         Edit Task
                     </button>
-                    @if (alloc.IsUnavailable)
-                    {
-                        <button type="button" onclick="showReassignForm('@alloc.AllocationId', '@alloc.StaffName', '@alloc.TaskName')">
-                            Reassign Staff
+                    <form method="post" asp-action="DeleteStaffAllocation" class="inline-form">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="allocationId" value="@alloc.AllocationId" />
+                        <input type="hidden" name="dateStr" value="@Model.Date.ToString("yyyy-MM-dd")" />
+                        <button type="submit" onclick="return confirm('Delete @alloc.StaffName from schedule?');">
+                            Delete
                         </button>
-                    }
+                    </form>
                 </td>
             </tr>
             @if (!string.IsNullOrWhiteSpace(alloc.Notes))
             {
                 <tr class="@rowClass">
-                    <td colspan="6" style="background-color: #f8f9fa; padding-left: 30px;">
+                    <td colspan="5" class="notes-row">
                         <small><strong>Notes:</strong> @alloc.Notes</small>
                     </td>
                 </tr>
@@ -129,7 +135,7 @@
                 </select>
             </div>
             
-            <div style="margin-top: 15px;">
+            <div>
                 <button type="submit">Update Task</button>
                 <button type="button" onclick="closeEditTaskModal()">Cancel</button>
             </div>
@@ -137,22 +143,19 @@
     </div>
 </div>
 
-<!-- Reassign Modal -->
-<div id="reassignModal" class="modal" style="display:none;">
+<!-- Add Staff Modal -->
+<div id="addStaffModal" class="modal" style="display:none;">
     <div class="modal-content">
-        <span class="close" onclick="closeReassignModal()">&times;</span>
-        <h3>Reassign Staff</h3>
-        <form method="post" asp-action="ReassignTask">
+        <span class="close" onclick="closeAddStaffModal()">&times;</span>
+        <h3>Add Staff to Schedule</h3>
+        <form method="post" asp-action="AddStaffToDay">
             @Html.AntiForgeryToken()
             <input type="hidden" name="dateStr" value="@Model.Date.ToString("yyyy-MM-dd")" />
-            <input type="hidden" id="reassignAllocationId" name="allocationId" />
-            
-            <p id="reassignInfo"></p>
             
             <div class="form-group">
-                <label>Reassign to:</label>
-                <select name="newStaffId" class="form-control" required>
-                    <option value="">-- Select Available Staff --</option>
+                <label>Select Staff:</label>
+                <select name="staffId" class="form-control" required>
+                    <option value="">-- Select Staff --</option>
                     @foreach (var staff in Model.AvailableStaffForReassignment)
                     {
                         <option value="@staff.Id">@staff.Name (@staff.Id) - @staff.AuthorizationLvl</option>
@@ -160,9 +163,20 @@
                 </select>
             </div>
             
-            <div style="margin-top: 15px;">
-                <button type="submit">Reassign</button>
-                <button type="button" onclick="closeReassignModal()">Cancel</button>
+            <div class="form-group">
+                <label>Select Task:</label>
+                <select name="taskName" class="form-control" required>
+                    <option value="">-- Select Task Type --</option>
+                    @foreach (var taskType in ViewBag.TaskTypes as SelectList)
+                    {
+                        <option value="@taskType.Text">@taskType.Text</option>
+                    }
+                </select>
+            </div>
+            
+            <div>
+                <button type="submit">Add Staff</button>
+                <button type="button" onclick="closeAddStaffModal()">Cancel</button>
             </div>
         </form>
     </div>
@@ -180,31 +194,36 @@
         document.getElementById('editTaskModal').style.display = 'none';
     }
     
-    function showReassignForm(allocationId, staffName, taskName) {
-        document.getElementById('reassignAllocationId').value = allocationId;
-        document.getElementById('reassignInfo').textContent = `Reassigning task "${taskName}" from ${staffName}`;
-        document.getElementById('reassignModal').style.display = 'block';
+    function showAddStaffModal() {
+        document.getElementById('addStaffModal').style.display = 'block';
     }
     
-    function closeReassignModal() {
-        document.getElementById('reassignModal').style.display = 'none';
+    function closeAddStaffModal() {
+        document.getElementById('addStaffModal').style.display = 'none';
     }
     
     window.onclick = function(event) {
         const editModal = document.getElementById('editTaskModal');
-        const reassignModal = document.getElementById('reassignModal');
+        const addStaffModal = document.getElementById('addStaffModal');
         if (event.target == editModal) {
             closeEditTaskModal();
         }
-        if (event.target == reassignModal) {
-            closeReassignModal();
+        if (event.target == addStaffModal) {
+            closeAddStaffModal();
         }
     }
 </script>
 
 <style>
+    .inline-form {
+        display: inline;
+    }
     .unavailable-row td {
         background-color: #fff3cd;
+    }
+    .notes-row {
+        background-color: #f8f9fa;
+        padding-left: 30px;
     }
     .badge-success { background-color: #28a745; color: white; }
     .badge-danger { background-color: #dc3545; color: white; }

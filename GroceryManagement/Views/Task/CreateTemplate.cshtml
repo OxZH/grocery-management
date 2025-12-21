@@ -10,24 +10,33 @@
 <form method="post" asp-action="CreateTemplate">
     @Html.AntiForgeryToken()
     
-    <div class="form-group">
-        <label asp-for="TemplateName">Template Name:</label>
-        <input asp-for="TemplateName" class="form-control" placeholder="e.g., Monday Weekday Roster" />
-        <span asp-validation-for="TemplateName" class="text-danger"></span>
+    <div>
+        <label asp-for="TemplateName"><strong>Template Name:</strong></label>
+        <input asp-for="TemplateName" placeholder="e.g., Monday Weekday Roster" />
+        <span asp-validation-for="TemplateName"></span>
     </div>
 
     <h3>Staff-Task Assignments</h3>
-    <p style="color: #666;">Add staff members and assign each a task. Each staff can only be assigned once.</p>
+    <p>Add staff members and assign each a task. Each staff can only be assigned once.</p>
 
-    <div id="allocations-container">
-        <!-- Dynamic allocation rows will be added here -->
-    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Staff Member</th>
+                <th>Task Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="allocations-container">
+            <!-- Dynamic allocation rows will be added here -->
+        </tbody>
+    </table>
 
-    <button type="button" class="btn btn-secondary" onclick="addAllocation()">+ Add Staff</button>
+    <button type="button" onclick="addAllocation()">+ Add Staff</button>
 
-    <div style="margin-top: 20px;">
-        <button type="submit" class="btn btn-primary">Save Template</button>
-        <a href="@Url.Action("Templates")" class="btn btn-secondary">Cancel</a>
+    <div>
+        <button type="submit">Save Template</button>
+        <a href="@Url.Action("Templates")">Cancel</a>
     </div>
 </form>
 
@@ -39,35 +48,30 @@
         const index = allocationIndex++;
         
         const html = `
-            <div class="allocation-row" id="allocation-${index}" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 4px; background-color: #f9f9f9;">
-                <div class="row">
-                    <div class="col-md-5">
-                        <label>Staff Member:</label>
-                        <select name="Allocations[${index}].StaffId" class="form-control" required>
-                            <option value="">-- Select Staff --</option>
-                            @foreach (var item in ViewBag.Staffs as SelectList)
-                            {
-                                <option value="@item.Value">@item.Text</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-5">
-                        <label>Task Name:</label>
-                        <select name="Allocations[${index}].TaskName" class="form-control" required>
-                            <option value="">-- Select Task --</option>
-                            @foreach (var taskType in ViewBag.TaskTypes as SelectList)
-                            {
-                                <option value="@taskType.Text">@taskType.Text</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label>&nbsp;</label><br/>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeAllocation(${index})">Remove</button>
-                    </div>
-                </div>
+            <tr id="allocation-${index}">
+                <td>
+                    <select name="Allocations[${index}].StaffId" required>
+                        <option value="">-- Select Staff --</option>
+                        @foreach (var item in ViewBag.Staffs as SelectList)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </td>
+                <td>
+                    <select name="Allocations[${index}].TaskName" required>
+                        <option value="">-- Select Task --</option>
+                        @foreach (var taskType in ViewBag.TaskTypes as SelectList)
+                        {
+                            <option value="@taskType.Text">@taskType.Text</option>
+                        }
+                    </select>
+                </td>
+                <td>
+                    <button type="button" onclick="removeAllocation(${index})">Remove</button>
+                </td>
                 <input type="hidden" name="Allocations[${index}].SortOrder" value="${index}" />
-            </div>
+            </tr>
         `;
         
         container.insertAdjacentHTML('beforeend', html);
@@ -89,59 +93,3 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-
-<style>
-    .form-group {
-        margin-bottom: 20px;
-    }
-    .form-control {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-    }
-    .row {
-        display: flex;
-        gap: 10px;
-    }
-    .col-md-5 {
-        flex: 0 0 41.666667%;
-    }
-    .col-md-2 {
-        flex: 0 0 16.666667%;
-    }
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    .btn {
-        padding: 8px 16px;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        margin-right: 5px;
-    }
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-    }
-    .btn-secondary {
-        background-color: #6c757d;
-        color: white;
-    }
-    .btn-danger {
-        background-color: #dc3545;
-        color: white;
-    }
-    .btn-sm {
-        padding: 4px 8px;
-        font-size: 0.875rem;
-    }
-    .text-danger {
-        color: #dc3545;
-        font-size: 0.875rem;
-    }
-</style>
