@@ -27,10 +27,10 @@
 </form>
 
 <table class="table table-bordered">
-    <tr><th>Gross Revenue (Checkouts)</th><td>@Model.Revenue.ToString("C")</td></tr>
-    <tr><th>Procurement Cost</th><td>@Model.ProcurementCost.ToString("C")</td></tr>
-    <tr><th>Expenses</th><td>@Model.ExpenseTotal.ToString("C")</td></tr>
-    <tr class="@(Model.NetProfit >= 0 ? "table-success" : "table-danger")"><th>@netLabel</th><td>@netAmount.ToString("C")</td></tr>
+    <tr><th>Gross Revenue (Checkouts)</th><td>RM @Model.Revenue.ToString("N2")</td></tr>
+    <tr><th>Procurement Cost</th><td>RM @Model.ProcurementCost.ToString("N2")</td></tr>
+    <tr><th>Expenses</th><td>RM @Model.ExpenseTotal.ToString("N2")</td></tr>
+    <tr class="@(Model.NetProfit >= 0 ? "table-success" : "table-danger")"><th>@netLabel</th><td>RM @netAmount.ToString("N2")</td></tr>
 </table>
 
 <h4>Checkouts (Gross Revenue)</h4>
@@ -45,7 +45,7 @@
                     <td>@c.Id</td>
                     <td>@c.Date.ToString("yyyy-MM-dd")</td>
                     <td>@c.CustomerId</td>
-                    <td>@c.Total.ToString("C")</td>
+                    <td>RM @c.Total.ToString("N2")</td>
                 </tr>
             }
         }
@@ -68,7 +68,7 @@
                     <td>@p.Id</td>
                     <td>@p.ProcurementDateTime.ToString("yyyy-MM-dd")</td>
                     <td>@(p.Supplier?.Name ?? p.SupplierId)</td>
-                    <td>@p.TotalPrice.ToString("C")</td>
+                    <td>RM @p.TotalPrice.ToString("N2")</td>
                 </tr>
             }
         }
@@ -92,7 +92,7 @@
                     <td>@e.Date.ToString("yyyy-MM-dd")</td>
                     <td>@e.Type</td>
                     <td>@e.Details</td>
-                    <td>@e.Amount.ToString("C")</td>
+                    <td>RM @e.Amount.ToString("N2")</td>
                 </tr>
             }
         }
