@@ -64,18 +64,20 @@ public class ProcurementController(DB db, Helper hp) : Controller
 
     [HttpGet]
     public IActionResult GetProducts(string? supplierId)
-    {
-        var data = db.Inventories
-            .Where(p => p.SupplierId == supplierId)
-            .Select(p => new
-            {
-                value = p.Id,
-                text = p.Product.Name,
-            })
-            .ToList();
+{
+    var data = db.Inventories
+        .Where(i => i.SupplierId == supplierId)
+        .Select(i => i.Product)
+        .Distinct()
+        .Select(p => new
+        {
+            value = p.Id,
+            text = p.Name,
+        })
+        .ToList();
 
-        return Json(data);
-    }
+    return Json(data);
+}
 
     [HttpGet]
     public IActionResult GetTotalPrice(string? productId, int quantity = 0)
