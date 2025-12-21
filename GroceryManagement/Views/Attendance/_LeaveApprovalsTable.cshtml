@@ -1,61 +1,78 @@
 @model List<GroceryManagement.Models.LeaveRequest>
 
-@if (Model is null || !Model.Any())
-{
-    <tr>
-        <td colspan="9" style="text-align: center;">No leave requests found.</td>
-    </tr>
-}
-else
-{
-    @foreach (var r in Model)
-    {
+<table class="table">
+    <thead>
         <tr>
-            <td>@r.Id</td>
-            <td>@r.StaffId</td>
-            <td>@r.LeaveDate</td>
-            <td>@r.Type</td>
-            <td>@r.Status</td>
-            <td>@r.SubmittedAt</td>
-            <td>@(string.IsNullOrWhiteSpace(r.ApprovedBy) ? "-" : r.ApprovedBy)</td>
-            <td>
-                @if (!string.IsNullOrWhiteSpace(r.AttachmentPath))
-                {
-                    <a href="@r.AttachmentPath" target="_blank">View</a>
-                }
-                else
-                {
-                    <span>-</span>
-                }
-            </td>
-            <td>
-                @if (r.Status == "PENDING")
-                {
-                    <form asp-action="ApproveLeave" method="post" style="display:inline"
-                          data-ajax="true"
-                          data-ajax-method="POST"
-                          data-ajax-update="#target"
-                          data-ajax-confirm="Approve this leave request?">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@r.Id" />
-                        <button type="submit">Approve</button>
-                    </form>
-                    <form asp-action="RejectLeave" method="post" style="display:inline"
-                          data-ajax="true"
-                          data-ajax-method="POST"
-                          data-ajax-update="#target"
-                          data-ajax-confirm="Reject this leave request?">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@r.Id" />
-                        <button type="submit">Reject</button>
-                    </form>
-                }
-                else
-                {
-                    <span>Already @r.Status</span>
-                }
-            </td>
+            <th>Id</th>
+            <th>Staff</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Submitted</th>
+            <th>Approved By</th>
+            <th>Attachment</th>
+            <th>Actions</th>
         </tr>
-    }
-}
+    </thead>
+    <tbody>
+        @if (Model is null || !Model.Any())
+        {
+            <tr>
+                <td colspan="9" style="text-align: center;">No leave requests found.</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var r in Model)
+            {
+                <tr>
+                    <td>@r.Id</td>
+                    <td>@r.StaffId</td>
+                    <td>@r.LeaveDate</td>
+                    <td>@r.Type</td>
+                    <td>@r.Status</td>
+                    <td>@r.SubmittedAt</td>
+                    <td>@(string.IsNullOrWhiteSpace(r.ApprovedBy) ? "-" : r.ApprovedBy)</td>
+                    <td>
+                        @if (!string.IsNullOrWhiteSpace(r.AttachmentPath))
+                        {
+                            <a href="@r.AttachmentPath" target="_blank">View</a>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td>
+                        @if (r.Status == "PENDING")
+                        {
+                            <form asp-action="ApproveLeave" method="post" style="display:inline"
+                                  data-ajax="true"
+                                  data-ajax-method="POST"
+                                  data-ajax-update="#target"
+                                  data-ajax-confirm="Approve this leave request?">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@r.Id" />
+                                <button type="submit">Approve</button>
+                            </form>
+                            <form asp-action="RejectLeave" method="post" style="display:inline"
+                                  data-ajax="true"
+                                  data-ajax-method="POST"
+                                  data-ajax-update="#target"
+                                  data-ajax-confirm="Reject this leave request?">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@r.Id" />
+                                <button type="submit">Reject</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span>Already @r.Status</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
 

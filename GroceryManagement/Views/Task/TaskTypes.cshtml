@@ -34,20 +34,7 @@
 <h3>Existing Task Types</h3>
 
 <div id="target">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Task Type</th>
-                <th>Description</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @Html.Partial("_TaskTypesTable", Model)
-        </tbody>
-    </table>
+    @Html.Partial("_TaskTypesTable", Model)
 </div>
 
 <div style="margin-top: 20px;">

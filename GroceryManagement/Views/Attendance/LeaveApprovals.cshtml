@@ -15,22 +15,5 @@
 }
 
 <div id="target">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Staff</th>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Submitted</th>
-                <th>Approved By</th>
-                <th>Attachment</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @Html.Partial("_LeaveApprovalsTable", Model)
-        </tbody>
-    </table>
+    @Html.Partial("_LeaveApprovalsTable", Model)
 </div>
