@@ -1,13 +1,17 @@
 @model Expense
 @{
     ViewBag.Title = "Create Expense";
+    var amountValue = Model.Amount > 0 ? Model.Amount.ToString("0.##") : string.Empty;
 }
 
 <h2>Create Expense</h2>
 
 <form method="post">
     @Html.AntiForgeryToken()
-    @Html.ValidationSummary(false)
+    @if (!ViewData.ModelState.IsValid)
+    {
+        @Html.ValidationSummary(false)
+    }
 <div>
     <label>Type</label>
     <select name="Type" required>
@@ -37,7 +41,7 @@
     </div>
     <div>
         <label>Amount</label>
-        <input type="number" step="0.01" name="Amount" value="@Model.Amount" required />
+        <input type="number" step="0.01" name="Amount" value="@amountValue" required />
         @Html.ValidationMessage("Amount")
     </div>
     <button type="submit">Save</button>
