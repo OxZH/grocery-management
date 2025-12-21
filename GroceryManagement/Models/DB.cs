@@ -283,7 +283,7 @@ public class AttendanceRecords
     [DataType(DataType.Time)]
     public TimeOnly? CheckOutTime { get; set; }
 
-    [RegularExpression("^(ATTEND|ABSENT|LATE|LEAVE)$", ErrorMessage = "Status must be one of: ATTEND, ABSENT, LATE, or LEAVE")]
+    [RegularExpression("^(ATTEND|ABSENT|LEAVE)$", ErrorMessage = "Status must be one of: ATTEND, ABSENT, or LEAVE")]
     [MaxLength(10)]
     public string Status { get; set; }
 

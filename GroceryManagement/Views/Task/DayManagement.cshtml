@@ -116,6 +116,17 @@
 <div id="attendanceList" class="tab-content" style="display:none;">
     <h2>Staff Attendance for @Model.Date.ToString("yyyy-MM-dd")</h2>
     
+    <div>
+        <form method="post" asp-action="AutoMarkAbsent">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="dateStr" value="@Model.Date.ToString("yyyy-MM-dd")" />
+            <button type="submit" onclick="return confirm('Mark all staff without attendance records as absent for @Model.Date.ToString("yyyy-MM-dd")?');">
+                Auto Mark Absent
+            </button>
+        </form>
+        <p><small>This will automatically mark staff who have not checked in and are not on leave as absent.</small></p>
+    </div>
+    
     @if (!Model.StaffList.Any())
     {
         <p>No staff members found.</p>
@@ -129,6 +140,7 @@
                     <th>Staff ID</th>
                     <th>Name</th>
                     <th>Attendance Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -152,6 +164,11 @@
                                 @staff.AttendanceStatus
                             </span>
                         </td>
+                        <td>
+                            <button type="button" onclick="showEditStatusModal('@staff.StaffId', '@staff.StaffName', '@staff.AttendanceStatus')">
+                                Edit Status
+                            </button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -173,7 +190,53 @@
     </div>
 </div>
 
+<!-- Edit Attendance Status Modal -->
+<div id="editStatusModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditStatusModal()">&times;</span>
+        <h3>Edit Attendance Status</h3>
+        <p id="editStatusInfo"></p>
+        <form method="post" asp-action="EditAttendanceStatus">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="dateStr" value="@Model.Date.ToString("yyyy-MM-dd")" />
+            <input type="hidden" id="editStaffId" name="staffId" />
+            
+            <div class="form-group">
+                <label><strong>Select Status:</strong></label>
+                <select id="editStatus" name="status" class="form-control" required>
+                    <option value="ATTEND">ATTEND</option>
+                    <option value="ABSENT">ABSENT</option>
+                    <option value="LEAVE">LEAVE</option>
+                </select>
+            </div>
+            
+            <div>
+                <button type="submit">Update Status</button>
+                <button type="button" onclick="closeEditStatusModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+    function showEditStatusModal(staffId, staffName, currentStatus) {
+        document.getElementById('editStaffId').value = staffId;
+        document.getElementById('editStatusInfo').textContent = `Editing attendance for: ${staffName} (${staffId})`;
+        document.getElementById('editStatus').value = currentStatus;
+        document.getElementById('editStatusModal').style.display = 'block';
+    }
+    
+    function closeEditStatusModal() {
+        document.getElementById('editStatusModal').style.display = 'none';
+    }
+    
+    window.onclick = function(event) {
+        const modal = document.getElementById('editStatusModal');
+        if (event.target == modal) {
+            closeEditStatusModal();
+        }
+    }
+
     function openTab(evt, tabName) {
         // Hide all tab contents
         var tabContents = document.getElementsByClassName("tab-content");

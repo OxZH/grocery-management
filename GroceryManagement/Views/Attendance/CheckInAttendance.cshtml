@@ -136,15 +136,15 @@
             }
         }
 
-        // Check if there's a check-in or check-out message
-        const checkInInfo = '@ViewBag.CheckInInfo';
-        const checkOutInfo = '@ViewBag.CheckOutInfo';
+        // Check if there's a check-in or check-out notification flag
+        const showCheckIn = '@TempData["ShowCheckInNotification"]';
+        const showCheckOut = '@TempData["ShowCheckOutNotification"]';
 
-        if (checkInInfo && checkInInfo.trim() !== '') {
+        if (showCheckIn === 'true') {
             showNotification('Check-In Successful', 'You have successfully checked in!', 'checkin');
         }
 
-        if (checkOutInfo && checkOutInfo.trim() !== '') {
+        if (showCheckOut === 'true') {
             showNotification('Check-Out Successful', 'You have successfully checked out!', 'checkout');
         }
     })();

@@ -113,6 +113,7 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         db.SaveChanges();
 
         TempData["Info"] = $"<p class='success'>Checked in at {checkTime} on {checkDate:yyyy-MM-dd}.</p>";
+        TempData["ShowCheckInNotification"] = "true";
 
         return RedirectToAction(nameof(CheckInAttendance), new
         {
@@ -166,6 +167,8 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         {
             TempData["Info"] = $"<p class='success'>Checked out at {checkTime} on {checkDate:yyyy-MM-dd}.</p>";
         }
+        
+        TempData["ShowCheckOutNotification"] = "true";
 
         return RedirectToAction(nameof(CheckInAttendance), new
         {

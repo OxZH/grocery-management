@@ -602,6 +602,153 @@ public class TaskController(DB db) : Controller
         return View(vm);
     }
 
+    // Auto Mark Absent Staff
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Manager")]
+    public IActionResult AutoMarkAbsent(string dateStr)
+    {
+        if (!DateOnly.TryParse(dateStr, out var date))
+        {
+            TempData["Info"] = "<p class='error'>Invalid date.</p>";
+            return RedirectToAction(nameof(Calendar));
+        }
+
+        var allStaff = db.Staffs.ToList();
+        var existingRecords = db.AttendanceRecords
+            .Where(a => a.Date == date)
+            .ToList();
+
+        var existingStaffIds = existingRecords.Select(a => a.StaffId).ToHashSet();
+        
+        // Get the last attendance ID to generate unique IDs
+        var lastId = db.AttendanceRecords
+            .OrderByDescending(a => a.Id)
+            .Select(a => a.Id)
+            .FirstOrDefault();
+
+        int nextIdNumber = 1;
+        if (lastId != null)
+        {
+            nextIdNumber = int.Parse(lastId.Substring(3)) + 1;
+        }
+
+        int markedCount = 0;
+        var recordsToAdd = new List<AttendanceRecords>();
+
+        foreach (var staff in allStaff)
+        {
+            // Check if staff has no attendance record
+            if (!existingStaffIds.Contains(staff.Id))
+            {
+                // Check if staff has a leave request for this day
+                var hasLeave = db.LeaveRequests.Any(lr => 
+                    lr.StaffId == staff.Id && 
+                    lr.LeaveDate == date && 
+                    lr.Status == "APPROVED");
+
+                if (!hasLeave)
+                {
+                    // Create absent record with unique ID
+                    var absentRecord = new AttendanceRecords
+                    {
+                        Id = $"ATT{nextIdNumber:D5}",
+                        StaffId = staff.Id,
+                        Date = date,
+                        Status = "ABSENT",
+                        CheckInTime = null,
+                        CheckOutTime = null
+                    };
+
+                    recordsToAdd.Add(absentRecord);
+                    nextIdNumber++;
+                    markedCount++;
+                }
+            }
+        }
+
+        if (markedCount > 0)
+        {
+            db.AttendanceRecords.AddRange(recordsToAdd);
+            db.SaveChanges();
+            TempData["Info"] = $"<p class='success'>Successfully marked {markedCount} staff as absent for {date.ToShortDateString()}.</p>";
+        }
+        else
+        {
+            TempData["Info"] = "<p class='info'>No staff to mark as absent. All staff have attendance records or are on leave.</p>";
+        }
+
+        return RedirectToAction(nameof(DayManagement), new { dateStr });
+    }
+
+    // Edit Staff Attendance Status
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Manager")]
+    public IActionResult EditAttendanceStatus(string dateStr, string staffId, string status)
+    {
+        if (!DateOnly.TryParse(dateStr, out var date))
+        {
+            TempData["Info"] = "<p class='error'>Invalid date.</p>";
+            return RedirectToAction(nameof(Calendar));
+        }
+
+        if (string.IsNullOrWhiteSpace(staffId) || string.IsNullOrWhiteSpace(status))
+        {
+            TempData["Info"] = "<p class='error'>Staff ID and status are required.</p>";
+            return RedirectToAction(nameof(DayManagement), new { dateStr });
+        }
+
+        // Validate status
+        var validStatuses = new[] { "ATTEND", "ABSENT", "LEAVE" };
+        if (!validStatuses.Contains(status))
+        {
+            TempData["Info"] = "<p class='error'>Invalid status value.</p>";
+            return RedirectToAction(nameof(DayManagement), new { dateStr });
+        }
+
+        var existingRecord = db.AttendanceRecords
+            .FirstOrDefault(a => a.StaffId == staffId && a.Date == date);
+
+        if (existingRecord != null)
+        {
+            // Update existing record
+            existingRecord.Status = status;
+            db.SaveChanges();
+            TempData["Info"] = $"<p class='success'>Attendance status for {staffId} updated to {status}.</p>";
+        }
+        else
+        {
+            // Create new record
+            var lastId = db.AttendanceRecords
+                .OrderByDescending(a => a.Id)
+                .Select(a => a.Id)
+                .FirstOrDefault();
+
+            int nextIdNumber = 1;
+            if (lastId != null)
+            {
+                nextIdNumber = int.Parse(lastId.Substring(3)) + 1;
+            }
+
+            var newRecord = new AttendanceRecords
+            {
+                Id = $"ATT{nextIdNumber:D5}",
+                StaffId = staffId,
+                Date = date,
+                Status = status,
+                CheckInTime = status == "ATTEND" ? TimeOnly.FromDateTime(DateTime.Now) : null,
+                CheckOutTime = null
+            };
+
+            db.AttendanceRecords.Add(newRecord);
+            db.SaveChanges();
+            TempData["Info"] = $"<p class='success'>Attendance record created for {staffId} with status {status}.</p>";
+        }
+
+        return RedirectToAction(nameof(DayManagement), new { dateStr });
+    }
+
     [Authorize(Roles = "Manager")]
     public IActionResult DayDetails(string dateStr)
     {
