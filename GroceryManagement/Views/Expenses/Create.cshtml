@@ -8,11 +8,29 @@
 <form method="post">
     @Html.AntiForgeryToken()
     @Html.ValidationSummary(false)
-<input type="hidden" name="Type" value="Payment Reconciliation" />
 <div>
     <label>Type</label>
-    <input value="Payment Reconciliation" readonly />
+    <select name="Type" required>
+        @foreach (var t in new[] { "Utilities", "Office Supplies", "Salary", "Maintenance", "Insurance", "Payment Reconciliation" })
+        {
+            <option value="@t" selected="@(t==Model.Type ? "selected" : null)">@t</option>
+        }
+    </select>
+    @Html.ValidationMessage("Type")
 </div>
+    <div>
+        <label>Staff Id (for Salary)</label>
+        <input name="StaffId" id="StaffId" value="@Model.StaffId" />
+        @Html.ValidationMessage("StaffId")
+    </div>
+    <div>
+        <label>Payment Method</label>
+        <select name="PaymentMethod">
+            <option value="Cash" selected>Cash</option>
+            <option value="E-Wallet">E-Wallet</option>
+            <option value="Credit Card">Credit Card</option>
+        </select>
+    </div>
     <div>
         <label>Details</label>
         <textarea name="Details" rows="3">@Model.Details</textarea>
@@ -35,9 +53,14 @@
 <script>
     (function() {
         const typeSel = document.querySelector('select[name="Type"]');
-        if (!typeSel) return;
-        typeSel.addEventListener('change', () => {
-            // no-op placeholder if future dynamic logic is needed
-        });
+        const staffInput = document.getElementById('StaffId');
+        if (!typeSel || !staffInput) return;
+        const toggle = () => {
+            const isSalary = (typeSel.value || '').toLowerCase() === 'salary';
+            staffInput.disabled = !isSalary;
+            if (!isSalary) staffInput.value = '';
+        };
+        typeSel.addEventListener('change', toggle);
+        toggle();
     })();
 </script>
