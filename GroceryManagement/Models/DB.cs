@@ -253,12 +253,19 @@ public class ProcurementRecord
     [MaxLength(10)]
     public string Status { get; set; }
 
+    [MaxLength(6)]
+    public string PaymentStatus { get; set; }
+
     // automated
     [DataType(DataType.DateTime)]
     public DateTime ProcurementDateTime { get; set; }
 
     [DataType(DataType.Date)]
     public DateTime? StatusUpdateDateTime { get; set; }
+
+    [DataType(DataType.Url)]
+    [MaxLength(100)]
+    public string? DeliveryProofPhotoLink { get; set; }
 
     // FK
     [MaxLength(6)]
@@ -268,6 +275,8 @@ public class ProcurementRecord
     public string SupplierId { get; set; }
 
     // Navigation
-    public Product Product { get; set; }
+    public Product Product { get; set; } // TODO: deal with this later
     public Supplier Supplier { get; set; }
 }
+
+

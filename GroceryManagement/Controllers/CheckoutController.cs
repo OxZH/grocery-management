@@ -201,6 +201,12 @@ public class CheckoutController : Controller
                     inv.Status = "SOLD";
                 }
                 total += prod.Price * taken.Count;
+
+                // decrement storefront quantity only (clamp at zero)
+                if (prod != null && taken.Count > 0)
+                {
+                    prod.StoreFrontQty = Math.Max(0, prod.StoreFrontQty - taken.Count);
+                }
             }
 
             // ensure primary InventoryId not empty if we allocated something
