@@ -3,8 +3,7 @@
     ViewData["Title"] = "My Schedule";
 }
 
-<h1>My Schedule - @Model.MonthName @Model.Year</h1>
-<h3>@Model.StaffName (@Model.StaffId)</h3>
+<h3>@Model.MonthName @Model.Year - @Model.StaffName (@Model.StaffId)</h3>
 
 @Html.Raw(TempData["Info"])
 
