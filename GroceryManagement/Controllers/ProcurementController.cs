@@ -57,7 +57,7 @@ public class ProcurementController(DB db, Helper hp) : Controller
 
     public IActionResult Insert()
     {
-        ViewBag.SupplierList = new SelectList(db.Suppliers, "Id", "Name");
+        ViewBag.SupplierList = new SelectList(db.Supplier, "Id", "Name");
         ViewBag.NextId = NextId();
         return View();
     }
@@ -65,12 +65,12 @@ public class ProcurementController(DB db, Helper hp) : Controller
     [HttpGet]
     public IActionResult GetProducts(string? supplierId)
     {
-        var data = db.Products
+        var data = db.Inventories
             .Where(p => p.SupplierId == supplierId)
             .Select(p => new
             {
                 value = p.Id,
-                text = p.Name
+                text = p.Product.Name,
             })
             .ToList();
 
@@ -81,7 +81,7 @@ public class ProcurementController(DB db, Helper hp) : Controller
     public IActionResult GetTotalPrice(string? productId, int quantity = 0)
     {
         var product = db.Products.FirstOrDefault(p => p.Id == productId);
-        return Json(new { totalPrice = product?.Price * quantity });
+        return Json(new { totalPrice = product?.SellPrice * quantity });
     }
 
     public IActionResult Details(string? id)
@@ -93,7 +93,7 @@ public class ProcurementController(DB db, Helper hp) : Controller
         }
 
         ViewBag.Product = db.Products.Find(proc.ProductId);
-        ViewBag.Supplier = db.Suppliers.Find(proc.SupplierId);
+        ViewBag.Supplier = db.Supplier.Find(proc.SupplierId);
         return View(proc);
     }
 
@@ -103,7 +103,7 @@ public class ProcurementController(DB db, Helper hp) : Controller
         var product = db.Products.FirstOrDefault(p => p.Id == vm.ProductId);
         if (product == null)
         {
-            ViewBag.SupplierList = new SelectList(db.Suppliers.ToList(), "Id", "Name");
+            ViewBag.SupplierList = new SelectList(db.Supplier.ToList(), "Id", "Name");
             ViewBag.NextId = NextId();
             return View();
         }
@@ -111,13 +111,13 @@ public class ProcurementController(DB db, Helper hp) : Controller
         if (ModelState.IsValid)
         {
             var now = DateTime.Now;
-            var supplier = db.Suppliers.First(p => p.Id == vm.SupplierId);
+            var supplier = db.Supplier.First(p => p.Id == vm.SupplierId);
             db.ProcurementRecords.Add(new()
             {
                 Id = NextId(),
                 ProductId = vm.ProductId,
                 Quantity = vm.Quantity,
-                TotalPrice = vm.Quantity * product.Price,
+                TotalPrice = vm.Quantity * product.SellPrice,
                 ProcurementDateTime = now,
                 StatusUpdateDateTime = now,
                 Status = "Ordered",
@@ -130,7 +130,7 @@ public class ProcurementController(DB db, Helper hp) : Controller
             return RedirectToAction("Index");
         }
 
-        ViewBag.SupplierList = new SelectList(db.Suppliers, "Id", "Name");
+        ViewBag.SupplierList = new SelectList(db.Supplier, "Id", "Name");
         return View();
     }
 
@@ -149,7 +149,7 @@ public class ProcurementController(DB db, Helper hp) : Controller
             SupplierId = record.SupplierId
         };
 
-        ViewBag.SupplierList = new SelectList(db.Suppliers, "Id", "Name", record.SupplierId);
+        ViewBag.SupplierList = new SelectList(db.Supplier, "Id", "Name", record.SupplierId);
         ViewBag.ProductList = new SelectList(db.Products, "Id", "Name", record.ProductId);
         return View(vm);
     }
@@ -177,7 +177,7 @@ public class ProcurementController(DB db, Helper hp) : Controller
         proc.SupplierId = vm.SupplierId;
         proc.ProductId = vm.ProductId;
         proc.Quantity = vm.Quantity;
-        proc.TotalPrice = vm.Quantity * product.Price;
+        proc.TotalPrice = vm.Quantity * product.SellPrice;
         db.SaveChanges();
 
         TempData["Info"] = "Record updated.";

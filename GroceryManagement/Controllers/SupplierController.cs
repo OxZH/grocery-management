@@ -10,19 +10,19 @@ public class SupplierController(DB db) : Controller
     // Manually generate next id
     private string NextId()
     {
-        string max = db.Suppliers.Max(t => t.Id) ?? "SUP000";
+        string max = db.Supplier.Max(t => t.Id) ?? "SUP000";
         int n = int.Parse(max[3..]);
         return (n + 1).ToString("'SUP'000");
     }
 
     public IActionResult Index()
     {
-        return View(db.Suppliers);
+        return View(db.Supplier);
     }
 
     public IActionResult Details(string? id)
     {
-        var sup = db.Suppliers.Find(id);
+        var sup = db.Supplier.Find(id);
         if (sup == null)
         {
             return RedirectToAction("Index");
@@ -43,7 +43,7 @@ public class SupplierController(DB db) : Controller
         if (ModelState.IsValid)
         {
             var nextId = NextId();
-            db.Suppliers.Add(new()
+            db.Supplier.Add(new()
             {
                 Id = nextId,
                 Name = vm.Name.Trim(),
@@ -63,7 +63,7 @@ public class SupplierController(DB db) : Controller
 
     public IActionResult Update(string? id)
     {
-        var sup = db.Suppliers.Find(id);
+        var sup = db.Supplier.Find(id);
         if (sup == null)
         {
             return RedirectToAction("Index");
@@ -84,7 +84,7 @@ public class SupplierController(DB db) : Controller
     [HttpPost]
     public IActionResult Update(SupplierVM vm)
     {
-        var sup = db.Suppliers.Find(vm.Id);
+        var sup = db.Supplier.Find(vm.Id);
         if (sup == null)
         {
             return RedirectToAction("Index");
@@ -108,10 +108,10 @@ public class SupplierController(DB db) : Controller
     [HttpPost]
     public IActionResult Delete(string? id)
     {
-        var sup = db.Suppliers.Find(id);
+        var sup = db.Supplier.Find(id);
         if (sup != null)
         {
-            db.Suppliers.Remove(sup);
+            db.Supplier.Remove(sup);
             db.SaveChanges();
             TempData["Info"] = "Record deleted.";
         }

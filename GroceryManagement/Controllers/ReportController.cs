@@ -31,7 +31,7 @@ public class ReportController(DB db) : Controller
                 && p.ProcurementDateTime < endDateTime)
             .ToList();
         ViewBag.Products = db.Products.ToList();
-        ViewBag.Suppliers = db.Suppliers.ToList();
+        ViewBag.Supplier = db.Supplier.ToList();
 
         //if (Request.IsAjax())
         //{
