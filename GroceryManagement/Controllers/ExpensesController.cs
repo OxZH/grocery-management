@@ -50,6 +50,10 @@ public class ExpensesController : Controller
             ? paymentMethod
             : detail;
 
+        // re-validate after adjustments
+        ModelState.Clear();
+        TryValidateModel(model);
+
         // auto-generate Id if not provided (EX + 3 digits to fit legacy 5-char column)
         if (string.IsNullOrWhiteSpace(model.Id))
         {
