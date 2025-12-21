@@ -1,0 +1,71 @@
+@model IEnumerable<Checkout>
+@{
+    ViewBag.Title = "Checkouts";
+    var search = (string)ViewBag.Search;
+    var statusFilter = (string)ViewBag.StatusFilter;
+    var sortBy = (string)ViewBag.SortBy ?? "Date";
+    var sortDir = (string)ViewBag.SortDir ?? "desc";
+}
+
+<h2>Checkouts</h2>
+
+<p><a href="/Checkout/Create">Add Checkout</a></p>
+
+<form id="filterForm">
+    <input type="text" name="search" placeholder="Search by id, customer or inventory" value="@search" />
+    <select name="statusFilter">
+        <option value="">All</option>
+        @if(statusFilter=="PENDING") { <option value="PENDING" selected> PENDING</option> } else { <option value="PENDING">PENDING</option> }
+        @if(statusFilter=="PICKING") { <option value="PICKING" selected> PICKING</option> } else { <option value="PICKING">PICKING</option> }
+        @if(statusFilter=="PACKED") { <option value="PACKED" selected> PACKED</option> } else { <option value="PACKED">PACKED</option> }
+        @if(statusFilter=="READY") { <option value="READY" selected> READY</option> } else { <option value="READY">READY</option> }
+        @if(statusFilter=="COMPLETED") { <option value="COMPLETED" selected> COMPLETED</option> } else { <option value="COMPLETED">COMPLETED</option> }
+        @if(statusFilter=="CANCELLED") { <option value="CANCELLED" selected> CANCELLED</option> } else { <option value="CANCELLED">CANCELLED</option> }
+    </select>
+    <select name="sortBy">
+        @if(sortBy=="Date") { <option value="Date" selected>Date</option> } else { <option value="Date">Date</option> }
+        @if(sortBy=="Total") { <option value="Total" selected>Total</option> } else { <option value="Total">Total</option> }
+    </select>
+    <select name="sortDir">
+        @if(sortDir=="desc") { <option value="desc" selected>Desc</option> } else { <option value="desc">Desc</option> }
+        @if(sortDir=="asc") { <option value="asc" selected>Asc</option> } else { <option value="asc">Asc</option> }
+    </select>
+    <button type="submit">Apply</button>
+</form>
+
+<div id="checkoutTable">
+    @await Html.PartialAsync("_CheckoutTable", Model)
+</div>
+
+<script>
+    (function(){
+        const form = document.getElementById('filterForm');
+        const container = document.getElementById('checkoutTable');
+
+        function load(page){
+            const data = new URLSearchParams(new FormData(form));
+            if(page) data.set('page', page);
+            fetch('/Checkout/ListPartial?' + data.toString(), { headers: { 'X-Requested-With':'XMLHttpRequest' }})
+                .then(r => r.text())
+                .then(html => {
+                    container.innerHTML = html;
+                });
+        }
+
+        form.addEventListener('submit', e => { e.preventDefault(); load(1); });
+
+        container.addEventListener('click', e => {
+            if(e.target.matches('[data-page]')){
+                e.preventDefault();
+                const p = e.target.getAttribute('data-page');
+                if(p) load(p);
+            }
+            if(e.target.matches('[data-sort]')){
+                e.preventDefault();
+                form.sortBy.value = e.target.getAttribute('data-sort');
+                form.sortDir.value = form.sortDir.value === 'asc' ? 'desc' : 'asc';
+                load(1);
+            }
+        });
+    })();
+</script>

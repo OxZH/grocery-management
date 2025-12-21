@@ -53,6 +53,15 @@
                 <a href="/Attendance/LeaveApprovals">Leave Approvals</a>
                 <a href="/Account/Register">Register Staff</a>
                 <a href="/Salary/Pay">Salary Report</a>
+                <div class="dropdown">
+                    <a href="/Finance">Finance</a>
+                    <div class="dropdown-content">
+                        <a href="/Finance/Invoices">Invoices</a>
+                        <a href="/Finance/Expenses">Expenses</a>
+                        <a href="/Finance/Reports">Reports</a>
+                    </div>
+                </div>
+        
             }
 
             @if (User.IsInRole("Staff"))
@@ -61,6 +70,7 @@
                 <a href="/Task/MySchedule">My Schedule</a>
                 <a href="/Attendance/ApplyLeave">Apply Leave</a>
                 <a href="/Account/UpdateProfile">Update Profile</a>
+                <a href="/Checkout">Checkout</a>
             }
 
             <a href="/Account/UpdatePassword">Update Password</a>

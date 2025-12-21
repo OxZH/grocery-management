@@ -1,0 +1,29 @@
+@model IEnumerable<Expense>
+@{
+    ViewBag.Title = "Expenses";
+}
+
+<h2>Expenses</h2>
+<p><a href="/Expenses/Create">Add Expense</a></p>
+<table class="table">
+    <tr>
+        <th>Id</th><th>Type</th><th>Details</th><th>Date</th><th>Amount</th><th></th>
+    </tr>
+    @foreach(var e in Model){
+        <tr>
+            <td>@e.Id</td>
+            <td>@e.Type</td>
+            <td>@e.Details</td>
+            <td>@e.Date.ToShortDateString()</td>
+            <td>@e.Amount</td>
+            <td>
+                <a href="/Expenses/Edit/@e.Id">Edit</a>
+                <form method="post" action="/Expenses/Delete" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@e.Id" />
+                    <button type="submit" onclick="return confirm('Delete expense @e.Id?')">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>

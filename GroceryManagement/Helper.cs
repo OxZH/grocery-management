@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Net;
-using System.Net.Mail;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
@@ -85,7 +83,9 @@ public class Helper(IWebHostEnvironment en,
     }
     public string ProSavePhoto(IFormFile f, string folder, int rotateDegrees = 0, bool flip = false)
     {
-        var file = Guid.NewGuid().ToString("n") + ".jpg";
+        var ext = Path.GetExtension(f.FileName);
+        if (string.IsNullOrWhiteSpace(ext) || ext.Length > 5) ext = ".jpg";
+        var file = Guid.NewGuid().ToString("n") + ext;
         var path = Path.Combine(en.WebRootPath, folder, file);
 
         if (!Directory.Exists(Path.GetDirectoryName(path)))
@@ -171,6 +171,17 @@ public class Helper(IWebHostEnvironment en,
         foreach (var id in existing)
         {
             if (string.IsNullOrEmpty(id)) continue;
+
+            // Strip "EX" prefix to get the number
+            var digits = id.StartsWith("EX") ? id.Substring(2) : id;
+
+            // Track the highest number found
+            if (int.TryParse(digits, out var n)) max = Math.Max(max, n);
+        }
+
+        // Return the next number in the sequence
+        return max + 1;
+    }
 
             // Strip "EX" prefix to get the number
             var digits = id.StartsWith("EX") ? id.Substring(2) : id;

@@ -1,0 +1,55 @@
+@model GroceryManagement.Models.FinanceInvoicesVM
+@{
+    var pageNumber = (int?)(ViewBag.PageNumber ?? 1) ?? 1;
+    var totalPages = (int?)(ViewBag.TotalPages ?? 1) ?? 1;
+    var totalCount = (int?)(ViewBag.TotalCount ?? 0);
+}
+
+<h3>Checkout Invoices</h3>
+<table class="table">
+    <tr><th>Id</th><th><a href="#" data-sort="date">Date</a></th><th><a href="#" data-sort="total">Total</a></th><th>Status</th><th></th></tr>
+    @foreach(var i in Model.Checkouts){
+        <tr>
+            <td>@i.Id</td>
+            <td>@i.Date.ToString("yyyy-MM-dd")</td>
+            <td>@i.Total</td>
+            <td>@i.Status</td>
+            <td><a href="/Finance/Invoice?type=order&id=@i.Id" target="_blank">View</a></td>
+        </tr>
+    }
+</table>
+
+<h3>Procurement Invoices</h3>
+<table class="table">
+    <tr><th>Id</th><th><a href="#" data-sort="date">Date</a></th><th><a href="#" data-sort="total">Total Price</a></th><th>Status</th><th>Supplier</th><th></th><th></th></tr>
+    @foreach(var p in Model.Procurements){
+        <tr>
+            <td>@p.Id</td>
+            <td>@p.ProcurementDateTime.ToString("yyyy-MM-dd")</td>
+            <td>@p.TotalPrice</td>
+            <td>@p.Status</td>
+            <td>@p.SupplierId</td>
+            <td><a href="/Finance/Invoice?type=procurement&id=@p.Id" target="_blank">View</a></td>
+            <td>
+                @if (string.Equals(p.Status, "PAID", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span>Paid</span>
+                }
+                else
+                {
+                    <form method="post" action="@Url.Action("ConfirmProcurementPayment", "Finance")">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@p.Id" />
+                        <button type="submit">Confirm Payment</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+</table>
+
+<div class="pager">
+    <button data-page="@(pageNumber-1)" @(pageNumber<=1?"disabled":null)>Prev</button>
+    <span>@($"Page {pageNumber} of {totalPages} ({totalCount} total)")</span>
+    <button data-page="@(pageNumber+1)" @(pageNumber>=totalPages?"disabled":null)>Next</button>
+</div>

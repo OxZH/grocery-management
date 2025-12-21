@@ -1,0 +1,46 @@
+@model IEnumerable<GroceryManagement.Models.Expense>
+@{
+    ViewBag.Title = "Expenses";
+}
+
+<h2>Expenses</h2>
+<p>
+    <a class="btn" href="/Expenses/Create">Add Expense</a>
+    <a class="btn" href="/Expenses/Create?type=Payment%20Reconciliation">Payment Reconciliation</a>
+</p>
+
+<form id="expenseFilter">
+    <input type="text" name="search" placeholder="Search by id/type/details" />
+    <select name="sort">
+        <option value="date">Date</option>
+        <option value="amount">Amount</option>
+    </select>
+    <select name="dir">
+        <option value="desc">Desc</option>
+        <option value="asc">Asc</option>
+    </select>
+    <button type="submit">Apply</button>
+</form>
+
+<div id="expenseTable">
+    @await Html.PartialAsync("_ExpensesTable", Model)
+</div>
+
+<script>
+    (function(){
+        const form = document.getElementById('expenseFilter');
+        const container = document.getElementById('expenseTable');
+        function load(page){
+            const data = new URLSearchParams(new FormData(form));
+            if(page) data.set('page', page);
+            fetch('/Finance/ExpensesPartial?' + data.toString(), { headers: { 'X-Requested-With':'XMLHttpRequest' }})
+                .then(r => r.text())
+                .then(html => container.innerHTML = html);
+        }
+        form.addEventListener('submit', e => { e.preventDefault(); load(1); });
+        container.addEventListener('click', e => {
+            if(e.target.matches('[data-page]')){ e.preventDefault(); load(e.target.getAttribute('data-page')); }
+            if(e.target.matches('[data-sort]')){ e.preventDefault(); form.sort.value = e.target.getAttribute('data-sort'); form.dir.value = form.dir.value==='asc'?'desc':'asc'; load(1); }
+        });
+    })();
+</script>

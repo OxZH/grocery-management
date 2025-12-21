@@ -1,9 +1,12 @@
 global using GroceryManagement.Models;
 global using GroceryManagement;
+global using Microsoft.EntityFrameworkCore;
 using GroceryManagement.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<Helper>();
 builder.Services.AddSqlServer<DB>($@"
     Data Source=(LocalDB)\MSSQLLocalDB;
     AttachDbFilename={builder.Environment.ContentRootPath}\GroceryManagementDB.mdf;

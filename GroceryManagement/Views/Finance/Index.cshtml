@@ -1,0 +1,91 @@
+@{
+    ViewBag.Title = "Finance Dashboard";
+}
+
+<h2>Finance Dashboard</h2>
+<p>Welcome to the Finance module. Use the quick links below or the menu to view invoices, expenses, and reports.</p>
+
+<div style="display:flex; gap:12px; flex-wrap:wrap; margin:16px 0;">
+    <a class="btn" href="@Url.Action("Invoices", "Finance")">Invoices</a>
+    <a class="btn" href="@Url.Action("Expenses", "Finance")">Expenses</a>
+    <a class="btn" href="@Url.Action("Reports", "Finance")">Reports</a>
+</div>
+
+<section style="margin-top:20px;">
+    <h3>Checkout Volume</h3>
+    <div style="margin-bottom:10px;">
+        <button type="button" class="trend-btn" data-period="week">Last 7 days</button>
+        <button type="button" class="trend-btn" data-period="month">This month</button>
+        <button type="button" class="trend-btn" data-period="year">This year</button>
+    </div>
+    <div id="trend-chart" style="display:flex; gap:6px; align-items:flex-end; height:220px; border:1px solid #ccc; padding:8px; overflow-x:hidden; width:100%; box-sizing:border-box;">
+        <div style="color:#777;">Loading...</div>
+    </div>
+    <div id="trend-legend" style="margin-top:6px; font-size:0.9em; color:#555;"></div>
+</section>
+
+<script>
+    (function(){
+        const chart = document.getElementById('trend-chart');
+        const legend = document.getElementById('trend-legend');
+        const buttons = document.querySelectorAll('.trend-btn');
+
+        function render(labels, counts){
+            if(!labels || labels.length===0){
+                chart.innerHTML = '<div style="color:#777;">No data</div>';
+                legend.textContent = '';
+                return;
+            }
+            const max = Math.max(...counts, 1);
+            chart.innerHTML = '';
+            const barCount = labels.length;
+            labels.forEach((label, idx) => {
+                const val = counts[idx];
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'flex';
+                wrapper.style.flexDirection = 'column';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.flex = '1 1 0';
+                wrapper.style.minWidth = `${Math.min(60, Math.max(16, chart.clientWidth / Math.max(barCount,1) - 4))}px`;
+
+                const bar = document.createElement('div');
+                bar.style.width = '100%';
+                bar.style.background = '#4a90e2';
+                bar.style.height = `${(val/max)*160}px`;
+                bar.title = `${label}: ${val}`;
+                bar.style.transition = 'height 0.2s';
+                bar.style.display = 'flex';
+                bar.style.alignItems = 'flex-end';
+                bar.style.justifyContent = 'center';
+                bar.style.color = '#fff';
+                bar.style.fontSize = '10px';
+                bar.textContent = val;
+
+                const lbl = document.createElement('div');
+                lbl.style.fontSize = '9px';
+                lbl.style.color = '#555';
+                lbl.style.marginTop = '4px';
+                lbl.style.transform = 'rotate(-45deg)';
+                lbl.style.transformOrigin = 'top left';
+                // show full label for months, last 5 chars for daily labels
+                lbl.textContent = label.length > 7 ? label : label.slice(5);
+
+                wrapper.appendChild(bar);
+                wrapper.appendChild(lbl);
+                chart.appendChild(wrapper);
+            });
+            legend.textContent = 'Showing checkout counts per day';
+        }
+
+        function load(period){
+            chart.innerHTML = '<div style="color:#777;">Loading...</div>';
+            fetch(`/Finance/CheckoutTrend?period=${period}`, { headers: { 'X-Requested-With':'XMLHttpRequest' }})
+                .then(r => r.ok ? r.json() : Promise.reject())
+                .then(data => render(data.labels, data.counts))
+                .catch(() => { chart.innerHTML = '<div style="color:red;">Failed to load data</div>'; legend.textContent=''; });
+        }
+
+        buttons.forEach(btn => btn.addEventListener('click', () => load(btn.dataset.period)));
+        load('week');
+    })();
+</script>

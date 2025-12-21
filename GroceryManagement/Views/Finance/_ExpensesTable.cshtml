@@ -1,0 +1,23 @@
+@model IEnumerable<GroceryManagement.Models.Expense>
+@{
+    var pageNumber = (int?)(ViewBag.PageNumber ?? 1) ?? 1;
+    var totalPages = (int?)(ViewBag.TotalPages ?? 1) ?? 1;
+    var totalCount = (int?)(ViewBag.TotalCount ?? Model.Count());
+}
+<table class="table">
+    <tr><th><a href="#" data-sort="date">Date</a></th><th>Id</th><th>Type</th><th>Details</th><th><a href="#" data-sort="amount">Amount</a></th></tr>
+    @foreach(var e in Model){
+        <tr>
+            <td>@e.Date.ToShortDateString()</td>
+            <td>@e.Id</td>
+            <td>@e.Type</td>
+            <td>@e.Details</td>
+            <td>@e.Amount</td>
+        </tr>
+    }
+</table>
+<div class="pager">
+    <button data-page="@(pageNumber-1)" @(pageNumber<=1?"disabled":null)>Prev</button>
+    <span>@($"Page {pageNumber} of {totalPages} ({totalCount} total)")</span>
+    <button data-page="@(pageNumber+1)" @(pageNumber>=totalPages?"disabled":null)>Next</button>
+</div>

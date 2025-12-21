@@ -11,6 +11,9 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
+    public DbSet<Supplier> Suppliers { get; set; }
+    public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
+    public DbSet<Expense> Expenses { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Staff> Staffs { get; set; }
     public DbSet<Manager> Managers { get; set; }
@@ -87,10 +90,7 @@ public class User
     public int LoginAttempts { get; set; } = 0;
     [DataType(DataType.DateTime)]
     public DateTime? Locked { get; set; }
-
-
 }
-
 
 public class Staff : User
 {
@@ -129,10 +129,9 @@ public class Manager : User
 
 }
 
-
 public class Checkout
 {
-    [Key, MaxLength(5)]
+    [Key, MaxLength(6)]
     public string Id { get; set; }
     public string CustomerId { get; set; }
     public string InventoryId { get; set; }
@@ -140,7 +139,7 @@ public class Checkout
     public decimal Total { get; set; }
     [DataType(DataType.DateTime)]
     public DateTime Date { get; set; }
-    [RegularExpression("^(CONFIRMED|PENDING|FAILED)$", ErrorMessage = "Status must be one of: CONFIRMED, PENDING or FAILED")]
+    [RegularExpression("^(CONFIRMED|PENDING|FAILED)$", ErrorMessage = "Status must be one of: VONFIRMED, PENDING or FAILED")]
     [MaxLength(10)]
     public string Status { get; set; }
     [DataType(DataType.DateTime)]
@@ -273,7 +272,6 @@ public class Allocation
     public Staff Staff { get; set; }
 }
 
-
 public class AttendanceRecords
 {
     [Key, MaxLength(10)]
@@ -392,6 +390,7 @@ public class Product
 
 
 }
+
 public class Inventory
 {
     [Key, MaxLength(9), Required(ErrorMessage = "Id is required"),
@@ -423,6 +422,7 @@ public class Inventory
     public Checkout Checkout { get; set; }
     public Supplier Supplier { get; set; }
 }
+
 public class Supplier
 {
     [Key, MaxLength(6)]
@@ -456,12 +456,19 @@ public class ProcurementRecord
     [MaxLength(10)]
     public string Status { get; set; }
 
+    [MaxLength(6)]
+    public string PaymentStatus { get; set; }
+
     // automated
     [DataType(DataType.DateTime)]
     public DateTime ProcurementDateTime { get; set; }
 
     [DataType(DataType.Date)]
     public DateTime? StatusUpdateDateTime { get; set; }
+
+    [DataType(DataType.Url)]
+    [MaxLength(100)]
+    public string? DeliveryProofPhotoLink { get; set; }
 
     // FK
     [MaxLength(6)]

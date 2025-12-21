@@ -50,6 +50,22 @@ nav {
     display: flex;
 }
 
+.dropdown {
+    position: relative;
+}
+.dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    background: #666;
+    min-width: 160px;
+    z-index: 1;
+    padding: 5px;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+.dropdown .dropdown-content a { display: block; padding: 5px; color: #fff; text-decoration: none; }
+
 nav a {
     background: #666;
     color: #fff;
