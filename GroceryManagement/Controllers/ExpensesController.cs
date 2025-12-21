@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace GroceryManagement.Controllers;
 
+[Authorize(Roles = "Manager")]
 public class ExpensesController : Controller
 {
     private readonly DB _db;
