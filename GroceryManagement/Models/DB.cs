@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace GroceryManagement.Models;
 
@@ -11,7 +12,7 @@ public class DB(DbContextOptions options) : DbContext(options)
     public DbSet<ProcurementRecord> ProcurementRecords { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Inventory> Inventories { get; set; }
-    public DbSet<Supplier> Suppliers { get; set; }
+    //public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<Expense> Expenses { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Staff> Staffs { get; set; }
@@ -478,5 +479,64 @@ public class ProcurementRecord
 
     // Navigation
     public Product Product { get; set; }
+    public Supplier Supplier { get; set; }
+}
+/*public class Suppliers
+{
+    [Key, MaxLength(6)]
+    public string Id { get; set; }
+
+    [MaxLength(100)]
+    public string Name { get; set; }
+
+    [MaxLength(11)]
+    public string SupplierType { get; set; }
+
+    [MaxLength(250)]
+    public string Address { get; set; }
+
+    [MinLength(11), MaxLength(12)]
+    public string ContactNo { get; set; }
+}
+*/
+public class ProcurementRecords
+{
+    [Key, MaxLength(10)]
+    public string Id { get; set; }
+
+    public int Quantity { get; set; }
+
+    [Precision(6, 2)]
+    [DataType(DataType.Currency)]
+    public Decimal TotalPrice { get; set; }
+
+    // quick access
+    [MaxLength(10)]
+    public string Status { get; set; }
+
+    [MaxLength(6)]
+    [RegularExpression("^(Paid|Unpaid)$", ErrorMessage = "Invalid payment status")]
+    public string PaymentStatus { get; set; }
+
+    // automated
+    [DataType(DataType.DateTime)]
+    public DateTime ProcurementDateTime { get; set; }
+
+    [DataType(DataType.Date)]
+    public DateTime? StatusUpdateDateTime { get; set; }
+
+    [DataType(DataType.Url)]
+    [MaxLength(100)]
+    public string? DeliveryProofPhotoLink { get; set; }
+
+    // FK
+    [MaxLength(6)]
+    public string ProductId { get; set; }
+
+    [MaxLength(6)]
+    public string SupplierId { get; set; }
+
+    // Navigation
+    public Product Product { get; set; } // TODO: deal with this later
     public Supplier Supplier { get; set; }
 }

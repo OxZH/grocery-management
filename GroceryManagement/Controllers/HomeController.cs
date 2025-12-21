@@ -54,15 +54,16 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
             return RedirectToAction(null, new { name, sort, dir, page = 1 });
         }
 
-        var m = sorted.ToPagedList(page, 10);
+        var s = sorted.ToPagedList(page, 10);
 
-        if (page > m.PageCount && m.PageCount > 0)
+        if (page > s.PageCount && s.PageCount > 0)
         {
-            return RedirectToAction(null, new { name, sort, dir, page = m.PageCount });
+            return RedirectToAction(null, new { name, sort, dir, page = s.PageCount });
         }
 
-        return View(m);
+        return View(s);
     }
+    [Authorize]
     public IActionResult Insert()
     {
         ViewBag.ProductList = new SelectList(db.Products.ToList(), "Id", "Name");
@@ -72,6 +73,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
 
     // POST: Home/Insert
     [HttpPost]
+    [Authorize]
     public IActionResult Insert(InventoryInsertVM vm)
     {
         vm.ProductId = vm.ProductId?.ToUpper();
@@ -82,7 +84,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
 
         if (staff == null)
         {
-            ModelState.AddModelError("", "Error: Current user is not registered as a Staff member.");
+            ModelState.AddModelError("Unauthorize", "Error: Current user is not registered as a Staff member.");
 
             ViewBag.ProductList = new SelectList(db.Products.ToList(), "Id", "Name");
             ViewBag.SupplierList = new SelectList(db.Supplier.ToList(), "Id", "Id");
@@ -101,13 +103,11 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
         }
 
         // check if the ProductId is valid
-        if (ModelState.IsValid("ProductId") &&
-            !db.Products.Any(p => p.Id == vm.ProductId))
+        if (ModelState.IsValid("ProductId") &&!db.Products.Any(p => p.Id == vm.ProductId))
         {
             ModelState.AddModelError("ProductId", "Invalid Product.");
         }
-        if (ModelState.IsValid("SupplierId") &&
-           !db.Supplier.Any(p => p.Id == vm.SupplierId))
+        if (ModelState.IsValid("SupplierId") &&!db.Supplier.Any(p => p.Id == vm.SupplierId))
         {
             ModelState.AddModelError("SupplierId", "Invalid SupplierId.");
         }
@@ -221,7 +221,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
         TempData["Info"] = $"{vm.Qty} record(s) inserted. First ID: {firstId} to {lastId}.";
         return RedirectToAction("Index");
     }
-
+    [Authorize]
     public IActionResult Update(string id)
     {
 
@@ -231,10 +231,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
             TempData["Info"] = $"Inventory ID {id} not found.";
             return RedirectToAction("Index");
         }
-
         ViewBag.ProductList = new SelectList(db.Products.ToList(), "Id", "Name", inv.ProductId);
-
-
         //update 
         var vm = new InventoryUpdateVM
         {
@@ -246,12 +243,12 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
             CheckoutId = inv.CheckoutId,
             Status = inv.Status
         };
-
         return View(vm);
     }
 
     // POST: Home/Update
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> Update(InventoryUpdateVM vm)
     {
         vm.ProductId = vm.ProductId?.ToUpper();
@@ -367,6 +364,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
     }
 
     [HttpPost]
+    [Authorize]
     public IActionResult DeleteConfirmed(string id)
     {
         var inv = db.Inventories.Find(id);
@@ -397,7 +395,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
         TempData["Info"] = $"Inventory record {id} deleted successfully.";
         return RedirectToAction("Index");
     }
-
+    [Authorize]
     public IActionResult Detail(string id, int page = 1)
     {
         // Find the inventory record by ID
@@ -422,6 +420,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
     }
 
     [HttpPost]
+    [Authorize]
     public IActionResult DeleteBatch(string id)
     {
         // 1. Find the "template" item (the one we are looking at)

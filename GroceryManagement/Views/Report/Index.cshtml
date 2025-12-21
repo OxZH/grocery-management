@@ -1,0 +1,91 @@
+﻿@model DateRangeVM
+
+@{
+    ViewBag.Title = "Reports | Procurement Analytics";
+}
+
+<form method="post">
+    <label asp-for="StartDate"></label>
+    <input asp-for="StartDate">
+    <span asp-validation-for="StartDate"></span>
+
+    <label asp-for="EndDate"></label>
+    <input asp-for="EndDate">
+    <span asp-validation-for="EndDate"></span>
+
+    <button type="submit" id="load-report">Load Report</button>
+</form>
+<br />
+
+@if (ViewBag.Procurements != null)
+{
+    if (ViewBag.Procurements.Count > 0)
+    {
+        <div id="target">
+            <partial name="_Last30Days">
+        </div>
+    }
+    else
+    {
+        <p>Unable to generate report: no procurement records found between @Model.StartDate and @Model.EndDate.</p>
+    }
+}
+
+@section foot {
+    <script>
+        // 1. Extend built-in Date object
+        //    d.addDays(days) --> return new Date object after days added
+        Date.prototype.addDays = function (days) {
+            const d = new Date(this);
+            d.setDate(d.getDate() + days);
+            return d;
+        };
+
+        // 2. Extend built-in Date object
+        //    d.format() --> return value in YYYY-MM-DD format
+        Date.prototype.format = function () {
+            return this.toISOString().substring(0, 10);
+        };
+
+        (function () {
+            // Wait for DOM ready
+            $(function () {
+                const startEl = $("#StartDate")[0];
+                const endEl = $("#EndDate")[0];
+
+                // Initialize EndDate to today if not already set
+                if (endEl && !endEl.value) {
+                    endEl.valueAsDate = new Date();
+                }
+
+                // When EndDate changes, set StartDate = EndDate - 30 days
+                $('#EndDate').on('input', () => {
+                    if (!startEl || !endEl) return;
+
+                    if (endEl.valueAsDate) {
+                        // Use valueAsDate for date inputs
+                        startEl.valueAsDate = endEl.valueAsDate.addDays(-30);
+                    } else {
+                        // Fallback to today - 30
+                        startEl.valueAsDate = new Date().addDays(-30);
+                    }
+                });
+
+                $('#StartDate').on('input', () => {
+                    if (!startEl || !endEl) return;
+
+                    if (startEl.valueAsDate) {
+                        // Use valueAsDate for date inputs
+                        endEl.valueAsDate = startEl.valueAsDate.addDays(30);
+                    } else {
+                        // Fallback to today - 30
+                        endEl.valueAsDate = new Date().addDays(30);
+                    }
+                });
+
+                // Trigger once to initialize StartDate on page load
+                $('#EndDate').trigger('input');
+            });
+        })();
+    </script>
+}

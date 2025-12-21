@@ -1,0 +1,58 @@
+﻿@model ProcurementRecordVM
+
+@{
+    ViewBag.Title = "Procurement | Update Status";
+    ViewBag.StatusList = new List<string> { "Ordered", "Received", "Cancelled" };
+}
+
+<form class="form" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <label asp-for="Id"></label>
+    <b>@Model?.Id</b>
+    @Html.Hidden("Id", @Model?.Id)
+    <br>
+
+    <label asp-for="SupplierId">Supplier ID</label>
+    <b>@Model?.SupplierId</b>
+    @Html.Hidden("SupplierId", @Model?.SupplierId)
+    <br>
+
+    <label asp-for="ProductId">Product ID</label>
+    <b>@Model?.ProductId</b>
+    @Html.Hidden("ProductId", @Model?.ProductId)
+    <br>
+
+    <label asp-for="Quantity"></label>
+    <b>@Model?.Quantity</b>
+    @Html.Hidden("Quantity", @Model?.Quantity)
+    <br>
+
+    <label>Total Price</label>
+    <b>@Model?.TotalPrice</b>
+    @Html.Hidden("TotalPrice", @Model?.TotalPrice)
+    <br>
+
+    <label asp-for="Status"></label>
+    <div>
+        @foreach (var status in ViewBag.StatusList)
+        {
+            var radioId = $"Status_{status}";
+            <input asp-for="Status" id="@radioId" type="radio" value="@status" />
+            <label for="@radioId">@status</label>
+        }
+    </div>
+    <br />
+
+    <label asp-for="ProofPhoto">Proof Photo</label>
+    <label class="upload">
+        <input asp-for="ProofPhoto" accept="image/jpeg,image/png" hidden>
+        <img src="/images/photo.jpg">
+    </label>
+    <span asp-validation-for="ProofPhoto"></span>
+
+    <section>
+        <button>Submit</button>
+        <button type="reset">Reset</button>
+    </section>
+</form>

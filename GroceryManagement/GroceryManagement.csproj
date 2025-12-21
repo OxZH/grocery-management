@@ -20,6 +20,7 @@
     <Folder Include="wwwroot\photos\" />
     <Folder Include="Views\Orders\" />
     <Folder Include="Views\Order\" />
+    <Folder Include="wwwroot\images\procurement_proof\" />
   </ItemGroup>
 
 </Project>

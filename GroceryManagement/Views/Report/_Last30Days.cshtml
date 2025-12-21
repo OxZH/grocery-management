@@ -1,0 +1,138 @@
+﻿@model DateRangeVM
+
+@{
+    string[] fields = ["Date Created", "Id", "Item", "Supplier", "Quantity", "Total Price (RM)"];
+}
+
+<h1>Procurement Analytics Report (@Model.StartDate.ToString("MMMM yyyy") to @Model.EndDate.ToString("MMMM yyyy"))</h1>
+<p>Report generated on: @DateTime.Now</p>
+
+<table class="table">
+    <tr>
+        @foreach (var f in fields)
+        {
+
+            <th>@f</th>
+        }
+    </tr>
+
+    @foreach (var p in ViewBag.Procurements)
+    {
+        if (p.Status == "Cancelled") continue;
+
+        // Find product without using a lambda on a dynamic collection
+        string prodName = "";
+        if (ViewBag.Products != null)
+        {
+            foreach (Product x in ViewBag.Products)
+            {
+                if (x.Id == p.ProductId)
+                {
+                    prodName = x.Name;
+                    break;
+                }
+            }
+        }
+
+        // Find supplier without using a lambda on a dynamic collection
+        string supName = "";
+        if (ViewBag.Suppliers != null)
+        {
+            foreach (Supplier s in ViewBag.Suppliers)
+            {
+                if (s.Id == p.SupplierId)
+                {
+                    supName = s.Name;
+                    break;
+                }
+            }
+        }
+
+        <tr>
+            <td>@p.ProcurementDateTime</td>
+            <td>@p.Id</td>
+            <td>@(prodName != "" ? prodName : "Unknown") (@p.ProductId)</td>
+            <td>@(supName != "" ? supName : "Unknown") (@p.SupplierId)</td>
+            <td>@p.Quantity</td>
+            <td>@p.TotalPrice</td>
+        </tr>
+    }
+
+    <tr>
+        <th colspan="5">Grand Total (RM)</th>
+        <td>
+            @{
+                decimal grandTotal = 0;
+                foreach (var p in ViewBag.Procurements)
+                {
+                    grandTotal += p.TotalPrice;
+                }
+            }
+            <b>@grandTotal</b>
+        </td>
+    </tr>
+</table>
+<br />
+
+<table class="table detail">
+    <tr>
+        <th colspan="2">Procurement Status Breakdown</th>
+    </tr>
+    <tr>
+        <th>Procurement Status</th>
+		<th>Count</th>
+    </tr>
+    @{
+        var statusCounts = new Dictionary<string, int>
+        {
+            { "Ordered", 0 },
+            { "Received", 0 },
+            { "Cancelled", 0 }
+		};
+        foreach (var p in ViewBag.Procurements)
+        {
+            statusCounts[p.Status]++;
+        }
+
+        foreach (var statusGroup in new[] { "Ordered", "Received", "Cancelled" })
+        {
+            <tr>
+                <td>@statusGroup</td>
+                <td>@statusCounts[statusGroup]</td>
+            </tr>
+        }
+    }
+    <tr>
+        <th>Total</th>
+        <td><b>@ViewBag.Procurements.Count record(s)</b></td>
+    </tr>
+</table>
+
+<br />
+<div>
+    <canvas id="poChart" width="400" height="200"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('poChart').getContext("2d");
+
+    new Chart(ctx, {
+           type: "bar",
+           data: {
+               labels: ["Ordered", "Received", "Cancelled"],
+               datasets: [{
+                   label: 'Procurement Status Breakdown',
+                   data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(new[] { statusCounts["Ordered"], statusCounts["Received"], statusCounts["Cancelled"] })),
+                   borderWidth: 1
+               }],
+           },
+           options: {
+               scales: {
+                   y: {
+                       beginAtZero: true
+                   }
+               }
+           }
+     });
+</script>

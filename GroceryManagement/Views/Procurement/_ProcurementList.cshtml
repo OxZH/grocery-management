@@ -1,0 +1,90 @@
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<ProcurementRecord>
+
+@{
+    string[] fields = ["Id", "Created", "Total Price", "Status", "Last Updated", "Links"];
+}
+
+@Html.Hidden("sort", "", new { form = "f" })
+@Html.Hidden("dir", "", new { form = "f" })
+
+<p>
+    @Model.Count() of @Model.TotalItemCount record(s) |
+    Page @Model.PageNumber of @Model.PageCount
+</p>
+
+<table class="table">
+    <tr>
+        @foreach (var f in fields)
+        {
+            string d = "asc";
+            string c = "";
+
+            if (f == ViewBag.Sort)
+            {
+                d = ViewBag.Dir == "des" ? "asc" : "des";
+                c = ViewBag.Dir;
+            }
+
+            <th>
+                <a data-ajax="true"
+                   data-ajax-update="#target"
+                   data-ajax-loading="#loader"
+                   href="?name=@ViewBag.Name&sort=@f&dir=@d" class="@c">@f</a>
+            </th>
+        }
+        <th></th>
+    </tr>
+
+    @foreach (var s in Model)
+    {
+        <tr>
+            <td>@s.Id</td>
+            <td>@s.ProcurementDateTime</td>
+            <td>@s.TotalPrice</td>
+            <td>
+                <span>
+					@s.Status
+                    <button data-get="/Procurement/UpdateStatus/@s.Id">Edit</button>
+                </span>
+            </td>
+            <td>@s.StatusUpdateDateTime</td>
+            <td>
+                <div>
+                    @* (TODO: uncomment when merging) <button data-get="/Finance/Invoice/@s.Id">View Invoice</button> *@
+                    @if (s.Status == "Received")
+                    {
+                        <button data-get="/images/procurement_proof/@s.DeliveryProofPhotoLink">View Delivery Proof</button>
+                    }
+                </div>
+            </td>
+            <td>
+                <button data-get="/Procurement/Details/@s.Id">Details</button>
+                <button data-get="/Procurement/Update/@s.Id">Update</button>
+                <button data-post="/Procurement/Delete/@s.Id">Delete</button>
+            </td>
+        </tr>
+    }
+</table>
+
+@{
+    var options = PagedListRenderOptions.ClassicPlusFirstAndLast;
+    options.LinkToFirstPageFormat = "First";
+    options.LinkToLastPageFormat = "Last";
+    options.LinkToPreviousPageFormat = "Previous";
+    options.LinkToNextPageFormat = "Next";
+
+    var ajaxOptions = new AjaxOptions
+    {
+        HttpMethod = "get",
+        UpdateTargetId = "target",
+        LoadingElementId = "#loader",
+    };
+}
+
+@Html.PagedListPager(
+    Model,
+    p => $"?name={ViewBag.Name}&sort={ViewBag.Sort}&dir={ViewBag.Dir}&page={p}",
+    PagedListRenderOptions.EnableUnobtrusiveAjaxReplacing(options, ajaxOptions)
+)

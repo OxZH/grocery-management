@@ -1,0 +1,34 @@
+﻿@model IEnumerable<Supplier>
+
+@{
+    ViewBag.Title = "Home | Supplier";
+}
+
+<p>@Model.Count() record(s)</p>
+
+<table class="table">
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Supplier Type</th>
+        <th>Address</th>
+        <th>Contact Number</th>
+        <th></th>
+    </tr>
+    @foreach (var sup in Model)
+    {
+        <tr>
+            <td>@sup.Id</td>
+            <td>@sup.Name</td>
+            <td>@sup.SupplierType</td>
+            <td>@sup.Address</td>
+            <td>@sup.ContactNo</td>
+            <td>
+                <button data-get="/Supplier/Details/@sup.Id">Details</button>
+                <button data-get="/Supplier/Update/@sup.Id">Update</button>
+                <button data-post="/Supplier/Delete/@sup.Id">Delete</button>
+            </td>
+        </tr>
+    }
+
+</table>

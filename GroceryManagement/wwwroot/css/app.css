@@ -669,3 +669,13 @@ label > * {
 .teammate-name {
     font-weight: bold;
 }
+
+.map-embed {
+    width: 100%;
+    height: 60vh; /* responsive height relative to viewport */
+    max-height: 700px; /* prevent excessively tall embeds */
+    border: 0;
+    border-radius: 12px; /* rounded corners */
+    overflow: hidden; /* ensure rounded corners are applied to iframe content */
+    display: block;
+}

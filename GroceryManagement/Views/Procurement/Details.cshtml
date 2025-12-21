@@ -1,0 +1,40 @@
+﻿@model ProcurementRecord
+
+@{
+    ViewBag.Title = "Procurement | Detail";
+}
+
+<table class="table detail">
+    <tr>
+        <th>Id</th>
+        <td>@Model.Id</td>
+    </tr>
+    <tr>
+        <th>Created</th>
+        <td>@Model.ProcurementDateTime</td>
+    </tr>
+    <tr>
+        <th>Supplier</th>
+        <td>@ViewBag.Supplier.Name (@Model.SupplierId) <button data-get="/Supplier/Details/@Model.SupplierId">Details</button></td>
+    </tr>
+    <tr>
+        <th>Product</th>
+        <td>@ViewBag.Product.Name (@Model.ProductId)</td>
+    </tr>
+    <tr>
+        <th>Quantity</th>
+		<td>@Model.Quantity</td>
+    </tr>
+    <tr>
+        <th>TotalPrice</th>
+        <td>@Model.TotalPrice</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>@Model.Status</td>
+    </tr>
+    <tr>
+        <th>Last Updated</th>
+        <td>@Model.StatusUpdateDateTime</td>
+    </tr>
+</table>

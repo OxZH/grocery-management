@@ -1,0 +1,46 @@
+﻿@model SupplierVM
+
+@{
+    ViewBag.Title = "Suppliers | Insert";
+}
+
+<form method="post" class="form">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <label asp-for="Id"></label>
+    <span>@ViewBag.NextId</span>
+    <br />
+
+    <label asp-for="Name"></label>
+    <input asp-for="Name" data-trim>
+    <span asp-validation-for="Name"></span>
+
+    <label asp-for="SupplierType">Supplier Type</label>
+    <select asp-for="SupplierType"
+            class="form-select">
+        <option value="">-- Select a category --</option>
+        <option value="Distributor">Distributor</option>
+        <option value="Wholesale">Wholesale</option>
+        <option value="White-Label">White-Label</option>
+    </select>
+    <span asp-validation-for="SupplierType"></span>
+
+    <label asp-for="Address"></label>
+    <input asp-for="Address">
+    <span asp-validation-for="Address"></span>
+
+    <label asp-for="ContactNo">Contact Number</label>
+    <input asp-for="ContactNo">
+    <span asp-validation-for="ContactNo"></span>
+
+    <section>
+        <button>Submit</button>
+        <button type="reset">Reset</button>
+    </section>
+</form>
+
+@section foot {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+}

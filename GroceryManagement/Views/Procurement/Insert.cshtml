@@ -1,0 +1,110 @@
+﻿@model ProcurementRecordVM
+
+@{
+    ViewBag.Title = "Procurement | Insert";
+}
+
+<form method="post" class="form">
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <label>ID</label>
+    <span>@ViewBag.NextId</span>
+    <br/>
+
+    <label asp-for="SupplierId">Supplier ID</label>
+    <select asp-for="SupplierId" asp-items="ViewBag.SupplierList"
+            class="supplier-select">
+        <option value="">-- Select a supplier --</option>
+    </select>
+    <span asp-validation-for="SupplierId"></span>
+
+    <label asp-for="ProductId">Product ID</label>
+    <select asp-for="ProductId" class="product-select">
+        <option value="">-- Select a product --</option>
+    </select>
+    <span asp-validation-for="ProductId"></span>
+
+    <label asp-for="Quantity"></label>
+    <input asp-for="Quantity" class="quantity" disabled>
+    <span asp-validation-for="Quantity"></span>
+
+    <label>Total Price</label>
+    <span id="total-price"></span>
+    <br>
+
+    <section>
+        <button>Submit</button>
+        <button type="reset">Reset</button>
+    </section>
+</form>
+
+@section foot {
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(function () {
+            // Ensure initial state on page load
+            var initialProduct = $('.product-select').val();
+            var isDisabled = !initialProduct;
+            $(".quantity").prop("disabled", isDisabled);
+            if (isDisabled) {
+                $('.quantity').val('');
+                $('#total-price').text('0.00');
+            }
+
+            // Dynamic product loading when supplier changes
+            $('.supplier-select').change(function () {
+                var supplierId = this.value;
+
+                $('.product-select').empty()
+                                 .append('<option value="">-- Select a product --</option>');
+
+                // Reset quantity and total price whenever supplier changes
+                $(".quantity").prop("disabled", true).val('');
+                $('#total-price').text('0.00');
+
+                if (!supplierId) return;
+
+                $.getJSON('/Procurement/GetProducts', { supplierId })
+                    .done(function (data) {
+                        $.each(data, function (_, item) {
+                            $('.product-select')
+                                .append($('<option>', {
+                                    value: item.value,
+                                    text: item.text
+                                }));
+                        });
+                    });
+            });
+
+            // Enable/disable quantity based on product selection
+            $('.product-select').change(function () {
+                var productId = this.value;
+                var disabled = !productId; // true if empty string, null, or undefined
+
+                $(".quantity").prop("disabled", disabled);
+
+                if (disabled) {
+                    $('.quantity').val('');
+                    $('#total-price').text('0.00');
+                }
+            });
+
+            // Calculate total price when quantity changes
+            $(".quantity").on('input change', function () {
+                var productId = $('.product-select').val();
+                var quantity = $(this).val();
+                if (!productId || !quantity) {
+                    $('#total-price').text('0.00');
+                    return;
+                }
+                $.getJSON('/Procurement/GetTotalPrice', { productId, quantity })
+                    .done(function (data) {
+                        $('#total-price').text(data.totalPrice);
+                    });
+            });
+        });
+    </script>
+}
+
