@@ -27,16 +27,16 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
 
         var today = DateOnly.FromDateTime(DateTime.Today);
         var nearLimit = today.AddDays(3);
-        // Define the sorting function based on the column name
+        //  sorting function 
         Func<Inventory, object> fn = sort switch
         {
-            // Sorting by Id uses a composite key to ensure correct sequence (INV00001A, INV00002A, INV00001B)
+            // sort by Id
             "Id" => i => i.Id.Substring(8, 1) + i.Id.Substring(3, 5),
             "ExpiryDate" => i => i.ExpiryDate,
             "ProductId" => i => i.ProductId,
             "StaffId" => i => i.StaffId,
             "Status" => i => i.Status,
-            // Default sort: latest ID first (composite descending)
+            // default sort
             _ => i => i.Id.Substring(8, 1) + i.Id.Substring(3, 5),
         };
         var dataList = searched.AsEnumerable();
