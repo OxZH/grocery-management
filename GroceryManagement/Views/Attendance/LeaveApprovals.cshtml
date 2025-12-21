@@ -14,12 +14,7 @@
     <div class="alert">@Html.Raw(info)</div>
 }
 
-@if (Model is null || !Model.Any())
-{
-    <p>No leave requests found.</p>
-}
-else
-{
+<div id="target">
     <table class="table">
         <thead>
             <tr>
@@ -35,47 +30,7 @@ else
             </tr>
         </thead>
         <tbody>
-        @foreach (var r in Model)
-        {
-            <tr>
-                <td>@r.Id</td>
-                <td>@r.StaffId</td>
-                <td>@r.LeaveDate</td>
-                <td>@r.Type</td>
-                <td>@r.Status</td>
-                <td>@r.SubmittedAt</td>
-                <td>@(string.IsNullOrWhiteSpace(r.ApprovedBy) ? "-" : r.ApprovedBy)</td>
-                <td>
-                    @if (!string.IsNullOrWhiteSpace(r.AttachmentPath))
-                    {
-                        <a href="@r.AttachmentPath" target="_blank">View</a>
-                    }
-                    else
-                    {
-                        <span>-</span>
-                    }
-                </td>
-                <td>
-                    @if (r.Status == "PENDING")
-                    {
-                        <form asp-action="ApproveLeave" method="post" style="display:inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@r.Id" />
-                            <button type="submit">Approve</button>
-                        </form>
-                        <form asp-action="RejectLeave" method="post" style="display:inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="id" value="@r.Id" />
-                            <button type="submit">Reject</button>
-                        </form>
-                    }
-                    else
-                    {
-                        <span>Already @r.Status</span>
-                    }
-                </td>
-            </tr>
-        }
+            @Html.Partial("_LeaveApprovalsTable", Model)
         </tbody>
     </table>
-}
+</div>

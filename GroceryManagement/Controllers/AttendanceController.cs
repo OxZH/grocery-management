@@ -306,6 +306,13 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
             .ToList();
 
         ViewBag.ManagerId = managerId;
+        
+        // AJAX Support
+        if (Request.IsAjax())
+        {
+            return PartialView("_LeaveApprovalsTable", requests);
+        }
+        
         return View("LeaveApprovals", requests);
     }
 
@@ -318,6 +325,11 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         if (string.IsNullOrWhiteSpace(managerId))
         {
             TempData["Info"] = "<p class='error'>Unable to identify current manager.</p>";
+            
+            if (Request.IsAjax())
+            {
+                return RedirectToAction(nameof(LeaveApprovals));
+            }
             return RedirectToAction(nameof(LeaveApprovals));
         }
 
@@ -325,6 +337,11 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         if (req is null)
         {
             TempData["Info"] = "<p class='error'>Leave request not found.</p>";
+            
+            if (Request.IsAjax())
+            {
+                return RedirectToAction(nameof(LeaveApprovals));
+            }
             return RedirectToAction(nameof(LeaveApprovals));
         }
 
@@ -334,6 +351,13 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         db.SaveChanges();
 
         TempData["Info"] = $"<p class='success'>Approved {req.Id}.</p>";
+        
+        // AJAX Support - return updated table
+        if (Request.IsAjax())
+        {
+            return RedirectToAction(nameof(LeaveApprovals));
+        }
+        
         return RedirectToAction(nameof(LeaveApprovals));
     }
 
@@ -346,6 +370,11 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         if (string.IsNullOrWhiteSpace(managerId))
         {
             TempData["Info"] = "<p class='error'>Unable to identify current manager.</p>";
+            
+            if (Request.IsAjax())
+            {
+                return RedirectToAction(nameof(LeaveApprovals));
+            }
             return RedirectToAction(nameof(LeaveApprovals));
         }
 
@@ -353,6 +382,11 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         if (req is null)
         {
             TempData["Info"] = "<p class='error'>Leave request not found.</p>";
+            
+            if (Request.IsAjax())
+            {
+                return RedirectToAction(nameof(LeaveApprovals));
+            }
             return RedirectToAction(nameof(LeaveApprovals));
         }
 
@@ -362,6 +396,13 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         db.SaveChanges();
 
         TempData["Info"] = $"<p class='success'>Rejected {req.Id}.</p>";
+        
+        // AJAX Support - return updated table
+        if (Request.IsAjax())
+        {
+            return RedirectToAction(nameof(LeaveApprovals));
+        }
+        
         return RedirectToAction(nameof(LeaveApprovals));
     }
 
