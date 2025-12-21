@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -6,6 +7,7 @@ using GroceryManagement.Models;
 
 namespace GroceryManagement.Controllers;
 
+[Authorize(Roles = "Staff")]
 public class CheckoutController : Controller
 {
     private readonly DB _db;
