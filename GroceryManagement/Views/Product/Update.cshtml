@@ -25,7 +25,7 @@
     <label asp-for="Photo">Photo</label>
     <label class="upload">
 
-        <input asp-for="PhotoURL" accept="image/jpeg,image/png" hidden onchange="previewFile(this)">
+        <input asp-for="Photo" accept="image/jpeg,image/png" hidden onchange="previewFile(this)">
         <img src="/images/productImg/@Model.PhotoURL" id="previewImage" style="transition: transform 0.3s ease;">
     </label>
 
@@ -44,7 +44,7 @@
         <label style="margin-top: 5px; display:block;">
             <input type="checkbox" name="Flip" value="true"> ↔ Flip Horizontally
         </label>
-        <span asp-validation-for="PhotoURL"></span>
+        <span asp-validation-for="Photo"></span>
     </div>
     
 

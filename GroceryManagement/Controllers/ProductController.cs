@@ -258,7 +258,7 @@ public class ProductController(DB db, Helper hp) : Controller
             return RedirectToAction("Index", "Product");
         }
         // Pass the product directly to the View
-        return PartialView(p);
+        return View(p);
     }
     public IActionResult MoveStock(string? id)
     {
