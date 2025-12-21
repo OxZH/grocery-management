@@ -39,33 +39,48 @@ public class Helper(IWebHostEnvironment en,
         return "";
     }
 
-    public string SavePhoto(IFormFile f, string folder)
+    public string? SavePhoto(IFormFile f, string folder)
     {
-        var file = Guid.NewGuid().ToString("n") + ".jpg";
-        var path = Path.Combine(en.WebRootPath, folder, file);
-
-        // Create directory if missing
-        if (!Directory.Exists(Path.GetDirectoryName(path)))
+        if (f == null || f.Length == 0)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            return null;
         }
-        // Load image
-        using var img = Image.Load(f.OpenReadStream());
-
-        // Config resize options 
-        var options = new ResizeOptions
+        try
         {
-            Size = new(800, 800),
-            Mode = ResizeMode.Crop,
-        };
-        // Resize
-        img.Mutate(x => x.Resize(options));
+            var file = Guid.NewGuid().ToString("n") + ".jpg";
+            var path = Path.Combine(en.WebRootPath, folder, file);
 
-        //using var stream = new FileStream(path, FileMode.Create);
+            // Create directory if missing
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            }
+            // Load image
+            using var img = Image.Load(f.OpenReadStream());
 
-        img.SaveAsJpeg(path);
+            // Config resize options 
+            var options = new ResizeOptions
+            {
+                Size = new(800, 800),
+                Mode = ResizeMode.Crop,
+            };
+            // Resize
+            img.Mutate(x => x.Resize(options));
 
-        return file;
+            //using var stream = new FileStream(path, FileMode.Create);
+
+            img.SaveAsJpeg(path);
+
+            return file;
+        }
+        catch (SixLabors.ImageSharp.UnknownImageFormatException)
+        {
+            return null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     public void DeletePhoto(string file, string folder)

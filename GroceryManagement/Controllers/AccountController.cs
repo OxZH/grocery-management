@@ -198,16 +198,31 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
         {
             if (ModelState.IsValid)
             {
-            
+
                 // 1. Get the Email from the cookie
                 string currentManagerEmail = User.Identity!.Name;
                 // 2. Find the Manager object in the DB using that email
                 var currentManager = db.Managers.FirstOrDefault(m => m.Email == currentManagerEmail);
                 // Safety check (in case the manager was deleted but still has a cookie)
                 if (currentManager == null) return RedirectToAction("Login", "Account");
-                // save photos and keep the filename in a variable
-                string unqiueFileName = hp.SavePhoto(vm.Photo, "images/users");
-                
+
+                // Initialize as null (Default: No photo)
+                string? unqiueFileName = null;
+
+                // Attempt to save if user uploaded a file
+                if (vm.Photo != null)
+                {
+                    unqiueFileName = hp.SavePhoto(vm.Photo, "images/users");
+
+                    // If vm.Photo wasnt null, but result is null then file corrupt
+                    if (unqiueFileName == null)
+                    {
+                        ModelState.AddModelError("Photo", "The uploaded file is corrupt or not a valid image.");
+                        // Stop registration and show error
+                        return View(vm);
+                    }
+                }
+
                 try
                 {
                     // Insert staff object
@@ -353,14 +368,27 @@ public class AccountController(DB db, IWebHostEnvironment en, Helper hp) : Contr
             // 4. Update Photo (Only for Staff)
             if (u is Staff s && vm.Photo != null)
             {
-                // A. Delete old photo if exists
+                string? newPhoto = hp.SavePhoto(vm.Photo, "images/users");
+
+                if (newPhoto == null)
+                {
+                    // Show error and dont delete old photo
+                    ModelState.AddModelError("Photo", "The uploaded file is corrupt or not a valid image.");
+
+                    // Restore view data
+                    vm.PhotoURL = s.PhotoURL;
+                    vm.Email = u.Email;
+                    return View(vm);
+                }
+
+                // Delete old photo if new one is safe
                 if (!string.IsNullOrEmpty(s.PhotoURL))
                 {
                     hp.DeletePhoto(s.PhotoURL, "images/users");
                 }
 
                 // B. Save new photo
-                s.PhotoURL = hp.SavePhoto(vm.Photo, "images/users");
+                s.PhotoURL = newPhoto;
             }
 
             db.SaveChanges();

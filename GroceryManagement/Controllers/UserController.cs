@@ -8,8 +8,8 @@ using X.PagedList.Mvc.Core;
 
 namespace GroceryManagement.Controllers;
 
-public class UserController (DB db, 
-                            IWebHostEnvironment en, 
+public class UserController(DB db,
+                            IWebHostEnvironment en,
                             Helper hp) : Controller
 {
     // GET: User/Index
@@ -218,6 +218,14 @@ public class UserController (DB db,
                         ModelState.AddModelError("Photo", err);
                         return View(vm);
                     }
+                    // Attempt to save new photo to make sure no errors
+                    string? newPhoto = hp.SavePhoto(vm.Photo, "images/users");
+
+                    if (string.IsNullOrEmpty(newPhoto))
+                    {
+                        ModelState.AddModelError("Photo", "The image could not be saved. It may be corrupted.");
+                        return View(vm);
+                    }
 
                     // Delete the old photo
                     if (!string.IsNullOrEmpty(dbStaff.PhotoURL))
@@ -226,7 +234,7 @@ public class UserController (DB db,
                     }
 
                     // C. Save new photo
-                    dbStaff.PhotoURL = hp.SavePhoto(vm.Photo, "images/users");
+                    dbStaff.PhotoURL = newPhoto;
                 }
             }
 
@@ -256,76 +264,85 @@ public class UserController (DB db,
     [Authorize(Roles = "Manager")]
     public IActionResult Delete(string? id)
     {
-        // 1. Find the user to be deleted
+        // 1. Find the user
         var u = db.Users.Find(id);
+
+        // Safe Referer Logic (Prevents crashes if Referer is null)
+        string refererUrl = Request.Headers.Referer.ToString() ?? "/";
 
         if (u == null)
         {
             TempData["Info"] = "User not found.";
-            return Redirect(Request.Headers.Referer.ToString());
+            return Redirect(refererUrl);
         }
 
-        // 2. CHECK: Is this a Manager?
-        // We check if any staff report to this user (u.Id)
-        var subordinates = db.Staffs.Where(s => s.ManagerId == u.Id).ToList();
+        // Capture identity for self deletion check
+        bool isSelfDeletion = (u.Email == User.Identity?.Name);
 
-        if (subordinates.Count > 0)
+        // Prepare photo path 
+        string? photoToDelete = (u is Staff s) ? s.PhotoURL : null;
+
+        // 2. Reassign staff if manager deleted
+        if (u is Manager)
         {
-            // 3. REASSIGNMENT LOGIC
-            // Find another manager who is NOT the one we are deleting
-            var otherManager = db.Managers
-                .Where(m => m.Id != u.Id && m.Id.StartsWith("M"))
-                .FirstOrDefault();
-
-            if (otherManager == null)
+            var subordinates = db.Staffs.Where(s => s.ManagerId == u.Id).ToList();
+            if (subordinates.Count > 0)
             {
-                // Scenario: No one else to take over. Block deletion.
-                TempData["Info"] = "Cannot delete: This manager has staff assigned, and no other manager exists to take over.";
-                return Redirect(Request.Headers.Referer.ToString());
-            }
+                // Find other managers 
+                var otherManager = db.Managers
+                    .Where(m => m.Id != u.Id && m.Id.StartsWith("M"))
+                    .FirstOrDefault();
 
-            // 4. Reassign all staff to the new manager
-            foreach (var staff in subordinates)
-            {
-                staff.ManagerId = otherManager.Id;
-            }
+                // No managers to take over
+                if (otherManager == null)
+                {
+                    TempData["Info"] = "Cannot delete: This manager has staff, and no other manager exists to take over.";
+                    return Redirect(refererUrl);
+                }
 
-            // Save the reassignment BEFORE deleting the old manager
+                // Reasssign all staff to new manager
+                foreach (var staff in subordinates)
+                {
+                    staff.ManagerId = otherManager.Id;
+                }
+            }
+        }
+        // 3. Try user deletion
+        try
+        {
+            db.Users.Remove(u);
+
+            // Attempts to commit the delete (error if there are dependencies) 
             db.SaveChanges();
-            TempData["Info"] = $"Staff reassigned to {otherManager.Name}. ";
+
+            // If no dependencies 
+            if (!string.IsNullOrEmpty(photoToDelete))
+            {
+                // Delete physical file
+                hp.DeletePhoto(photoToDelete, "images/users");
+            }
+
+            TempData["Info"] = "Record deleted successfully.";
+        }
+        // If there are dependencies
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+        {
+            // Reload the user (because the failed delete might have messed up the tracking state)
+            db.Entry(u).State = Microsoft.EntityFrameworkCore.EntityState.Unchanged;
+
+            TempData["Info"] = "Delete Failed: This user cannot be deleted because they have existing records in the system (e.g., Attendance, Sales, or Inventory).";
+
+            return Redirect(refererUrl);
         }
 
-        // 5. STANDARD DELETE LOGIC (Now safe to proceed)
-
-        // Check if there is a photo to clean up (only for Staff)
-        string? photoToDelete = null;
-        if (u is Staff staffMember)
+        // 4. Logout if self deleted
+        if (isSelfDeletion)
         {
-            photoToDelete = staffMember.PhotoURL;
-        }
-
-        db.Users.Remove(u);
-        db.SaveChanges();
-
-        // User.Identity.Name holds the Email (based on your Helper.SignIn logic)
-        if (u.Email == User.Identity!.Name)
-        {
-            // 1. Kill the cookie immediately
             hp.SignOut();
-
-            TempData["Info"] = "Your account has been deleted.";
-            // 2. Kick them back to Login page (not the previous page, because they have no access)
             return RedirectToAction("Login", "Account");
         }
 
-        // Delete physical file
-        if (!string.IsNullOrEmpty(photoToDelete))
-        {
-            hp.DeletePhoto(photoToDelete, "images/users");
-        }
-
-        TempData["Info"] += "Record deleted successfully.";
-
-        return Redirect(Request.Headers.Referer.ToString());
+        return Redirect(refererUrl);
     }
 }
+
