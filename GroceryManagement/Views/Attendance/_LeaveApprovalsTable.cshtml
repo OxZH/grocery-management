@@ -44,31 +44,24 @@
                         }
                     </td>
                     <td>
-                        @if (r.Status == "PENDING")
-                        {
-                            <form asp-action="ApproveLeave" method="post" style="display:inline"
-                                  data-ajax="true"
-                                  data-ajax-method="POST"
-                                  data-ajax-update="#target"
-                                  data-ajax-confirm="Approve this leave request?">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@r.Id" />
-                                <button type="submit">Approve</button>
-                            </form>
-                            <form asp-action="RejectLeave" method="post" style="display:inline"
-                                  data-ajax="true"
-                                  data-ajax-method="POST"
-                                  data-ajax-update="#target"
-                                  data-ajax-confirm="Reject this leave request?">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="id" value="@r.Id" />
-                                <button type="submit">Reject</button>
-                            </form>
-                        }
-                        else
-                        {
-                            <span>Already @r.Status</span>
-                        }
+                        <form asp-action="ApproveLeave" method="post" style="display:inline"
+                              data-ajax="true"
+                              data-ajax-method="POST"
+                              data-ajax-update="#target"
+                              data-ajax-confirm="Approve this leave request?">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@r.Id" />
+                            <button type="submit">Approve</button>
+                        </form>
+                        <form asp-action="RejectLeave" method="post" style="display:inline"
+                              data-ajax="true"
+                              data-ajax-method="POST"
+                              data-ajax-update="#target"
+                              data-ajax-confirm="Reject this leave request?">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@r.Id" />
+                            <button type="submit">Reject</button>
+                        </form>
                     </td>
                 </tr>
             }
