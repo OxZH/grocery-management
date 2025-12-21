@@ -1,12 +1,104 @@
 @model GroceryManagement.Models.FinanceReportVM
 @{
     ViewBag.Title = "Finance Reports";
+    var netLabel = Model.NetProfit >= 0 ? "Net Profit" : "Net Loss";
+    var netAmount = Math.Abs(Model.NetProfit);
 }
 
-<h2>Profit & Loss</h2>
-<table class="table">
-    <tr><th>Revenue (Checkout Total)</th><td>@Model.Revenue</td></tr>
-    <tr><th>Expenses</th><td>@Model.ExpenseTotal</td></tr>
-    <tr><th>Procurement Cost</th><td>@Model.ProcurementCost</td></tr>
-    <tr><th>Net Profit</th><td>@Model.NetProfit</td></tr>
+<h2>Profit & Loss (Monthly)</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <label class="form-label" for="monthSelect">Month</label>
+        <select id="monthSelect" name="month" class="form-select">
+            @for (int m = 1; m <= 12; m++)
+            {
+                <option value="@m" selected="@(m == Model.Month)">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <label class="form-label" for="yearSelect">Year</label>
+        <input id="yearSelect" name="year" type="number" class="form-control" value="@Model.Year" min="2000" max="2100" />
+    </div>
+    <div class="col-auto align-self-end">
+        <button type="submit" class="btn btn-primary">Apply</button>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <tr><th>Gross Revenue (Checkouts)</th><td>@Model.Revenue.ToString("C")</td></tr>
+    <tr><th>Procurement Cost</th><td>@Model.ProcurementCost.ToString("C")</td></tr>
+    <tr><th>Expenses</th><td>@Model.ExpenseTotal.ToString("C")</td></tr>
+    <tr class="@(Model.NetProfit >= 0 ? "table-success" : "table-danger")"><th>@netLabel</th><td>@netAmount.ToString("C")</td></tr>
+</table>
+
+<h4>Checkouts (Gross Revenue)</h4>
+<table class="table table-sm table-striped">
+    <thead><tr><th>Id</th><th>Date</th><th>Customer</th><th>Total</th></tr></thead>
+    <tbody>
+        @if (Model.Checkouts.Any())
+        {
+            foreach (var c in Model.Checkouts)
+            {
+                <tr>
+                    <td>@c.Id</td>
+                    <td>@c.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@c.CustomerId</td>
+                    <td>@c.Total.ToString("C")</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="4" class="text-muted">No checkouts this month.</td></tr>
+        }
+    </tbody>
+</table>
+
+<h4>Procurements</h4>
+<table class="table table-sm table-striped">
+    <thead><tr><th>Id</th><th>Date</th><th>Supplier</th><th>Total Cost</th></tr></thead>
+    <tbody>
+        @if (Model.Procurements.Any())
+        {
+            foreach (var p in Model.Procurements)
+            {
+                <tr>
+                    <td>@p.Id</td>
+                    <td>@p.ProcurementDateTime.ToString("yyyy-MM-dd")</td>
+                    <td>@(p.Supplier?.Name ?? p.SupplierId)</td>
+                    <td>@p.TotalPrice.ToString("C")</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="4" class="text-muted">No procurements this month.</td></tr>
+        }
+    </tbody>
+</table>
+
+<h4>Expenses</h4>
+<table class="table table-sm table-striped">
+    <thead><tr><th>Id</th><th>Date</th><th>Type</th><th>Details</th><th>Amount</th></tr></thead>
+    <tbody>
+        @if (Model.Expenses.Any())
+        {
+            foreach (var e in Model.Expenses)
+            {
+                <tr>
+                    <td>@e.Id</td>
+                    <td>@e.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@e.Type</td>
+                    <td>@e.Details</td>
+                    <td>@e.Amount.ToString("C")</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="5" class="text-muted">No expenses this month.</td></tr>
+        }
+    </tbody>
 </table>

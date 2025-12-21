@@ -131,18 +131,51 @@ public class FinanceController : Controller
         return PartialView("_ExpensesTable", list);
     }
 
-    public IActionResult Reports()
+    public IActionResult Reports(int? month, int? year)
     {
         ViewBag.Title = "Finance Reports";
-        var revenue = _db.Set<Checkout>().Sum(c => c.Total);
-        var expenseTotal = _db.Set<Expense>().Sum(e => e.Amount);
-        var procurementCost = _db.Set<ProcurementRecord>().Sum(p => p.TotalPrice);
+
+        var now = DateTime.Now;
+        int selectedMonth = month ?? now.Month;
+        int selectedYear = year ?? now.Year;
+
+        selectedMonth = Math.Clamp(selectedMonth, 1, 12);
+        selectedYear = Math.Max(2000, selectedYear);
+
+        var start = new DateTime(selectedYear, selectedMonth, 1);
+        var end = start.AddMonths(1);
+
+        var checkouts = _db.Set<Checkout>()
+            .Where(c => c.Date >= start && c.Date < end)
+            .OrderByDescending(c => c.Date)
+            .ToList();
+
+        var expenses = _db.Set<Expense>()
+            .Include(e => e.Manager)
+            .Where(e => e.Date >= start && e.Date < end)
+            .OrderByDescending(e => e.Date)
+            .ToList();
+
+        var procurements = _db.Set<ProcurementRecord>()
+            .Include(p => p.Supplier)
+            .Where(p => p.ProcurementDateTime >= start && p.ProcurementDateTime < end)
+            .OrderByDescending(p => p.ProcurementDateTime)
+            .ToList();
+
+        var revenue = checkouts.Sum(c => c.Total);
+        var expenseTotal = expenses.Sum(e => e.Amount);
+        var procurementCost = procurements.Sum(p => p.TotalPrice);
         var vm = new FinanceReportVM
         {
+            Month = selectedMonth,
+            Year = selectedYear,
             Revenue = revenue,
             ExpenseTotal = expenseTotal,
             ProcurementCost = procurementCost,
-            NetProfit = revenue - expenseTotal - procurementCost
+            NetProfit = revenue - expenseTotal - procurementCost,
+            Checkouts = checkouts,
+            Expenses = expenses,
+            Procurements = procurements
         };
         return View(vm);
     }
