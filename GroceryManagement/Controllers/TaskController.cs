@@ -22,6 +22,13 @@ public class TaskController(DB db) : Controller
     public IActionResult TaskTypes()
     {
         var taskTypes = db.TaskTypes.OrderBy(t => t.Name).ToList();
+        
+        // AJAX Support
+        if (Request.IsAjax())
+        {
+            return PartialView("_TaskTypesTable", taskTypes);
+        }
+        
         return View(taskTypes);
     }
 
@@ -33,12 +40,22 @@ public class TaskController(DB db) : Controller
         if (string.IsNullOrWhiteSpace(name))
         {
             TempData["Info"] = "<p class='error'>Task type name is required.</p>";
+            
+            if (Request.IsAjax())
+            {
+                return RedirectToAction(nameof(TaskTypes));
+            }
             return RedirectToAction(nameof(TaskTypes));
         }
 
         if (db.TaskTypes.Any(t => t.Name == name.Trim()))
         {
             TempData["Info"] = "<p class='error'>Task type already exists.</p>";
+            
+            if (Request.IsAjax())
+            {
+                return RedirectToAction(nameof(TaskTypes));
+            }
             return RedirectToAction(nameof(TaskTypes));
         }
 
@@ -54,6 +71,13 @@ public class TaskController(DB db) : Controller
         db.SaveChanges();
 
         TempData["Info"] = $"<p class='success'>Task type '{name}' added successfully.</p>";
+        
+        // AJAX Support - return updated table
+        if (Request.IsAjax())
+        {
+            return RedirectToAction(nameof(TaskTypes));
+        }
+        
         return RedirectToAction(nameof(TaskTypes));
     }
 
@@ -66,6 +90,11 @@ public class TaskController(DB db) : Controller
         if (taskType == null)
         {
             TempData["Info"] = "<p class='error'>Task type not found.</p>";
+            
+            if (Request.IsAjax())
+            {
+                return RedirectToAction(nameof(TaskTypes));
+            }
             return RedirectToAction(nameof(TaskTypes));
         }
 
@@ -73,6 +102,13 @@ public class TaskController(DB db) : Controller
         db.SaveChanges();
 
         TempData["Info"] = $"<p class='success'>Task type '{taskType.Name}' {(taskType.IsActive ? "activated" : "deactivated")}.</p>";
+        
+        // AJAX Support - return updated table
+        if (Request.IsAjax())
+        {
+            return RedirectToAction(nameof(TaskTypes));
+        }
+        
         return RedirectToAction(nameof(TaskTypes));
     }
 

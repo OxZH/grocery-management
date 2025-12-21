@@ -1,0 +1,38 @@
+@model List<TaskType>
+
+@if (!Model.Any())
+{
+    <tr>
+        <td colspan="5" style="text-align: center;">No task types defined yet. Add one above to get started!</td>
+    </tr>
+}
+else
+{
+    @foreach (var taskType in Model)
+    {
+        <tr style="@(taskType.IsActive ? "" : "opacity: 0.5;")">
+            <td><strong>@taskType.Name</strong></td>
+            <td>@(taskType.Description ?? "-")</td>
+            <td>
+                <span class="badge badge-@(taskType.IsActive ? "success" : "secondary")">
+                    @(taskType.IsActive ? "Active" : "Inactive")
+                </span>
+            </td>
+            <td>@taskType.CreatedAt.ToString("yyyy-MM-dd")</td>
+            <td>
+                <form method="post" asp-action="ToggleTaskType" style="display:inline;"
+                      data-ajax="true"
+                      data-ajax-method="POST"
+                      data-ajax-update="#target"
+                      data-ajax-confirm="Toggle status for '@taskType.Name'?">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@taskType.Id" />
+                    <button type="submit">
+                        @(taskType.IsActive ? "Deactivate" : "Activate")
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+}
+
