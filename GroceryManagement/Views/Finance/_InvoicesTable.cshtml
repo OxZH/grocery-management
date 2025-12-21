@@ -31,10 +31,18 @@
             <td>@p.SupplierId</td>
             <td><a href="/Finance/Invoice?type=procurement&id=@p.Id" target="_blank">View</a></td>
             <td>
-                <form method="post" action="/Finance/ConfirmProcurementPayment">
-                    <input type="hidden" name="id" value="@p.Id" />
-                    <button type="submit">Confirm Payment</button>
-                </form>
+                @if (string.Equals(p.Status, "PAID", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span>Paid</span>
+                }
+                else
+                {
+                    <form method="post" action="@Url.Action("ConfirmProcurementPayment", "Finance")">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@p.Id" />
+                        <button type="submit">Confirm Payment</button>
+                    </form>
+                }
             </td>
         </tr>
     }
