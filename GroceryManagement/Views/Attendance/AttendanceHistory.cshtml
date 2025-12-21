@@ -1,0 +1,115 @@
+@model List<AttendanceRecords>
+@{
+    ViewData["Title"] = "My Attendance History";
+    var search = ViewBag.Search as string ?? "";
+    var status = ViewBag.Status as string ?? "ALL";
+    var currentPage = ViewBag.CurrentPage as int? ?? 1;
+    var pageSize = ViewBag.PageSize as int? ?? 20;
+    var totalRecords = ViewBag.TotalRecords as int? ?? 0;
+    var totalPages = ViewBag.TotalPages as int? ?? 1;
+}
+
+<h1>My Attendance History</h1>
+
+@Html.Raw(TempData["Info"])
+
+<!-- Filter and Search -->
+<div>
+    <form method="get" asp-action="AttendanceHistory">
+        <label><strong>Search by Date:</strong></label>
+        <input type="date" name="search" value="@search" placeholder="YYYY-MM-DD" />
+        
+        <label><strong>Filter by Status:</strong></label>
+        <select name="status">
+            <option value="ALL" selected="@(status == "ALL" ? "selected" : null)">All</option>
+            <option value="ATTEND" selected="@(status == "ATTEND" ? "selected" : null)">Attend</option>
+            <option value="ABSENT" selected="@(status == "ABSENT" ? "selected" : null)">Absent</option>
+            <option value="LEAVE" selected="@(status == "LEAVE" ? "selected" : null)">Leave</option>
+        </select>
+        
+        <button type="submit">Filter</button>
+        <a href="@Url.Action("AttendanceHistory")"><button type="button">Clear</button></a>
+    </form>
+</div>
+
+<p>Total Records: <strong>@totalRecords</strong></p>
+
+<!-- Attendance Records Table -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Check In Time</th>
+            <th>Check Out Time</th>
+            <th>Status</th>
+            <th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr>
+                <td colspan="5">No attendance records found.</td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var record in Model)
+            {
+                var duration = "";
+                if (record.CheckInTime != null && record.CheckOutTime != null)
+                {
+                    var diff = record.CheckOutTime.Value.ToTimeSpan() - record.CheckInTime.Value.ToTimeSpan();
+                    duration = $"{diff.Hours}h {diff.Minutes}m";
+                }
+
+                <tr>
+                    <td>@record.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@(record.CheckInTime?.ToString("HH:mm") ?? "N/A")</td>
+                    <td>@(record.CheckOutTime?.ToString("HH:mm") ?? "N/A")</td>
+                    <td>
+                        <span class="badge badge-@(record.Status == "ATTEND" ? "success" : record.Status == "ABSENT" ? "danger" : "secondary")">
+                            @record.Status
+                        </span>
+                    </td>
+                    <td>@duration</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<!-- Pagination -->
+@if (totalPages > 1)
+{
+    <div class="pagination">
+        @if (currentPage > 1)
+        {
+            <a href="@Url.Action("AttendanceHistory", new { search, status, page = currentPage - 1, pageSize })">Previous</a>
+        }
+        
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            if (i == currentPage)
+            {
+                <span class="active">@i</span>
+            }
+            else
+            {
+                <a href="@Url.Action("AttendanceHistory", new { search, status, page = i, pageSize })">@i</a>
+            }
+        }
+        
+        @if (currentPage < totalPages)
+        {
+            <a href="@Url.Action("AttendanceHistory", new { search, status, page = currentPage + 1, pageSize })">Next</a>
+        }
+    </div>
+    
+    <p>Page @currentPage of @totalPages</p>
+}
+
+<div>
+    <a href="@Url.Action("CheckInAttendance")"><button>Back to Check In</button></a>
+</div>
+

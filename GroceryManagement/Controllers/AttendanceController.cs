@@ -175,6 +175,53 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
     }
 
     [Authorize(Roles = "Staff")]
+    public IActionResult AttendanceHistory(string? search = null, string? status = null, int page = 1, int pageSize = 20)
+    {
+        var staffId = GetCurrentUserId();
+        if (string.IsNullOrWhiteSpace(staffId))
+        {
+            TempData["Info"] = "<p class='error'>Unable to identify current user.</p>";
+            return RedirectToAction("Index", "Home");
+        }
+
+        var query = db.AttendanceRecords
+            .Where(a => a.StaffId == staffId)
+            .AsQueryable();
+
+        // Filter by status
+        if (!string.IsNullOrWhiteSpace(status) && status != "ALL")
+        {
+            query = query.Where(a => a.Status == status);
+        }
+
+        // Search by date
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            if (DateOnly.TryParse(search, out var searchDate))
+            {
+                query = query.Where(a => a.Date == searchDate);
+            }
+        }
+
+        var totalRecords = query.Count();
+        var records = query
+            .OrderByDescending(a => a.Date)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        ViewBag.Search = search;
+        ViewBag.Status = status ?? "ALL";
+        ViewBag.CurrentPage = page;
+        ViewBag.PageSize = pageSize;
+        ViewBag.TotalRecords = totalRecords;
+        ViewBag.TotalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
+        ViewBag.StaffId = staffId;
+
+        return View(records);
+    }
+
+    [Authorize(Roles = "Staff")]
     public IActionResult ApplyLeave()
     {
         var staffId = GetCurrentUserId();

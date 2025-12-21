@@ -38,30 +38,13 @@
             <p>@Model.Notes</p>
         </div>
     }
-
-    <div class="task-actions">
-        @if (Model.Status == "PENDING")
-        {
-            <form method="post" asp-action="StartTask" style="display:inline;">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" value="@Model.AllocationId" />
-                <input type="hidden" name="dateStr" value="@Model.Date.ToString("yyyy-MM-dd")" />
-                <button type="submit" class="btn btn-primary">Start Task</button>
-            </form>
-        }
-
-        @if (Model.Status == "PENDING" || Model.Status == "IN_PROGRESS")
-        {
-            <button type="button" class="btn btn-success" onclick="showCompleteModal()">Mark as Complete</button>
-        }
-    </div>
 </div>
 
 @if (Model.Teammates.Any())
 {
     <div class="teammates-card">
         <h3>Teammates on this Task</h3>
-        <p style="color: #666;">These staff members are also assigned to "@Model.TaskName" on this date:</p>
+        <p>These staff members are also assigned to "@Model.TaskName" on this date:</p>
         
         <div class="teammates-list">
             @foreach (var teammate in Model.Teammates)
@@ -81,192 +64,10 @@
 else
 {
     <div class="teammates-card">
-        <p style="color: #666; font-style: italic;">You're the only one assigned to this task today.</p>
+        <p><i>You're the only one assigned to this task today.</i></p>
     </div>
 }
 
-<div style="margin-top: 20px;">
+<div>
     <a href="@Url.Action("MySchedule", new { year = Model.Date.Year, month = Model.Date.Month })" class="btn btn-secondary">Back to My Schedule</a>
 </div>
-
-<!-- Complete Task Modal -->
-<div id="completeModal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close" onclick="closeCompleteModal()">&times;</span>
-        <h3>Complete Task</h3>
-        <form method="post" asp-action="CompleteTask">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="id" value="@Model.AllocationId" />
-            <input type="hidden" name="dateStr" value="@Model.Date.ToString("yyyy-MM-dd")" />
-            
-            <div class="form-group">
-                <label>Completion Notes (Optional):</label>
-                <textarea name="notes" class="form-control" rows="4" placeholder="Add any notes about the completed task..."></textarea>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <button type="submit" class="btn btn-success">Confirm Completion</button>
-                <button type="button" class="btn btn-secondary" onclick="closeCompleteModal()">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    function showCompleteModal() {
-        document.getElementById('completeModal').style.display = 'block';
-    }
-    
-    function closeCompleteModal() {
-        document.getElementById('completeModal').style.display = 'none';
-    }
-    
-    window.onclick = function(event) {
-        const modal = document.getElementById('completeModal');
-        if (event.target == modal) {
-            closeCompleteModal();
-        }
-    }
-</script>
-
-<style>
-    .task-card {
-        background-color: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    .task-card h2 {
-        color: #0066cc;
-        margin-bottom: 15px;
-    }
-    .task-status, .task-time {
-        margin-bottom: 10px;
-    }
-    .task-notes {
-        margin-top: 15px;
-        padding-top: 15px;
-        border-top: 1px solid #dee2e6;
-    }
-    .task-notes p {
-        background-color: white;
-        padding: 10px;
-        border-radius: 4px;
-        border: 1px solid #dee2e6;
-    }
-    .task-actions {
-        margin-top: 20px;
-    }
-    .teammates-card {
-        background-color: #fff;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-    }
-    .teammates-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 15px;
-    }
-    .teammate-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px;
-        background-color: #f8f9fa;
-        border-radius: 4px;
-    }
-    .teammate-name {
-        font-weight: bold;
-    }
-    .badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.875rem;
-        font-weight: bold;
-    }
-    .badge-success {
-        background-color: #28a745;
-        color: white;
-    }
-    .badge-danger {
-        background-color: #dc3545;
-        color: white;
-    }
-    .badge-info {
-        background-color: #17a2b8;
-        color: white;
-    }
-    .badge-secondary {
-        background-color: #6c757d;
-        color: white;
-    }
-    .btn {
-        padding: 8px 16px;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-block;
-        margin-right: 5px;
-    }
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-    }
-    .btn-secondary {
-        background-color: #6c757d;
-        color: white;
-    }
-    .btn-success {
-        background-color: #28a745;
-        color: white;
-    }
-    .modal {
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.4);
-    }
-    .modal-content {
-        background-color: #fefefe;
-        margin: 10% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        border-radius: 4px;
-        width: 80%;
-        max-width: 500px;
-    }
-    .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-    }
-    .close:hover {
-        color: black;
-    }
-    .form-group {
-        margin-bottom: 15px;
-    }
-    .form-control {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        font-family: inherit;
-    }
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-</style>
-
