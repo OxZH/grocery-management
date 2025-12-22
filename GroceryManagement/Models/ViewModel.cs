@@ -52,7 +52,7 @@ public class InventoryUpdateVM
     [MaxLength(10)]
     public string Status { get; set; }
 
-    [MaxLength(5)]
+    [MaxLength(6)]
     public string? CheckoutId { get; set; }
 }
 
