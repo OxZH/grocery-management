@@ -254,19 +254,6 @@ public class Allocation
     [Required, DataType(DataType.Date)]
     public DateOnly AssignedDate { get; set; }
 
-    [Required, MaxLength(15)]
-    [RegularExpression("^(PENDING|IN_PROGRESS|COMPLETED)$")]
-    public string Status { get; set; } = "PENDING";
-
-    [DataType(DataType.DateTime)]
-    public DateTime? StartTime { get; set; }
-
-    [DataType(DataType.DateTime)]
-    public DateTime? CompletionDate { get; set; }
-
-    [MaxLength(300)]
-    public string? Notes { get; set; }
-
     // Navigation
     public Staff Staff { get; set; }
 }

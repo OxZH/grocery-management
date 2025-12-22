@@ -87,6 +87,18 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
             ? TimeOnly.FromDateTime(DateTime.Now)
             : TimeOnly.Parse(overrideTime);
 
+        // Rule: Check-in must be after 8:00 AM
+        var minimumCheckInTime = new TimeOnly(8, 0);
+        if (checkTime < minimumCheckInTime)
+        {
+            TempData["Info"] = $"<p class='error'>Check-in is only allowed after 8:00 AM. Your attempted time: {checkTime}.</p>";
+            return RedirectToAction(nameof(CheckInAttendance), new
+            {
+                overrideDate = checkDate.ToString("yyyy-MM-dd"),
+                overrideTime = checkTime.ToString("HH:mm")
+            });
+        }
+
         var alreadyCheckedIn = db.AttendanceRecords
             .FirstOrDefault(a => a.StaffId == staffId && a.Date == checkDate);
 
@@ -148,6 +160,17 @@ public class AttendanceController(DB db, IWebHostEnvironment env) : Controller
         if (record is null)
         {
             TempData["Info"] = $"<p class='error'>No check-in record found for {checkDate:yyyy-MM-dd}. Cannot check out.</p>";
+            return RedirectToAction(nameof(CheckInAttendance), new
+            {
+                overrideDate = checkDate.ToString("yyyy-MM-dd"),
+                overrideTime = checkTime.ToString("HH:mm")
+            });
+        }
+
+        // Rule: Check-out must be after check-in time
+        if (checkTime <= record.CheckInTime)
+        {
+            TempData["Info"] = $"<p class='error'>Check-out time ({checkTime}) must be after check-in time ({record.CheckInTime}).</p>";
             return RedirectToAction(nameof(CheckInAttendance), new
             {
                 overrideDate = checkDate.ToString("yyyy-MM-dd"),

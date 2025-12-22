@@ -476,10 +476,6 @@ public class DayAllocationVM
     public string TaskName { get; set; }
     public string AttendanceStatus { get; set; } = "UNKNOWN";
     public bool IsUnavailable { get; set; }
-    public string Status { get; set; } // PENDING, IN_PROGRESS, COMPLETED
-    public DateTime? StartTime { get; set; }
-    public DateTime? CompletionDate { get; set; }
-    public string? Notes { get; set; }
 }
 
 public class MyScheduleVM
@@ -506,10 +502,6 @@ public class MyDayTaskVM
     public DateOnly Date { get; set; }
     public string AllocationId { get; set; }
     public string TaskName { get; set; }
-    public string Status { get; set; } // PENDING, IN_PROGRESS, COMPLETED
-    public DateTime? StartTime { get; set; }
-    public DateTime? CompletionDate { get; set; }
-    public string? Notes { get; set; }
     public List<TeammateVM> Teammates { get; set; } = new();
 }
 

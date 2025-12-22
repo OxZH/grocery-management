@@ -9,35 +9,7 @@
 
 <div class="task-card">
     <h2>@Model.TaskName</h2>
-    
-    <div class="task-status">
-        <strong>Status:</strong>
-        <span class="badge badge-@(Model.Status == "COMPLETED" ? "success" : Model.Status == "IN_PROGRESS" ? "info" : "secondary")">
-            @Model.Status
-        </span>
-    </div>
-
-    @if (Model.StartTime != null)
-    {
-        <div class="task-time">
-            <strong>Started at:</strong> @Model.StartTime.Value.ToString("yyyy-MM-dd HH:mm")
-        </div>
-    }
-
-    @if (Model.CompletionDate != null)
-    {
-        <div class="task-time">
-            <strong>Completed at:</strong> @Model.CompletionDate.Value.ToString("yyyy-MM-dd HH:mm")
-        </div>
-    }
-
-    @if (!string.IsNullOrWhiteSpace(Model.Notes))
-    {
-        <div class="task-notes">
-            <strong>Notes:</strong>
-            <p>@Model.Notes</p>
-        </div>
-    }
+    <p>You are assigned to work on <strong>@Model.TaskName</strong> on this date.</p>
 </div>
 
 @if (Model.Teammates.Any())

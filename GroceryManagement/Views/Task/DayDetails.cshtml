@@ -52,7 +52,6 @@
             <th>Staff</th>
             <th>Task</th>
             <th>Attendance</th>
-            <th>Status</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -67,23 +66,10 @@
                 </td>
                 <td>
                     <strong>@alloc.TaskName</strong>
-                    @if (alloc.StartTime != null)
-                    {
-                        <br/><small>Started: @alloc.StartTime.Value.ToString("HH:mm")</small>
-                    }
-                    @if (alloc.CompletionDate != null)
-                    {
-                        <br/><small>Completed: @alloc.CompletionDate.Value.ToString("HH:mm")</small>
-                    }
                 </td>
                 <td>
                     <span class="badge badge-@(alloc.AttendanceStatus == "ATTEND" ? "success" : "danger")">
                         @alloc.AttendanceStatus
-                    </span>
-                </td>
-                <td>
-                    <span class="badge badge-@(alloc.Status == "COMPLETED" ? "success" : alloc.Status == "IN_PROGRESS" ? "info" : "secondary")">
-                        @alloc.Status
                     </span>
                 </td>
                 <td>
@@ -100,14 +86,6 @@
                     </form>
                 </td>
             </tr>
-            @if (!string.IsNullOrWhiteSpace(alloc.Notes))
-            {
-                <tr class="@rowClass">
-                    <td colspan="5" class="notes-row">
-                        <small><strong>Notes:</strong> @alloc.Notes</small>
-                    </td>
-                </tr>
-            }
         }
     </tbody>
 </table>

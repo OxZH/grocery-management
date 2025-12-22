@@ -530,8 +530,7 @@ public class TaskController(DB db) : Controller
                 TemplateId = template.Id,
                 StaffId = templateAlloc.StaffId,
                 TaskName = templateAlloc.TaskName,
-                AssignedDate = vm.Date,
-                Status = "PENDING"
+                AssignedDate = vm.Date
             };
             db.Allocations.Add(allocation);
             counter++;
@@ -789,11 +788,7 @@ public class TaskController(DB db) : Controller
                 StaffName = a.Staff.Name,
                 TaskName = a.TaskName,
                 AttendanceStatus = attendance.GetValueOrDefault(a.StaffId, "UNKNOWN"),
-                IsUnavailable = attendance.GetValueOrDefault(a.StaffId, "UNKNOWN") != "ATTEND",
-                Status = a.Status,
-                StartTime = a.StartTime,
-                CompletionDate = a.CompletionDate,
-                Notes = a.Notes
+                IsUnavailable = attendance.GetValueOrDefault(a.StaffId, "UNKNOWN") != "ATTEND"
             }).OrderBy(a => a.TaskName).ToList(),
             AvailableStaffForReassignment = availableStaff
         };
@@ -836,8 +831,7 @@ public class TaskController(DB db) : Controller
             Id = GenerateAllocationId(),
             StaffId = staffId,
             TaskName = taskName,
-            AssignedDate = date,
-            Status = "PENDING"
+            AssignedDate = date
         };
 
         db.Allocations.Add(newAllocation);
@@ -945,10 +939,6 @@ public class TaskController(DB db) : Controller
 
         var oldStaffId = allocation.StaffId;
         allocation.StaffId = newStaffId;
-        allocation.Status = "PENDING"; // Reset status
-        allocation.StartTime = null;
-        allocation.CompletionDate = null;
-        allocation.Notes = (allocation.Notes ?? "") + $"\n[Reassigned from {oldStaffId} on {DateTime.Now:yyyy-MM-dd HH:mm}]";
 
         // Update day schedule flag
         var daySchedule = db.DaySchedules.FirstOrDefault(ds => ds.ScheduleDate == allocation.AssignedDate);
@@ -1151,79 +1141,10 @@ public class TaskController(DB db) : Controller
             Date = date,
             AllocationId = allocation.Id,
             TaskName = allocation.TaskName,
-            Status = allocation.Status,
-            StartTime = allocation.StartTime,
-            CompletionDate = allocation.CompletionDate,
-            Notes = allocation.Notes,
             Teammates = teammates
         };
 
         return View(vm);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Staff")]
-    public IActionResult StartTask(string id, string dateStr)
-    {
-        var staffId = GetCurrentUserId();
-        var allocation = db.Allocations.FirstOrDefault(a => a.Id == id && a.StaffId == staffId);
-
-        if (allocation == null)
-        {
-            TempData["Info"] = "<p class='error'>Task not found or not assigned to you.</p>";
-            return RedirectToAction(nameof(MySchedule));
-        }
-
-        if (allocation.Status != "PENDING")
-        {
-            TempData["Info"] = "<p class='error'>Task is not in pending status.</p>";
-            return RedirectToAction(nameof(MyDayTask), new { dateStr });
-        }
-
-        allocation.Status = "IN_PROGRESS";
-        allocation.StartTime = DateTime.Now;
-        db.SaveChanges();
-
-        TempData["Info"] = "<p class='success'>Task started.</p>";
-        return RedirectToAction(nameof(MyDayTask), new { dateStr });
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Staff")]
-    public IActionResult CompleteTask(string id, string? notes, string dateStr)
-    {
-        var staffId = GetCurrentUserId();
-        var allocation = db.Allocations.FirstOrDefault(a => a.Id == id && a.StaffId == staffId);
-
-        if (allocation == null)
-        {
-            TempData["Info"] = "<p class='error'>Task not found or not assigned to you.</p>";
-            return RedirectToAction(nameof(MySchedule));
-        }
-
-        if (allocation.Status == "COMPLETED")
-        {
-            TempData["Info"] = "<p class='error'>Task is already completed.</p>";
-            return RedirectToAction(nameof(MyDayTask), new { dateStr });
-        }
-
-        allocation.Status = "COMPLETED";
-        allocation.CompletionDate = DateTime.Now;
-        if (allocation.StartTime == null)
-        {
-            allocation.StartTime = DateTime.Now;
-        }
-        if (!string.IsNullOrWhiteSpace(notes))
-        {
-            allocation.Notes = notes;
-        }
-
-        db.SaveChanges();
-
-        TempData["Info"] = "<p class='success'>Task marked as completed.</p>";
-        return RedirectToAction(nameof(MyDayTask), new { dateStr });
     }
 
     // ===== HELPER METHODS =====
