@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq;
@@ -6,6 +7,7 @@ using X.PagedList.Extensions;
 
 namespace GroceryManagement.Controllers;
 
+[Authorize]
 public class ProductController(DB db, Helper hp) : Controller
 {
     public IActionResult Index(string? name, string? sort, string? dir, int page = 1)

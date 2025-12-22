@@ -1,4 +1,5 @@
 ﻿using GroceryManagement.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using X.PagedList.Extensions;
 
 namespace GroceryManagement.Controllers;
 
+[Authorize]
 public class ProcurementController(DB db, Helper hp) : Controller
 {
     public IActionResult Index(string? sort, string? dir, int page = 1)

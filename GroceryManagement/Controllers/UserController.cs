@@ -13,6 +13,7 @@ public class UserController(DB db,
                             Helper hp) : Controller
 {
     // GET: User/Index
+    [Authorize(Roles ="Manager")]
     public IActionResult Index(string? name, string? sort, string? dir, int page = 1)
     {
         // (1) Searching ------------------------
@@ -72,6 +73,7 @@ public class UserController(DB db,
     }
 
     // GET: Home/Detail
+    [Authorize(Roles ="Manager")]
     public IActionResult Detail(string? id)
     {
         var model = db.Users.Find(id);
@@ -95,6 +97,7 @@ public class UserController(DB db,
     // Unblock staff
     [HttpPost]
     [Authorize(Roles = "Manager")]
+    [AutoValidateAntiforgeryToken]
     public IActionResult Unblock(string id)
     {
         var staff = db.Users.Find(id);
@@ -149,6 +152,7 @@ public class UserController(DB db,
     // POST: 
     [HttpPost]
     [Authorize(Roles = "Manager")]
+    [AutoValidateAntiforgeryToken]
     public IActionResult Update(UserUpdateVM vm)
     {
         // Remove role validation;just for display in vm
@@ -262,6 +266,7 @@ public class UserController(DB db,
     // POST: Account/Delete
     [HttpPost]
     [Authorize(Roles = "Manager")]
+    [AutoValidateAntiforgeryToken]
     public IActionResult Delete(string? id)
     {
         // 1. Find the user
