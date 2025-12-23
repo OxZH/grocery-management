@@ -119,16 +119,16 @@ public class Helper(IWebHostEnvironment en,
     }
     public string ProCurrentPhoto(string fileName, string folder, int degrees, bool flip)
     {
-        // 1. Find the existing file on the server
+        // Find the existing file on the server
         var oldPath = Path.Combine(en.WebRootPath, folder, fileName);
 
         // Safety check: if file doesn't exist, do nothing
         if (!File.Exists(oldPath)) return fileName;
 
-        // 2. Load the image
+        // Load the image
         using var img = Image.Load(oldPath);
 
-        // 3. Apply Rotate/Flip
+        // Apply Rotate/Flip
         if (degrees != 0) img.Mutate(x => x.Rotate(degrees));
         if (flip) img.Mutate(x => x.Flip(FlipMode.Horizontal));
 

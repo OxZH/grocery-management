@@ -216,7 +216,7 @@ public class ProductController(DB db, Helper hp) : Controller
 
         var dupCategories = db.Products.Select(c => c.Category).Distinct().ToList();
         ViewBag.ProductList = new SelectList(dupCategories, vm.Category);
-        return PartialView(vm);
+        return View(vm);
     }
     // POST: Product/Delete
     [HttpPost]
