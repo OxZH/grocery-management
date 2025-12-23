@@ -184,7 +184,7 @@ public class FinanceController : Controller
     {
         if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(id)) return NotFound();
         type = type.ToLowerInvariant();
-        var vm = new FinanceInvoiceDetailVM { InvoiceType = type == "procurement" ? "Procurement" : "Order" };
+        var vm = new FinanceInvoiceDetailVM { InvoiceType = type == "procurement" ? "Procurement" : "Checkout" };
         if (type == "procurement")
         {
             vm.Procurement = _db.Set<ProcurementRecord>().Include(p => p.Supplier).FirstOrDefault(p => p.Id == id);
