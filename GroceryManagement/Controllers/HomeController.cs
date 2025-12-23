@@ -164,7 +164,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
             int nextNumber = currentNumber + 1;
             char nextLetter = currentLetter;
 
-            // check if number exceeds 99999)
+            // check if number exceeds 99999
             if (nextNumber > 99999)
             {
                 nextNumber = 1;
@@ -321,17 +321,24 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
         }
         if (inv.Status != vm.Status)
         {
-            // We use vm.ProductId because we already handled the swap above
             var currentProduct = db.Products.Find(vm.ProductId);
 
             if (currentProduct != null)
             {
-                // CASE A: Item was AVAILABLE, now becoming SOLD or DISPOSED (Decrease Stock)
+                // change available to sold/disposed
                 if (inv.Status == "AVAILABLE" && vm.Status != "AVAILABLE")
                 {
-                    if (currentProduct.WareHouseQty > 0) currentProduct.WareHouseQty -= 1;
+                    if (currentProduct.WareHouseQty > 0)
+                    {
+                        currentProduct.WareHouseQty -= 1;
+                    }
+                    else
+                    {
+                        TempData["Info"] = $"Error: Product {vm.ProductId} warehosueqty id less than 1.";
+                        return RedirectToAction("Index");
+                    }
                 }
-                // CASE B: Item was SOLD/DISPOSED, now returning to AVAILABLE (Increase Stock)
+                // change sold/disposed to available
                 else if (inv.Status != "AVAILABLE" && vm.Status == "AVAILABLE")
                 {
                     currentProduct.WareHouseQty += 1;
@@ -352,7 +359,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
         }
         else
         {
-            inv.CheckoutId = null; // Clean up data if status changed away from SOLD
+            inv.CheckoutId = null; // clear CheckoutId if not SOLD
         }
 
         db.SaveChanges();
@@ -369,13 +376,13 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
     {
         var inv = db.Inventories.Find(id);
 
-        // Safety Check
+        // validate id
         if (inv == null)
         {
             TempData["Info"] = $"Error: Inventory ID {id} not found.";
             return RedirectToAction("Index");
         }
-        // Find the associated product and decrease quantity
+        // find the product id from table
         var product = db.Products.Find(inv.ProductId);
         if (product != null)
         {
@@ -385,10 +392,9 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
                 return RedirectToAction("Index");
             }
 
-            // Safe to subtract
+            // qty - 1
             product.WareHouseQty -= 1;
         }
-        // Delete and Save
         db.Inventories.Remove(inv);
         db.SaveChanges();
 
@@ -423,7 +429,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
     [Authorize]
     public IActionResult DeleteBatch(string id)
     {
-        // 1. Find the "template" item (the one we are looking at)
+        // find the template id
         var template = db.Inventories.Find(id);
 
 
@@ -433,14 +439,14 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
             return RedirectToAction("Index");
         }
 
-        // 2. Find ALL items that match this batch (Same Product, Expiry, Staff)
-        // We do NOT exclude the current ID here, because we want to delete it too!
+        // find all items that match this batch
         var batchToDelete = db.Inventories
             .Where(i => i.ProductId == template.ProductId
                      && i.ExpiryDate == template.ExpiryDate
+                     && i.Status == template.Status
                      && i.StaffId == template.StaffId)
-            .ToList();
 
+            .ToList();
         int count = batchToDelete.Count;
 
         if (count > 0)
@@ -448,15 +454,15 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
             var product = db.Products.Find(template.ProductId);
             if (product != null)
             {
+                //validate warehouse qty
                 if (product.WareHouseQty < count)
                 {
                     TempData["Info"] = $"Error: Cannot delete batch. Warehouse Qty ({product.WareHouseQty}) is less than the batch size ({count}).";
-                    return RedirectToAction("Index"); // Stop here, do not delete
+                    return RedirectToAction("Index");
                 }
-
-                product.WareHouseQty -= count; // Decrease by total items in batch
+                //warehouse qty - batch count
+                product.WareHouseQty -= count; 
             }
-            // 3. Delete them all at once
             db.Inventories.RemoveRange(batchToDelete);
             db.SaveChanges();
             TempData["Info"] = $"Success: Deleted entire batch ({count} records).";

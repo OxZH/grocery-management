@@ -214,10 +214,8 @@ public class ProductController(DB db, Helper hp) : Controller
             }
         }
 
-        // If we reach here, something failed. Reload the dropdown.
         var dupCategories = db.Products.Select(c => c.Category).Distinct().ToList();
         ViewBag.ProductList = new SelectList(dupCategories, vm.Category);
-        //vm.PhotoURL = p.PhotoURL;
         return PartialView(vm);
     }
     // POST: Product/Delete
@@ -253,13 +251,10 @@ public class ProductController(DB db, Helper hp) : Controller
     {
         // Find the product by ID
         var p = db.Products.Find(id);
-
-        // If ID is wrong or product deleted, go back to list
         if (p == null)
         {
             return RedirectToAction("Index", "Product");
         }
-        // Pass the product directly to the View
         return View(p);
     }
     public IActionResult MoveStock(string? id)
@@ -269,7 +264,6 @@ public class ProductController(DB db, Helper hp) : Controller
         {
             return RedirectToAction("Index", "Product");
         }
-
         var vm = new ProductMoveVM
         {
             Id = p.Id,
@@ -310,6 +304,7 @@ public class ProductController(DB db, Helper hp) : Controller
             vm.StoreFrontQty = p.StoreFrontQty;
             return View(vm);
         }
+        // move to store front
         p.WareHouseQty -= vm.QtyToMove;
         p.StoreFrontQty += vm.QtyToMove;
         db.SaveChanges();
