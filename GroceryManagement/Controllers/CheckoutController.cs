@@ -127,6 +127,14 @@ public class CheckoutController : Controller
             {
                 ModelState.AddModelError("Items", $"Product {i.ProductId} not found.");
             }
+            else
+            {
+                var prod = products[i.ProductId];
+                if (prod.StoreFrontQty < i.Quantity)
+                {
+                    ModelState.AddModelError("Items", $"Not enough storefront quantity for product {i.ProductId}. Requested {i.Quantity}, available {prod.StoreFrontQty}.");
+                }
+            }
         }
 
         // allocate inventories for requested quantities
