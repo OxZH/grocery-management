@@ -93,19 +93,19 @@ public class Helper(IWebHostEnvironment en,
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         }
         using var img = Image.Load(f.OpenReadStream());
-        // 1. APPLY ROTATION (Advanced Feature)
+        // APPLY ROTATION
         if (rotateDegrees != 0)
         {
             img.Mutate(x => x.Rotate(rotateDegrees));
         }
 
-        // 2. APPLY FLIP (Advanced Feature)
+        // APPLY FLIP
         if (flip)
         {
             img.Mutate(x => x.Flip(FlipMode.Horizontal));
         }
 
-        // 3. Then Resize
+        // Then Resize
         var options = new ResizeOptions
         {
             Size = new(800, 800),
@@ -132,11 +132,11 @@ public class Helper(IWebHostEnvironment en,
         if (degrees != 0) img.Mutate(x => x.Rotate(degrees));
         if (flip) img.Mutate(x => x.Flip(FlipMode.Horizontal));
 
-        // 4. Save as a NEW file (Important! This forces the browser to see the change)
+        // Save as a NEW file
         var newFileName = Guid.NewGuid().ToString("n") + ".jpg";
         var newPath = Path.Combine(en.WebRootPath, folder, newFileName);
 
-        // Maintain the standard size (optional, ensures consistency)
+        // Maintain the standard size
         img.Mutate(x => x.Resize(new ResizeOptions
         {
             Size = new(800, 800),
@@ -145,8 +145,7 @@ public class Helper(IWebHostEnvironment en,
 
         img.SaveAsJpeg(newPath);
 
-        // 5. Delete the old file to save space
-        // (Note: In a real app, you might keep backups, but for this assignment, deleting is fine)
+        // Delete the old file to save space
         try { File.Delete(oldPath); } catch { }
 
         return newFileName; // Return the new name so the Database can update

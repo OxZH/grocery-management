@@ -80,7 +80,7 @@ public class HomeController(DB db, IWebHostEnvironment en, IHubContext<Inventory
         vm.SupplierId = vm.SupplierId?.ToUpper();
         //get current user staff id
         string? email = User.Identity?.Name;
-        var staff = db.Staffs.FirstOrDefault(s => s.Email == email);
+        var staff = db.Users.FirstOrDefault(s => s.Email == email);
 
         if (staff == null)
         {
